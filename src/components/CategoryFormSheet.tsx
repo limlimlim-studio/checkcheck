@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Modal, Portal, Text, TextInput, Button, IconButton } from 'react-native-paper';
+import { Colors } from '../theme';
 import { generateRandomColor } from '../constants/colors';
 
 type Category = {
@@ -91,7 +92,7 @@ export default function CategoryFormSheet({ visible, category, onDismiss, onSave
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'white',
+    backgroundColor: Colors.surface,
     margin: 20,
     borderRadius: 12,
     padding: 24,
@@ -113,7 +114,7 @@ const styles = StyleSheet.create({
   colorHex: {
     fontFamily: 'monospace',
     fontSize: 14,
-    color: '#555',
+    color: Colors.textSecondary,
     flex: 1,
   },
   actions: {

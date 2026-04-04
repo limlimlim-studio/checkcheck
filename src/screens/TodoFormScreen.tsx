@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Appbar, Text, TextInput, Button, SegmentedButtons, Divider, Dialog, Portal } from 'react-native-paper';
+import { Colors } from '../theme';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -142,6 +143,7 @@ export default function TodoFormScreen() {
             display="spinner"
             locale="ko"
             minimumDate={today}
+            textColor="#F2F2F7"
             onChange={(_, date) => {
               if (date && date >= today) setDueDate(date);
             }}
@@ -184,7 +186,7 @@ export default function TodoFormScreen() {
 
         <Divider style={styles.divider} />
 
-        <Text variant="labelLarge" style={styles.label}>시급도</Text>
+        <Text variant="labelLarge" style={styles.label}>긴급도</Text>
         <SegmentedButtons
           value={urgency}
           onValueChange={setUrgency}
@@ -218,7 +220,7 @@ export default function TodoFormScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: Colors.background },
   content: { padding: 20, paddingBottom: 40 },
   input: { marginBottom: 16 },
   descriptionInput: { minHeight: 120 },
@@ -230,15 +232,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: Colors.border,
     borderRadius: 4,
     paddingHorizontal: 14,
     paddingVertical: 14,
     marginBottom: 12,
+    backgroundColor: Colors.surface,
   },
-  dateText: { fontSize: 15, color: '#333' },
-  datePlaceholder: { color: '#aaa' },
-  dateClear: { fontSize: 14, color: '#aaa' },
+  dateText: { fontSize: 15, color: Colors.text },
+  datePlaceholder: { color: Colors.textMuted },
+  dateClear: { fontSize: 14, color: Colors.textSecondary },
   dateConfirmRow: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginBottom: 8 },
   divider: { marginVertical: 16 },
   categoryScroll: { marginBottom: 4 },
