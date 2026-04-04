@@ -35,6 +35,11 @@ export default function RecordScreen() {
               <Text variant="titleSmall" style={styles.categoryName}>
                 {category.name}
               </Text>
+              {category.description ? (
+                <Text variant="bodySmall" style={styles.categoryDesc} numberOfLines={1} ellipsizeMode="tail">
+                  {category.description}
+                </Text>
+              ) : null}
             </View>
             {/* 잔디 그리드는 이슈 #24에서 구현 */}
             <View style={styles.gridPlaceholder} />
@@ -52,8 +57,6 @@ const styles = StyleSheet.create({
   section: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -63,6 +66,7 @@ const styles = StyleSheet.create({
   },
   dot: { width: 10, height: 10, borderRadius: 5 },
   categoryName: { color: Colors.text },
+  categoryDesc: { color: Colors.textMuted, flexShrink: 1 },
   gridPlaceholder: {
     height: 80,
     backgroundColor: Colors.surface,
