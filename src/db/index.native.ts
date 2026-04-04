@@ -20,12 +20,14 @@ export const initDb = async () => {
       name TEXT NOT NULL,
       description TEXT,
       color TEXT NOT NULL DEFAULT '#6200ee',
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      is_default INTEGER NOT NULL DEFAULT 0,
       created_at INTEGER NOT NULL
     );
 
     CREATE TABLE IF NOT EXISTS todos (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      category_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+      category_id INTEGER NOT NULL REFERENCES categories(id),
       title TEXT NOT NULL,
       description TEXT,
       due_date INTEGER,
@@ -46,16 +48,16 @@ export const initDb = async () => {
 
   db = drizzle(sqlite, { schema });
 
-  // 기본 카테고리 시드
   const existing = await db.select().from(schema.categories).all();
   if (existing.length === 0) {
     const now = Date.now();
     await db.insert(schema.categories).values([
-      { name: '업무', description: '직장 관련 할 일', color: '#4285F4', createdAt: now },
-      { name: '개인', description: '개인적인 할 일', color: '#EA4335', createdAt: now },
-      { name: '운동', description: '운동 및 건강 관리', color: '#34A853', createdAt: now },
-      { name: '학습', description: '공부 및 자기계발', color: '#FBBC05', createdAt: now },
-      { name: '쇼핑', description: '구매 목록', color: '#9C27B0', createdAt: now },
+      { name: '미분류', description: '카테고리 없는 할 일', color: '#9E9E9E', sortOrder: 0, isDefault: 1, createdAt: now },
+      { name: '업무', description: '직장 관련 할 일', color: '#4285F4', sortOrder: 1, isDefault: 0, createdAt: now },
+      { name: '개인', description: '개인적인 할 일', color: '#EA4335', sortOrder: 2, isDefault: 0, createdAt: now },
+      { name: '운동', description: '운동 및 건강 관리', color: '#34A853', sortOrder: 3, isDefault: 0, createdAt: now },
+      { name: '학습', description: '공부 및 자기계발', color: '#FBBC05', sortOrder: 4, isDefault: 0, createdAt: now },
+      { name: '쇼핑', description: '구매 목록', color: '#9C27B0', sortOrder: 5, isDefault: 0, createdAt: now },
     ]).run();
   }
 };
