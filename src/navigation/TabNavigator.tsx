@@ -1,7 +1,7 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import TodoScreen from '../screens/TodoScreen';
 import RecordScreen from '../screens/RecordScreen';
-import SettingsScreen from '../screens/SettingsScreen';
+import SettingsStack from './SettingsStack';
 
 const Tab = createBottomTabNavigator();
 
@@ -10,7 +10,11 @@ export default function TabNavigator() {
     <Tab.Navigator>
       <Tab.Screen name="할일" component={TodoScreen} />
       <Tab.Screen name="기록" component={RecordScreen} />
-      <Tab.Screen name="설정" component={SettingsScreen} />
+      <Tab.Screen
+        name="설정"
+        component={SettingsStack}
+        options={{ headerShown: false }}
+      />
     </Tab.Navigator>
   );
 }

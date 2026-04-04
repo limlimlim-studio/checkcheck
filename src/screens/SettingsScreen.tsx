@@ -1,14 +1,57 @@
-import { View, StyleSheet } from 'react-native';
-import { Text } from 'react-native-paper';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { Appbar, Text, Divider } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { SettingsStackParamList } from '../navigation/SettingsStack';
+
+type NavigationProp = NativeStackNavigationProp<SettingsStackParamList, 'SettingsHome'>;
+
+const SETTINGS_ITEMS = [
+  { key: 'CategoryManagement', label: '카테고리 관리', description: '카테고리 추가, 수정, 삭제' },
+] as const;
 
 export default function SettingsScreen() {
+  const navigation = useNavigation<NavigationProp>();
+
   return (
     <View style={styles.container}>
-      <Text variant="headlineMedium">설정</Text>
+      <Appbar.Header>
+        <Appbar.Content title="설정" />
+      </Appbar.Header>
+
+      <View style={styles.section}>
+        {SETTINGS_ITEMS.map((item, index) => (
+          <View key={item.key}>
+            <TouchableOpacity
+              style={styles.item}
+              onPress={() => navigation.navigate(item.key)}
+            >
+              <View>
+                <Text variant="bodyLarge">{item.label}</Text>
+                <Text variant="bodySmall" style={styles.description}>{item.description}</Text>
+              </View>
+              <Text style={styles.arrow}>›</Text>
+            </TouchableOpacity>
+            {index < SETTINGS_ITEMS.length - 1 && <Divider />}
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  container: { flex: 1, backgroundColor: '#f5f5f5' },
+  section: {
+    backgroundColor: '#fff',
+    marginTop: 16,
+  },
+  item: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+  },
+  description: { color: '#888', marginTop: 2 },
+  arrow: { fontSize: 20, color: '#ccc' },
 });
