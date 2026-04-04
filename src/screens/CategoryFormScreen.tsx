@@ -58,19 +58,12 @@ export default function CategoryFormScreen() {
       <Appbar.Header>
         <Appbar.BackAction onPress={() => navigation.goBack()} />
         <Appbar.Content title={isEdit ? '카테고리 수정' : '새 카테고리'} />
-        {isEdit && (
-          <Appbar.Action
-            icon="delete-outline"
-            iconColor="#EA4335"
-            onPress={() => setDeleteDialogVisible(true)}
-          />
-        )}
         <Button
           mode="contained"
           onPress={handleSave}
           disabled={!name.trim()}
           style={styles.saveButton}
-          labelStyle={styles.saveButtonLabel}
+          labelStyle={styles.actionButtonLabel}
         >
           저장
         </Button>
@@ -106,6 +99,18 @@ export default function CategoryFormScreen() {
           />
         </View>
 
+        {isEdit && (
+          <Button
+            mode="outlined"
+            textColor="#B03A2E"
+            icon="delete-outline"
+            onPress={() => setDeleteDialogVisible(true)}
+            style={styles.deleteButton}
+            labelStyle={styles.actionButtonLabel}
+          >
+            삭제
+          </Button>
+        )}
       </ScrollView>
 
       <Portal>
@@ -133,8 +138,9 @@ const styles = StyleSheet.create({
   input: { marginBottom: 16 },
   descriptionInput: { minHeight: 80 },
   label: { marginBottom: 12 },
+  deleteButton: { marginTop: 8 },
   saveButton: { marginRight: 8, alignSelf: 'center' },
-  saveButtonLabel: { fontSize: 14 },
+  actionButtonLabel: { fontSize: 14 },
   colorPreviewRow: {
     flexDirection: 'row',
     alignItems: 'center',
