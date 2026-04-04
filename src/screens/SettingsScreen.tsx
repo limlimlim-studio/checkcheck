@@ -1,8 +1,9 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Appbar, Text, Divider } from 'react-native-paper';
 import { Colors } from '../theme';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useEffect } from 'react';
 import { SettingsStackParamList } from '../navigation/SettingsStack';
 
 type NavigationProp = NativeStackNavigationProp<SettingsStackParamList, 'SettingsHome'>;
@@ -13,6 +14,16 @@ const SETTINGS_ITEMS = [
 
 export default function SettingsScreen() {
   const navigation = useNavigation<NavigationProp>();
+
+  useEffect(() => {
+    const parentNav = navigation.getParent();
+    if (!parentNav) return;
+    return parentNav.addListener('focus', () => {
+      navigation.setOptions({ animation: 'none' });
+      navigation.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'SettingsHome' }] }));
+      requestAnimationFrame(() => navigation.setOptions({ animation: 'default' }));
+    });
+  }, [navigation]);
 
   return (
     <View style={styles.container}>
