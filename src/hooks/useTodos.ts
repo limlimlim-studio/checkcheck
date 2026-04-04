@@ -3,15 +3,11 @@ import { eq } from 'drizzle-orm';
 import { db } from '../db';
 import { todos, todoCompletions } from '../db/schema';
 
-export const useTodos = (categoryId?: number) =>
+export const useTodos = (isCompleted: 0 | 1) =>
   useQuery({
-    queryKey: ['todos', categoryId],
-    queryFn: () => {
-      if (categoryId !== undefined) {
-        return db.select().from(todos).where(eq(todos.categoryId, categoryId)).all();
-      }
-      return db.select().from(todos).all();
-    },
+    queryKey: ['todos', isCompleted],
+    queryFn: () =>
+      db.select().from(todos).where(eq(todos.isCompleted, isCompleted)).all(),
   });
 
 export const useCreateTodo = () => {
@@ -21,16 +17,28 @@ export const useCreateTodo = () => {
       categoryId,
       title,
       description,
+      dueDate,
+      urgency,
+      importance,
     }: {
       categoryId: number;
       title: string;
       description?: string;
+      dueDate?: number;
+      urgency?: number;
+      importance?: number;
     }) => {
       const now = Date.now();
-      await db
-        .insert(todos)
-        .values({ categoryId, title, description: description ?? null, createdAt: now, updatedAt: now })
-        .run();
+      await db.insert(todos).values({
+        categoryId,
+        title,
+        description: description ?? null,
+        dueDate: dueDate ?? null,
+        urgency: urgency ?? 0,
+        importance: importance ?? 0,
+        createdAt: now,
+        updatedAt: now,
+      }).run();
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos'] }),
   });
@@ -43,16 +51,25 @@ export const useUpdateTodo = () => {
       id,
       title,
       description,
+      dueDate,
+      urgency,
+      importance,
     }: {
       id: number;
       title: string;
       description?: string;
+      dueDate?: number;
+      urgency?: number;
+      importance?: number;
     }) => {
-      await db
-        .update(todos)
-        .set({ title, description: description ?? null, updatedAt: Date.now() })
-        .where(eq(todos.id, id))
-        .run();
+      await db.update(todos).set({
+        title,
+        description: description ?? null,
+        dueDate: dueDate ?? null,
+        urgency: urgency ?? 0,
+        importance: importance ?? 0,
+        updatedAt: Date.now(),
+      }).where(eq(todos.id, id)).run();
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos'] }),
   });
@@ -64,22 +81,15 @@ export const useToggleTodo = () => {
     mutationFn: async ({ id, isCompleted }: { id: number; isCompleted: number }) => {
       const newCompleted = isCompleted === 1 ? 0 : 1;
       const now = Date.now();
-      await db
-        .update(todos)
-        .set({
-          isCompleted: newCompleted,
-          completedAt: newCompleted === 1 ? now : null,
-          updatedAt: now,
-        })
-        .where(eq(todos.id, id))
-        .run();
+      await db.update(todos).set({
+        isCompleted: newCompleted,
+        completedAt: newCompleted === 1 ? now : null,
+        updatedAt: now,
+      }).where(eq(todos.id, id)).run();
 
       if (newCompleted === 1) {
         const today = new Date().toISOString().split('T')[0];
-        await db
-          .insert(todoCompletions)
-          .values({ todoId: id, completedDate: today })
-          .run();
+        await db.insert(todoCompletions).values({ todoId: id, completedDate: today }).run();
       }
     },
     onSuccess: () => {
@@ -99,9 +109,12 @@ export const useDeleteTodo = () => {
   });
 };
 
-export const useCompletions = (todoId: number) =>
-  useQuery({
-    queryKey: ['completions', todoId],
-    queryFn: () =>
-      db.select().from(todoCompletions).where(eq(todoCompletions.todoId, todoId)).all(),
+export const useClearCompleted = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      await db.delete(todos).where(eq(todos.isCompleted, 1)).run();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos'] }),
   });
+};
