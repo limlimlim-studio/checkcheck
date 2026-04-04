@@ -49,6 +49,7 @@ export const useUpdateTodo = () => {
   return useMutation({
     mutationFn: async ({
       id,
+      categoryId,
       title,
       description,
       dueDate,
@@ -56,6 +57,7 @@ export const useUpdateTodo = () => {
       importance,
     }: {
       id: number;
+      categoryId: number;
       title: string;
       description?: string;
       dueDate?: number;
@@ -63,6 +65,7 @@ export const useUpdateTodo = () => {
       importance?: number;
     }) => {
       await db.update(todos).set({
+        categoryId,
         title,
         description: description ?? null,
         dueDate: dueDate ?? null,
