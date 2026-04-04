@@ -3,19 +3,23 @@ import { View, ScrollView, StyleSheet } from 'react-native';
 import { Appbar, Text, IconButton } from 'react-native-paper';
 import { Colors } from '../theme';
 import { useCategories } from '../hooks/useCategories';
+import { useEarliestCompletionYear } from '../hooks/useCompletions';
+import ContributionGrid from '../components/ContributionGrid';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
 export default function RecordScreen() {
   const [year, setYear] = useState(CURRENT_YEAR);
   const { data: categories = [] } = useCategories();
+  const { data: earliestYear = CURRENT_YEAR } = useEarliestCompletionYear();
 
   return (
     <View style={styles.container}>
       <Appbar.Header>
         <IconButton
           icon="chevron-left"
-          iconColor={Colors.text}
+          iconColor={year <= earliestYear ? Colors.textMuted : Colors.text}
+          disabled={year <= earliestYear}
           onPress={() => setYear((y) => y - 1)}
         />
         <Appbar.Content title={String(year)} titleStyle={styles.yearTitle} />
@@ -41,8 +45,7 @@ export default function RecordScreen() {
                 </Text>
               ) : null}
             </View>
-            {/* 잔디 그리드는 이슈 #24에서 구현 */}
-            <View style={styles.gridPlaceholder} />
+            <ContributionGrid categoryId={category.id} color={category.color} year={year} />
           </View>
         ))}
       </ScrollView>
@@ -67,9 +70,4 @@ const styles = StyleSheet.create({
   dot: { width: 10, height: 10, borderRadius: 5 },
   categoryName: { color: Colors.text },
   categoryDesc: { color: Colors.textMuted, flexShrink: 1 },
-  gridPlaceholder: {
-    height: 80,
-    backgroundColor: Colors.surface,
-    borderRadius: 6,
-  },
 });

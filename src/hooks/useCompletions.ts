@@ -3,6 +3,21 @@ import { eq, and, gte, lte, sql } from 'drizzle-orm';
 import { db } from '../db';
 import { todoCompletions, todos } from '../db/schema';
 
+export const useEarliestCompletionYear = () =>
+  useQuery({
+    queryKey: ['completions', 'earliest-year'],
+    queryFn: () => {
+      const row = db
+        .select({ minDate: sql<string>`min(${todoCompletions.completedDate})` })
+        .from(todoCompletions)
+        .get();
+      if (!row?.minDate) return CURRENT_YEAR;
+      return parseInt(row.minDate.slice(0, 4), 10);
+    },
+  });
+
+const CURRENT_YEAR = new Date().getFullYear();
+
 // 특정 카테고리 + 년도 범위의 날짜별 완료 수 반환
 // { '2026-01-03': 2, '2026-01-05': 1, ... }
 export const useCompletionsByCategory = (categoryId: number, year: number) =>

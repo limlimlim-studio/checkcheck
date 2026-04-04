@@ -35,8 +35,11 @@ export const initDb = async () => {
       urgency INTEGER NOT NULL DEFAULT 0,
       importance INTEGER NOT NULL DEFAULT 0,
       sort_order INTEGER NOT NULL DEFAULT 0,
+      sort_order INTEGER NOT NULL DEFAULT 0,
       is_completed INTEGER NOT NULL DEFAULT 0,
       completed_at INTEGER,
+      is_deleted INTEGER NOT NULL DEFAULT 0,
+      deleted_at INTEGER,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     );
@@ -45,9 +48,22 @@ export const initDb = async () => {
   // migration: add sort_order if not exists (existing installs)
   try {
     sqlite.execSync('ALTER TABLE todos ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0;');
-  } catch {
-    // column already exists, ignore
-  }
+  } catch { /* already exists */ }
+
+  // migration: add soft delete columns if not exists
+  try {
+    sqlite.execSync('ALTER TABLE todos ADD COLUMN is_deleted INTEGER NOT NULL DEFAULT 0;');
+  } catch { /* already exists */ }
+  try {
+    sqlite.execSync('ALTER TABLE todos ADD COLUMN deleted_at INTEGER;');
+  } catch { /* already exists */ }
+
+  // migration: remove stale completion records for uncompleted/deleted todos
+  // (bug: toggle-back did not delete todoCompletions until fixed)
+  sqlite.execSync(`
+    DELETE FROM todo_completions
+    WHERE todo_id IN (SELECT id FROM todos WHERE is_completed = 0 OR is_deleted = 1);
+  `);
 
   sqlite.execSync(`
     CREATE TABLE IF NOT EXISTS todo_completions (

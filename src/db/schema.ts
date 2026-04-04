@@ -23,6 +23,8 @@ export const todos = sqliteTable('todos', {
   sortOrder: int('sort_order').notNull().default(0),
   isCompleted: int('is_completed').notNull().default(0),
   completedAt: int('completed_at'),
+  isDeleted: int('is_deleted').notNull().default(0),
+  deletedAt: int('deleted_at'),
   createdAt: int('created_at').notNull(),
   updatedAt: int('updated_at').notNull(),
 });
