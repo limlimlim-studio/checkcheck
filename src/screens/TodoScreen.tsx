@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import { Appbar, Text, FAB, Button, Divider } from 'react-native-paper';
+import { Appbar, Text, FAB, Button, Divider, Dialog, Portal } from 'react-native-paper';
 import { Colors } from '../theme';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -28,6 +28,7 @@ type Todo = {
 export default function TodoScreen() {
   const navigation = useNavigation<Nav>();
   const [activeTab, setActiveTab] = useState<Tab>('active');
+  const [clearDialogVisible, setClearDialogVisible] = useState(false);
 
   const { data: activeTodos = [] } = useTodos(0);
   const { data: completedTodos = [] } = useTodos(1);
@@ -57,7 +58,7 @@ export default function TodoScreen() {
       <Appbar.Header>
         <Appbar.Content title="할 일" />
         {activeTab === 'completed' && completedTodos.length > 0 && (
-          <Appbar.Action icon="delete-sweep" onPress={() => clearCompleted()} />
+          <Appbar.Action icon="delete-sweep" onPress={() => setClearDialogVisible(true)} />
         )}
       </Appbar.Header>
 
@@ -103,6 +104,24 @@ export default function TodoScreen() {
       {activeTab === 'active' && (
         <FAB icon="plus" style={styles.fab} onPress={() => navigation.navigate('TodoForm')} />
       )}
+
+      <Portal>
+        <Dialog visible={clearDialogVisible} onDismiss={() => setClearDialogVisible(false)}>
+          <Dialog.Title>완료 목록 비우기</Dialog.Title>
+          <Dialog.Content>
+            <Text>완료된 할 일이 목록에서 삭제됩니다.{'\n'}완료 기록은 기록 탭에 유지됩니다.</Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setClearDialogVisible(false)}>취소</Button>
+            <Button
+              textColor={Colors.danger}
+              onPress={() => { clearCompleted(); setClearDialogVisible(false); }}
+            >
+              비우기
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </View>
   );
 }
