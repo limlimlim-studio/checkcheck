@@ -1,5 +1,6 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Appbar, Text, Divider } from 'react-native-paper';
+import { Colors } from '../theme';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SettingsStackParamList } from '../navigation/SettingsStack';
@@ -41,9 +42,9 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
+  container: { flex: 1, backgroundColor: Colors.background },
   section: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.surface,
     marginTop: 16,
   },
   item: {
@@ -52,6 +53,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
   },
-  description: { color: '#888', marginTop: 2 },
-  arrow: { fontSize: 20, color: '#ccc' },
+  description: { color: Colors.textSecondary, marginTop: 2 },
+  arrow: { fontSize: 20, color: Colors.textMuted },
 });

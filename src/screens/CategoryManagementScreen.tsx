@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Appbar, Text, Divider, FAB, Dialog, Portal, Button } from 'react-native-paper';
+import { Colors } from '../theme';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { useNavigation } from '@react-navigation/native';
 import {
@@ -145,27 +146,27 @@ export default function CategoryManagementScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: Colors.background },
   item: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
     gap: 12,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.background,
   },
-  itemDragging: { backgroundColor: '#f5f5f5', elevation: 4 },
+  itemDragging: { backgroundColor: Colors.surfaceVariant, elevation: 4 },
   colorBadge: { width: 20, height: 20, borderRadius: 10 },
   itemText: { flex: 1 },
   itemRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   defaultBadge: {
-    backgroundColor: '#eee',
-    color: '#888',
+    backgroundColor: Colors.surfaceVariant,
+    color: Colors.textSecondary,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
   },
-  description: { color: '#888', marginTop: 2 },
-  dragHandle: { color: '#ccc', fontSize: 18 },
+  description: { color: Colors.textSecondary, marginTop: 2 },
+  dragHandle: { color: Colors.textMuted, fontSize: 18 },
   fab: { position: 'absolute', right: 16, bottom: 16 },
   bold: { fontWeight: 'bold' },
 });

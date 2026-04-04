@@ -1,5 +1,6 @@
 import { View, FlatList, StyleSheet } from 'react-native';
 import { Appbar, Text, FAB, Button, Divider } from 'react-native-paper';
+import { Colors } from '../theme';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState } from 'react';
@@ -79,16 +80,16 @@ export default function TodoScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: Colors.background },
   tabs: {
     flexDirection: 'row',
     paddingHorizontal: 16,
     paddingVertical: 8,
     gap: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: Colors.tabBorder,
   },
   tabBtn: { flex: 1 },
-  empty: { textAlign: 'center', marginTop: 60, color: '#aaa' },
+  empty: { textAlign: 'center', marginTop: 60, color: Colors.textMuted },
   fab: { position: 'absolute', right: 16, bottom: 16 },
 });
