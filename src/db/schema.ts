@@ -15,6 +15,9 @@ export const todos = sqliteTable('todos', {
     .references(() => categories.id, { onDelete: 'cascade' }),
   title: text('title').notNull(),
   description: text('description'),
+  dueDate: int('due_date'),             // timestamp
+  urgency: int('urgency').default(0),   // 0~3
+  importance: int('importance').default(0), // 0~3
   isCompleted: int('is_completed').notNull().default(0),
   completedAt: int('completed_at'),
   createdAt: int('created_at').notNull(),
