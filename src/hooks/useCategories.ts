@@ -1,19 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { eq } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 import { db } from '../db';
-import { categories } from '../db/schema';
+import { categories, todos } from '../db/schema';
 
 export const useCategories = () =>
   useQuery({
     queryKey: ['categories'],
-    queryFn: () => db.select().from(categories).all(),
+    queryFn: () => db.select().from(categories).orderBy(asc(categories.sortOrder)).all(),
   });
 
 export const useCreateCategory = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ name, description, color }: { name: string; description?: string; color: string }) => {
-      await db.insert(categories).values({ name, description, color, createdAt: Date.now() }).run();
+      const all = await db.select().from(categories).all();
+      const maxOrder = all.reduce((max, c) => Math.max(max, c.sortOrder), 0);
+      await db.insert(categories).values({ name, description, color, sortOrder: maxOrder + 1, createdAt: Date.now() }).run();
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['categories'] }),
   });
@@ -29,10 +31,24 @@ export const useUpdateCategory = () => {
   });
 };
 
+export const useReorderCategories = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (orderedIds: number[]) => {
+      for (let i = 0; i < orderedIds.length; i++) {
+        await db.update(categories).set({ sortOrder: i }).where(eq(categories.id, orderedIds[i])).run();
+      }
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['categories'] }),
+  });
+};
+
 export const useDeleteCategory = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async ({ id, defaultCategoryId }: { id: number; defaultCategoryId: number }) => {
+      // 해당 카테고리의 할 일을 미분류로 재배정
+      await db.update(todos).set({ categoryId: defaultCategoryId }).where(eq(todos.categoryId, id)).run();
       await db.delete(categories).where(eq(categories.id, id)).run();
     },
     onSuccess: () => {
