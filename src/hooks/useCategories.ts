@@ -12,8 +12,18 @@ export const useCategories = () =>
 export const useCreateCategory = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ name, color }: { name: string; color: string }) => {
-      await db.insert(categories).values({ name, color, createdAt: Date.now() }).run();
+    mutationFn: async ({ name, description, color }: { name: string; description?: string; color: string }) => {
+      await db.insert(categories).values({ name, description, color, createdAt: Date.now() }).run();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['categories'] }),
+  });
+};
+
+export const useUpdateCategory = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, name, description, color }: { id: number; name: string; description?: string; color: string }) => {
+      await db.update(categories).set({ name, description, color }).where(eq(categories.id, id)).run();
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['categories'] }),
   });

@@ -1,6 +1,5 @@
 import { openDatabaseAsync } from 'expo-sqlite';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
-import { Platform } from 'react-native';
 import * as schema from './schema';
 
 type Db = ReturnType<typeof drizzle<typeof schema>>;
@@ -11,10 +10,7 @@ export let db: Db = null as unknown as Db;
 export const initDb = async () => {
   const sqlite = await openDatabaseAsync('todo.db');
 
-  // WAL mode is not supported on web (sql.js)
-  if (Platform.OS !== 'web') {
-    await sqlite.execAsync('PRAGMA journal_mode = WAL;');
-  }
+  await sqlite.execAsync('PRAGMA journal_mode = WAL;');
 
   await sqlite.execAsync(`
     PRAGMA foreign_keys = ON;
@@ -22,6 +18,7 @@ export const initDb = async () => {
     CREATE TABLE IF NOT EXISTS categories (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
+      description TEXT,
       color TEXT NOT NULL DEFAULT '#6200ee',
       created_at INTEGER NOT NULL
     );
@@ -45,4 +42,17 @@ export const initDb = async () => {
   `);
 
   db = drizzle(sqlite, { schema });
+
+  // 기본 카테고리 시드
+  const existing = await db.select().from(schema.categories).all();
+  if (existing.length === 0) {
+    const now = Date.now();
+    await db.insert(schema.categories).values([
+      { name: '업무', description: '직장 관련 할 일', color: '#4285F4', createdAt: now },
+      { name: '개인', description: '개인적인 할 일', color: '#EA4335', createdAt: now },
+      { name: '운동', description: '운동 및 건강 관리', color: '#34A853', createdAt: now },
+      { name: '학습', description: '공부 및 자기계발', color: '#FBBC05', createdAt: now },
+      { name: '쇼핑', description: '구매 목록', color: '#9C27B0', createdAt: now },
+    ]).run();
+  }
 };
