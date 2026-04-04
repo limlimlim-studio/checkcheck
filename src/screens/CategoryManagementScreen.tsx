@@ -112,6 +112,7 @@ export default function CategoryManagementScreen() {
         renderItem={renderItem}
         autoscrollThreshold={80}
         autoscrollSpeed={200}
+        containerStyle={{ flex: 1 }}
       />
 
       <FAB icon="plus" style={styles.fab} onPress={openCreate} />
