@@ -29,6 +29,11 @@ export const todos = sqliteTable('todos', {
   updatedAt: int('updated_at').notNull(),
 });
 
+export const appSettings = sqliteTable('app_settings', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
+});
+
 export const todoCompletions = sqliteTable('todo_completions', {
   id: int('id').primaryKey({ autoIncrement: true }),
   todoId: int('todo_id')

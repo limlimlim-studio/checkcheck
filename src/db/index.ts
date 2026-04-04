@@ -66,6 +66,13 @@ export const initDb = async () => {
   `);
 
   sqlite.execSync(`
+    CREATE TABLE IF NOT EXISTS app_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
+  `);
+
+  sqlite.execSync(`
     CREATE TABLE IF NOT EXISTS todo_completions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       todo_id INTEGER NOT NULL REFERENCES todos(id) ON DELETE CASCADE,
@@ -74,6 +81,12 @@ export const initDb = async () => {
   `);
 
   db = drizzle(sqlite, { schema });
+
+  // 개발 환경 임시 데이터 (1회 실행, 재생성은 seed.ts 주석 참고)
+  if (__DEV__) {
+    const { runDevSeed } = require('./seed');
+    runDevSeed();
+  }
 
   const existing = db.select().from(schema.categories).all();
   if (existing.length === 0) {
