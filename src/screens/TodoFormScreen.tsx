@@ -82,15 +82,12 @@ export default function TodoFormScreen() {
       <Appbar.Header>
         <Appbar.BackAction onPress={() => navigation.goBack()} />
         <Appbar.Content title={isEdit ? '할 일 수정' : '새 할 일'} />
-        {isEdit && (
-          <Appbar.Action icon="delete-outline" iconColor="#EA4335" onPress={() => setDeleteDialogVisible(true)} />
-        )}
         <Button
           mode="contained"
           onPress={handleSave}
           disabled={!title.trim()}
           style={styles.saveButton}
-          labelStyle={styles.saveButtonLabel}
+          labelStyle={styles.actionButtonLabel}
         >
           저장
         </Button>
@@ -201,6 +198,19 @@ export default function TodoFormScreen() {
           buttons={LEVEL_OPTIONS}
           style={styles.segment}
         />
+
+        {isEdit && (
+          <Button
+            mode="outlined"
+            textColor="#B03A2E"
+            icon="delete-outline"
+            onPress={() => setDeleteDialogVisible(true)}
+            style={styles.deleteButton}
+            labelStyle={styles.actionButtonLabel}
+          >
+            삭제
+          </Button>
+        )}
       </ScrollView>
 
       <Portal>
@@ -225,8 +235,9 @@ const styles = StyleSheet.create({
   input: { marginBottom: 16 },
   descriptionInput: { minHeight: 120 },
   label: { marginBottom: 8, marginTop: 4 },
+  deleteButton: { marginTop: 8 },
   saveButton: { marginRight: 8, alignSelf: 'center' },
-  saveButtonLabel: { fontSize: 14 },
+  actionButtonLabel: { fontSize: 14 },
   dateButton: {
     flexDirection: 'row',
     alignItems: 'center',
