@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
   yearTitle: { textAlign: 'center', fontWeight: '700', fontSize: 18 },
   content: { paddingVertical: 8 },
   section: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 2,
     paddingVertical: 12,
   },
   sectionHeader: {
@@ -66,6 +66,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     marginBottom: 10,
+    paddingHorizontal: 12,
   },
   dot: { width: 10, height: 10, borderRadius: 5 },
   categoryName: { color: Colors.text },
