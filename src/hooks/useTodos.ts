@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { asc, eq } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
 import { db } from '../db';
 import { todos, todoCompletions } from '../db/schema';
 
@@ -8,7 +8,7 @@ export const useTodos = (isCompleted: 0 | 1) =>
     queryKey: ['todos', isCompleted],
     queryFn: () =>
       db.select().from(todos)
-        .where(eq(todos.isCompleted, isCompleted))
+        .where(and(eq(todos.isCompleted, isCompleted), eq(todos.isDeleted, 0)))
         .orderBy(asc(todos.sortOrder))
         .all(),
   });
@@ -31,7 +31,9 @@ export const useCreateTodo = () => {
       urgency?: number;
       importance?: number;
     }) => {
-      const all = db.select().from(todos).where(eq(todos.isCompleted, 0)).all();
+      const all = db.select().from(todos)
+        .where(and(eq(todos.isCompleted, 0), eq(todos.isDeleted, 0)))
+        .all();
       const minOrder = all.reduce((min, t) => Math.min(min, t.sortOrder), 0);
       const now = Date.now();
       await db.insert(todos).values({
@@ -96,9 +98,13 @@ export const useToggleTodo = () => {
         updatedAt: now,
       }).where(eq(todos.id, id)).run();
 
+      const today = new Date().toISOString().split('T')[0];
       if (newCompleted === 1) {
-        const today = new Date().toISOString().split('T')[0];
         await db.insert(todoCompletions).values({ todoId: id, completedDate: today }).run();
+      } else {
+        await db.delete(todoCompletions)
+          .where(and(eq(todoCompletions.todoId, id), eq(todoCompletions.completedDate, today)))
+          .run();
       }
     },
     onSuccess: () => {
@@ -112,7 +118,11 @@ export const useDeleteTodo = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: number) => {
-      await db.delete(todos).where(eq(todos.id, id)).run();
+      await db.update(todos).set({
+        isDeleted: 1,
+        deletedAt: Date.now(),
+        updatedAt: Date.now(),
+      }).where(eq(todos.id, id)).run();
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos'] }),
   });
@@ -122,7 +132,12 @@ export const useClearCompleted = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
-      await db.delete(todos).where(eq(todos.isCompleted, 1)).run();
+      const now = Date.now();
+      await db.update(todos).set({
+        isDeleted: 1,
+        deletedAt: now,
+        updatedAt: now,
+      }).where(and(eq(todos.isCompleted, 1), eq(todos.isDeleted, 0))).run();
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos'] }),
   });
