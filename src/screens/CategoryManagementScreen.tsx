@@ -1,17 +1,13 @@
-import { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { Appbar, Text, Divider, FAB, Dialog, Portal, Button } from 'react-native-paper';
+import { Appbar, Text, Divider, FAB } from 'react-native-paper';
 import { Colors } from '../theme';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { useNavigation } from '@react-navigation/native';
-import {
-  useCategories,
-  useCreateCategory,
-  useUpdateCategory,
-  useDeleteCategory,
-  useReorderCategories,
-} from '../hooks/useCategories';
-import CategoryFormSheet from '../components/CategoryFormSheet';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useCategories, useReorderCategories } from '../hooks/useCategories';
+import { SettingsStackParamList } from '../navigation/SettingsStack';
+
+type Nav = NativeStackNavigationProp<SettingsStackParamList, 'CategoryManagement'>;
 
 type Category = {
   id: number;
@@ -24,50 +20,9 @@ type Category = {
 };
 
 export default function CategoryManagementScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<Nav>();
   const { data: categories = [] } = useCategories();
-  const { mutate: createCategory } = useCreateCategory();
-  const { mutate: updateCategory } = useUpdateCategory();
-  const { mutate: deleteCategory } = useDeleteCategory();
   const { mutate: reorderCategories } = useReorderCategories();
-
-  const [sheetVisible, setSheetVisible] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
-
-  const defaultCategory = categories.find((c) => c.isDefault === 1);
-
-  const openCreate = () => {
-    setSelectedCategory(null);
-    setSheetVisible(true);
-  };
-
-  const openEdit = (category: Category) => {
-    setSelectedCategory(category);
-    setSheetVisible(true);
-  };
-
-  const handleSave = (data: { name: string; description?: string; color: string }) => {
-    if (selectedCategory) {
-      updateCategory({ id: selectedCategory.id, ...data });
-    } else {
-      createCategory(data);
-    }
-    setSheetVisible(false);
-  };
-
-  const handleDeletePress = () => {
-    setSheetVisible(false);
-    setDeleteDialogVisible(true);
-  };
-
-  const handleDeleteConfirm = () => {
-    if (selectedCategory && defaultCategory) {
-      deleteCategory({ id: selectedCategory.id, defaultCategoryId: defaultCategory.id });
-    }
-    setDeleteDialogVisible(false);
-    setSelectedCategory(null);
-  };
 
   const handleDragEnd = ({ data }: { data: Category[] }) => {
     reorderCategories(data.map((c) => c.id));
@@ -77,7 +32,11 @@ export default function CategoryManagementScreen() {
     <ScaleDecorator>
       <TouchableOpacity
         style={[styles.item, isActive && styles.itemDragging]}
-        onPress={() => !item.isDefault && openEdit(item)}
+        onPress={() => {
+          if (!item.isDefault) {
+            navigation.navigate('CategoryForm', { category: item });
+          }
+        }}
         onLongPress={drag}
         disabled={isActive}
       >
@@ -93,7 +52,7 @@ export default function CategoryManagementScreen() {
             <Text variant="bodySmall" style={styles.description}>{item.description}</Text>
           ) : null}
         </View>
-        <Text style={styles.dragHandle}>☰</Text>
+        {!item.isDefault && <Text style={styles.dragHandle}>☰</Text>}
       </TouchableOpacity>
       <Divider />
     </ScaleDecorator>
@@ -116,31 +75,11 @@ export default function CategoryManagementScreen() {
         containerStyle={{ flex: 1 }}
       />
 
-      <FAB icon="plus" style={styles.fab} onPress={openCreate} />
-
-      <CategoryFormSheet
-        visible={sheetVisible}
-        category={selectedCategory}
-        onDismiss={() => setSheetVisible(false)}
-        onSave={handleSave}
-        onDelete={selectedCategory?.isDefault ? undefined : handleDeletePress}
+      <FAB
+        icon="plus"
+        style={styles.fab}
+        onPress={() => navigation.navigate('CategoryForm')}
       />
-
-      <Portal>
-        <Dialog visible={deleteDialogVisible} onDismiss={() => setDeleteDialogVisible(false)}>
-          <Dialog.Title>카테고리 삭제</Dialog.Title>
-          <Dialog.Content>
-            <Text>
-              <Text style={styles.bold}>"{selectedCategory?.name}"</Text> 카테고리에 속한 할 일이 모두{' '}
-              <Text style={styles.bold}>미분류</Text>로 이동됩니다.{'\n'}삭제하시겠습니까?
-            </Text>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={() => setDeleteDialogVisible(false)}>취소</Button>
-            <Button textColor="#EA4335" onPress={handleDeleteConfirm}>삭제</Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
     </View>
   );
 }
@@ -168,5 +107,4 @@ const styles = StyleSheet.create({
   description: { color: Colors.textSecondary, marginTop: 2 },
   dragHandle: { color: Colors.textMuted, fontSize: 18 },
   fab: { position: 'absolute', right: 16, bottom: 16 },
-  bold: { fontWeight: 'bold' },
 });
