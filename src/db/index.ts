@@ -34,12 +34,20 @@ export const initDb = async () => {
       due_date INTEGER,
       urgency INTEGER NOT NULL DEFAULT 0,
       importance INTEGER NOT NULL DEFAULT 0,
+      sort_order INTEGER NOT NULL DEFAULT 0,
       is_completed INTEGER NOT NULL DEFAULT 0,
       completed_at INTEGER,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     );
   `);
+
+  // migration: add sort_order if not exists (existing installs)
+  try {
+    sqlite.execSync('ALTER TABLE todos ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0;');
+  } catch {
+    // column already exists, ignore
+  }
 
   sqlite.execSync(`
     CREATE TABLE IF NOT EXISTS todo_completions (

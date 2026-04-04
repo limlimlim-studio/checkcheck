@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { eq } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 import { db } from '../db';
 import { todos, todoCompletions } from '../db/schema';
 
@@ -7,7 +7,10 @@ export const useTodos = (isCompleted: 0 | 1) =>
   useQuery({
     queryKey: ['todos', isCompleted],
     queryFn: () =>
-      db.select().from(todos).where(eq(todos.isCompleted, isCompleted)).all(),
+      db.select().from(todos)
+        .where(eq(todos.isCompleted, isCompleted))
+        .orderBy(asc(todos.sortOrder))
+        .all(),
   });
 
 export const useCreateTodo = () => {
@@ -28,6 +31,8 @@ export const useCreateTodo = () => {
       urgency?: number;
       importance?: number;
     }) => {
+      const all = db.select().from(todos).where(eq(todos.isCompleted, 0)).all();
+      const minOrder = all.reduce((min, t) => Math.min(min, t.sortOrder), 0);
       const now = Date.now();
       await db.insert(todos).values({
         categoryId,
@@ -36,6 +41,7 @@ export const useCreateTodo = () => {
         dueDate: dueDate ?? null,
         urgency: urgency ?? 0,
         importance: importance ?? 0,
+        sortOrder: minOrder - 1,
         createdAt: now,
         updatedAt: now,
       }).run();
@@ -117,6 +123,18 @@ export const useClearCompleted = () => {
   return useMutation({
     mutationFn: async () => {
       await db.delete(todos).where(eq(todos.isCompleted, 1)).run();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos'] }),
+  });
+};
+
+export const useReorderTodos = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (orderedIds: number[]) => {
+      for (let i = 0; i < orderedIds.length; i++) {
+        await db.update(todos).set({ sortOrder: i }).where(eq(todos.id, orderedIds[i])).run();
+      }
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos'] }),
   });

@@ -1,16 +1,29 @@
-import { View, FlatList, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Appbar, Text, FAB, Button, Divider } from 'react-native-paper';
 import { Colors } from '../theme';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState } from 'react';
 import { useCategories } from '../hooks/useCategories';
-import { useTodos, useToggleTodo, useClearCompleted } from '../hooks/useTodos';
+import { useTodos, useToggleTodo, useClearCompleted, useReorderTodos } from '../hooks/useTodos';
 import TodoItem from '../components/TodoItem';
 import { TodoStackParamList } from '../navigation/TodoStack';
+import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 
 type Nav = NativeStackNavigationProp<TodoStackParamList, 'TodoList'>;
 type Tab = 'active' | 'completed';
+
+type Todo = {
+  id: number;
+  title: string;
+  description?: string | null;
+  dueDate?: number | null;
+  urgency?: number | null;
+  importance?: number | null;
+  isCompleted: number;
+  categoryId: number;
+  sortOrder: number;
+};
 
 export default function TodoScreen() {
   const navigation = useNavigation<Nav>();
@@ -21,9 +34,23 @@ export default function TodoScreen() {
   const { data: categories = [] } = useCategories();
   const { mutate: toggleTodo } = useToggleTodo();
   const { mutate: clearCompleted } = useClearCompleted();
+  const { mutate: reorderTodos } = useReorderTodos();
 
   const currentTodos = activeTab === 'active' ? activeTodos : completedTodos;
   const getCategoryById = (id: number) => categories.find((c) => c.id === id);
+
+  const renderItem = ({ item, drag, isActive }: RenderItemParams<Todo>) => (
+    <ScaleDecorator>
+      <TodoItem
+        todo={item}
+        category={getCategoryById(item.categoryId)}
+        onToggle={() => toggleTodo({ id: item.id, isCompleted: item.isCompleted })}
+        onPress={() => navigation.navigate('TodoForm', { todo: item })}
+        onDrag={activeTab === 'active' ? drag : undefined}
+        isDragging={isActive}
+      />
+    </ScaleDecorator>
+  );
 
   return (
     <View style={styles.container}>
@@ -53,8 +80,8 @@ export default function TodoScreen() {
         </Button>
       </View>
 
-      <FlatList
-        data={currentTodos}
+      <DraggableFlatList
+        data={currentTodos as Todo[]}
         keyExtractor={(item) => String(item.id)}
         ItemSeparatorComponent={() => <Divider />}
         ListEmptyComponent={
@@ -62,14 +89,15 @@ export default function TodoScreen() {
             {activeTab === 'active' ? '할 일이 없어요' : '완료된 항목이 없어요'}
           </Text>
         }
-        renderItem={({ item }) => (
-          <TodoItem
-            todo={item}
-            category={getCategoryById(item.categoryId)}
-            onToggle={() => toggleTodo({ id: item.id, isCompleted: item.isCompleted })}
-            onPress={() => navigation.navigate('TodoForm', { todo: item })}
-          />
-        )}
+        renderItem={renderItem}
+        onDragEnd={({ data }) => {
+          if (activeTab === 'active') {
+            reorderTodos(data.map((t) => t.id));
+          }
+        }}
+        autoscrollThreshold={80}
+        autoscrollSpeed={200}
+        containerStyle={{ flex: 1 }}
       />
 
       {activeTab === 'active' && (

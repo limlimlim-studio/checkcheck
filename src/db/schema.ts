@@ -20,6 +20,7 @@ export const todos = sqliteTable('todos', {
   dueDate: int('due_date'),
   urgency: int('urgency').default(0),
   importance: int('importance').default(0),
+  sortOrder: int('sort_order').notNull().default(0),
   isCompleted: int('is_completed').notNull().default(0),
   completedAt: int('completed_at'),
   createdAt: int('created_at').notNull(),
