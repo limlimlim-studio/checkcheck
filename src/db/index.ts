@@ -1,4 +1,4 @@
-import { openDatabaseAsync } from 'expo-sqlite';
+import { openDatabaseSync } from 'expo-sqlite';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import * as schema from './schema';
 
@@ -8,13 +8,12 @@ type Db = ReturnType<typeof drizzle<typeof schema>>;
 export let db: Db = null as unknown as Db;
 
 export const initDb = async () => {
-  const sqlite = await openDatabaseAsync('todo.db');
+  const sqlite = openDatabaseSync('todo.db');
 
-  await sqlite.execAsync('PRAGMA journal_mode = WAL;');
+  sqlite.execSync('PRAGMA journal_mode = WAL;');
+  sqlite.execSync('PRAGMA foreign_keys = ON;');
 
-  await sqlite.execAsync(`
-    PRAGMA foreign_keys = ON;
-
+  sqlite.execSync(`
     CREATE TABLE IF NOT EXISTS categories (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -24,7 +23,9 @@ export const initDb = async () => {
       is_default INTEGER NOT NULL DEFAULT 0,
       created_at INTEGER NOT NULL
     );
+  `);
 
+  sqlite.execSync(`
     CREATE TABLE IF NOT EXISTS todos (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       category_id INTEGER NOT NULL REFERENCES categories(id),
@@ -38,7 +39,9 @@ export const initDb = async () => {
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     );
+  `);
 
+  sqlite.execSync(`
     CREATE TABLE IF NOT EXISTS todo_completions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       todo_id INTEGER NOT NULL REFERENCES todos(id) ON DELETE CASCADE,
@@ -48,10 +51,10 @@ export const initDb = async () => {
 
   db = drizzle(sqlite, { schema });
 
-  const existing = await db.select().from(schema.categories).all();
+  const existing = db.select().from(schema.categories).all();
   if (existing.length === 0) {
     const now = Date.now();
-    await db.insert(schema.categories).values([
+    db.insert(schema.categories).values([
       { name: '미분류', description: '카테고리 없는 할 일', color: '#9E9E9E', sortOrder: 0, isDefault: 1, createdAt: now },
       { name: '업무', description: '직장 관련 할 일', color: '#4285F4', sortOrder: 1, isDefault: 0, createdAt: now },
       { name: '개인', description: '개인적인 할 일', color: '#EA4335', sortOrder: 2, isDefault: 0, createdAt: now },
