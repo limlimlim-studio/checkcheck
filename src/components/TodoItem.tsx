@@ -32,7 +32,7 @@ export default function TodoItem({ todo, category, onToggle, onPress }: Props) {
 
   return (
     <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
-      <Checkbox
+      <Checkbox.Android
         status={todo.isCompleted === 1 ? 'checked' : 'unchecked'}
         onPress={onToggle}
         color={category?.color}

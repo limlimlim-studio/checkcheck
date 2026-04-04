@@ -7,14 +7,10 @@ const Tab = createBottomTabNavigator();
 
 export default function TabNavigator() {
   return (
-    <Tab.Navigator>
+    <Tab.Navigator screenOptions={{ headerShown: false }}>
       <Tab.Screen name="할일" component={TodoScreen} />
       <Tab.Screen name="기록" component={RecordScreen} />
-      <Tab.Screen
-        name="설정"
-        component={SettingsStack}
-        options={{ headerShown: false }}
-      />
+      <Tab.Screen name="설정" component={SettingsStack} />
     </Tab.Navigator>
   );
 }
