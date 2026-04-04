@@ -1,9 +1,9 @@
 import { StyleSheet, View } from 'react-native';
 import { Appbar, Text, FAB, Button, Divider, Dialog, Portal } from 'react-native-paper';
 import { Colors } from '../theme';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCategories } from '../hooks/useCategories';
 import { useTodos, useToggleTodo, useClearCompleted, useReorderTodos } from '../hooks/useTodos';
 import TodoItem from '../components/TodoItem';
@@ -29,6 +29,17 @@ export default function TodoScreen() {
   const navigation = useNavigation<Nav>();
   const [activeTab, setActiveTab] = useState<Tab>('active');
   const [clearDialogVisible, setClearDialogVisible] = useState(false);
+
+  useEffect(() => {
+    const parentNav = navigation.getParent();
+    if (!parentNav) return;
+    return parentNav.addListener('focus', () => {
+      setActiveTab('active');
+      navigation.setOptions({ animation: 'none' });
+      navigation.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'TodoList' }] }));
+      requestAnimationFrame(() => navigation.setOptions({ animation: 'default' }));
+    });
+  }, [navigation]);
 
   const { data: activeTodos = [] } = useTodos(0);
   const { data: completedTodos = [] } = useTodos(1);
