@@ -27,7 +27,6 @@ type Props = {
 };
 
 const LEVEL_LABELS = ['', '낮음', '보통', '높음'];
-
 const URGENCY_COLOR = '#FF6B6B';
 const IMPORTANCE_COLOR = '#4ECDC4';
 
@@ -40,13 +39,15 @@ export default function TodoItem({ todo, category, onToggle, onPress }: Props) {
   const importanceLevel = todo.importance ?? 0;
 
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
-      <Checkbox.Android
-        status={todo.isCompleted === 1 ? 'checked' : 'unchecked'}
-        onPress={onToggle}
-        color={category?.color}
-      />
-      <View style={styles.content}>
+    <View style={styles.container}>
+      <TouchableOpacity onPress={onToggle} activeOpacity={0.6} style={styles.checkboxArea}>
+        <Checkbox.Android
+          status={todo.isCompleted === 1 ? 'checked' : 'unchecked'}
+          color={category?.color}
+        />
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.content} onPress={onPress} activeOpacity={0.7}>
         <Text
           variant="bodyLarge"
           style={[styles.titleText, todo.isCompleted === 1 && styles.completed]}
@@ -80,8 +81,8 @@ export default function TodoItem({ todo, category, onToggle, onPress }: Props) {
             </View>
           )}
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </View>
   );
 }
 
@@ -89,10 +90,13 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 6,
     paddingHorizontal: 16,
   },
-  content: { flex: 1, marginLeft: 4 },
+  checkboxArea: {
+    padding: 4,
+  },
+  content: { flex: 1, marginLeft: 4, paddingVertical: 4 },
   titleText: { flexShrink: 1 },
   completed: { textDecorationLine: 'line-through', color: Colors.textMuted },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' },
