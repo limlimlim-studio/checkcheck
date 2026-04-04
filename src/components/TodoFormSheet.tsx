@@ -74,7 +74,7 @@ export default function TodoFormSheet({ visible, todo, onDismiss, onSave, onDele
   return (
     <Portal>
       <Modal visible={visible} onDismiss={onDismiss} contentContainerStyle={styles.container}>
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
           <Text variant="titleLarge" style={styles.title}>
             {isEdit ? '할 일 수정' : '새 할 일'}
           </Text>
@@ -164,8 +164,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     margin: 20,
     borderRadius: 12,
-    padding: 24,
     maxHeight: '85%',
+  },
+  scrollContent: {
+    padding: 24,
   },
   title: { marginBottom: 16 },
   input: { marginBottom: 12 },
