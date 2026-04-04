@@ -8,6 +8,7 @@ import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { initDb } from './src/db';
 import TabNavigator from './src/navigation/TabNavigator';
+import { AppTheme, NavTheme } from './src/theme';
 
 const queryClient = new QueryClient();
 
@@ -22,8 +23,8 @@ export default function App() {
 
   if (!ready) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#111111' }}>
+        <ActivityIndicator color="#A78BFA" />
       </View>
     );
   }
@@ -32,9 +33,9 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
         <SafeAreaProvider>
-          <PaperProvider>
-            <NavigationContainer>
-              <StatusBar style="auto" />
+          <PaperProvider theme={AppTheme}>
+            <NavigationContainer theme={NavTheme}>
+              <StatusBar style="light" />
               <TabNavigator />
             </NavigationContainer>
           </PaperProvider>
