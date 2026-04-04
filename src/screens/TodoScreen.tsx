@@ -1,75 +1,28 @@
-import { useState } from 'react';
 import { View, FlatList, StyleSheet } from 'react-native';
 import { Appbar, Text, FAB, Button, Divider } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useState } from 'react';
 import { useCategories } from '../hooks/useCategories';
-import { useTodos, useCreateTodo, useUpdateTodo, useDeleteTodo, useToggleTodo, useClearCompleted } from '../hooks/useTodos';
+import { useTodos, useToggleTodo, useClearCompleted } from '../hooks/useTodos';
 import TodoItem from '../components/TodoItem';
-import TodoFormSheet from '../components/TodoFormSheet';
+import { TodoStackParamList } from '../navigation/TodoStack';
 
+type Nav = NativeStackNavigationProp<TodoStackParamList, 'TodoList'>;
 type Tab = 'active' | 'completed';
 
-type TodoData = {
-  id: number;
-  title: string;
-  description?: string | null;
-  dueDate?: number | null;
-  urgency?: number | null;
-  importance?: number | null;
-  isCompleted: number;
-  categoryId: number;
-};
-
 export default function TodoScreen() {
+  const navigation = useNavigation<Nav>();
   const [activeTab, setActiveTab] = useState<Tab>('active');
-  const [sheetVisible, setSheetVisible] = useState(false);
-  const [selectedTodo, setSelectedTodo] = useState<TodoData | null>(null);
 
   const { data: activeTodos = [] } = useTodos(0);
   const { data: completedTodos = [] } = useTodos(1);
   const { data: categories = [] } = useCategories();
-
-  const { mutate: createTodo } = useCreateTodo();
-  const { mutate: updateTodo } = useUpdateTodo();
-  const { mutate: deleteTodo } = useDeleteTodo();
   const { mutate: toggleTodo } = useToggleTodo();
   const { mutate: clearCompleted } = useClearCompleted();
 
   const currentTodos = activeTab === 'active' ? activeTodos : completedTodos;
-
   const getCategoryById = (id: number) => categories.find((c) => c.id === id);
-
-  const openCreate = () => {
-    setSelectedTodo(null);
-    setSheetVisible(true);
-  };
-
-  const openEdit = (todo: TodoData) => {
-    setSelectedTodo(todo);
-    setSheetVisible(true);
-  };
-
-  const handleSave = (data: {
-    title: string;
-    description?: string;
-    dueDate?: number;
-    urgency: number;
-    importance: number;
-    categoryId: number;
-  }) => {
-    if (selectedTodo) {
-      updateTodo({ id: selectedTodo.id, ...data });
-    } else {
-      createTodo(data);
-    }
-    setSheetVisible(false);
-  };
-
-  const handleDelete = () => {
-    if (selectedTodo) {
-      deleteTodo(selectedTodo.id);
-      setSheetVisible(false);
-    }
-  };
 
   return (
     <View style={styles.container}>
@@ -113,22 +66,14 @@ export default function TodoScreen() {
             todo={item}
             category={getCategoryById(item.categoryId)}
             onToggle={() => toggleTodo({ id: item.id, isCompleted: item.isCompleted })}
-            onPress={() => openEdit(item)}
+            onPress={() => navigation.navigate('TodoForm', { todo: item })}
           />
         )}
       />
 
       {activeTab === 'active' && (
-        <FAB icon="plus" style={styles.fab} onPress={openCreate} />
+        <FAB icon="plus" style={styles.fab} onPress={() => navigation.navigate('TodoForm')} />
       )}
-
-      <TodoFormSheet
-        visible={sheetVisible}
-        todo={selectedTodo}
-        onDismiss={() => setSheetVisible(false)}
-        onSave={handleSave}
-        onDelete={handleDelete}
-      />
     </View>
   );
 }
