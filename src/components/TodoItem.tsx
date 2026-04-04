@@ -24,13 +24,15 @@ type Props = {
   category?: Category;
   onToggle: () => void;
   onPress: () => void;
+  onDrag?: () => void;
+  isDragging?: boolean;
 };
 
 const LEVEL_LABELS = ['', '낮음', '보통', '높음'];
 const URGENCY_COLOR = '#FF6B6B';
 const IMPORTANCE_COLOR = '#4ECDC4';
 
-export default function TodoItem({ todo, category, onToggle, onPress }: Props) {
+export default function TodoItem({ todo, category, onToggle, onPress, onDrag, isDragging }: Props) {
   const dueDateStr = todo.dueDate
     ? new Date(todo.dueDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })
     : null;
@@ -39,7 +41,7 @@ export default function TodoItem({ todo, category, onToggle, onPress }: Props) {
   const importanceLevel = todo.importance ?? 0;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDragging && styles.containerDragging]}>
       <TouchableOpacity onPress={onToggle} activeOpacity={0.6} style={styles.checkboxArea}>
         <Checkbox.Android
           status={todo.isCompleted === 1 ? 'checked' : 'unchecked'}
@@ -82,6 +84,12 @@ export default function TodoItem({ todo, category, onToggle, onPress }: Props) {
           )}
         </View>
       </TouchableOpacity>
+
+      {onDrag && (
+        <TouchableOpacity onLongPress={onDrag} style={styles.dragHandle} hitSlop={8}>
+          <Text style={styles.dragHandleText}>☰</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -92,7 +100,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 6,
     paddingHorizontal: 16,
+    backgroundColor: Colors.background,
   },
+  containerDragging: { backgroundColor: Colors.surfaceVariant, elevation: 4 },
   checkboxArea: {
     padding: 4,
   },
@@ -108,4 +118,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   badgeText: { fontSize: 10, fontWeight: '600' },
+  dragHandle: { paddingLeft: 8, paddingVertical: 4 },
+  dragHandleText: { color: Colors.textMuted, fontSize: 18 },
 });
