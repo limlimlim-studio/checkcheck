@@ -101,6 +101,7 @@ export default function TodoFormScreen() {
           mode="outlined"
           style={styles.input}
           autoFocus={!isEdit}
+          keyboardAppearance="dark"
         />
 
         <TextInput
@@ -111,6 +112,7 @@ export default function TodoFormScreen() {
           multiline
           numberOfLines={5}
           style={[styles.input, styles.descriptionInput]}
+          keyboardAppearance="dark"
         />
 
         <Text variant="labelLarge" style={styles.label}>기한</Text>

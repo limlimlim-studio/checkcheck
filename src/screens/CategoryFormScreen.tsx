@@ -77,6 +77,7 @@ export default function CategoryFormScreen() {
           mode="outlined"
           style={styles.input}
           autoFocus={!isEdit}
+          keyboardAppearance="dark"
         />
         <TextInput
           label="설명"
@@ -85,6 +86,7 @@ export default function CategoryFormScreen() {
           mode="outlined"
           multiline
           numberOfLines={3}
+          keyboardAppearance="dark"
           style={[styles.input, styles.descriptionInput]}
         />
 

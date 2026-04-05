@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2E6DA4"/>
+      <stop offset="100%" style="stop-color:#1A4A72"/>
+    </linearGradient>
+
+    <mask id="barMask">
+      <rect x="-100" y="-100" width="1224" height="1224" fill="white"/>
+      <polyline
+        points="145,450 380,640 810,200"
+        stroke="black"
+        stroke-width="255"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        fill="none"
+      />
+      <circle cx="380" cy="640" r="128" fill="black"/>
+    </mask>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+
+  <!-- 체크 + 막대 그룹: 캔버스 중앙 정렬 translate(35, -27) -->
+  <g transform="translate(35,-27)">
+    <!-- 막대 -->
+    <g mask="url(#barMask)">
+      <rect x="110" y="510" width="220" height="450" rx="24" ry="24" fill="#E8674A"/>
+      <rect x="382" y="560" width="200" height="400" rx="24" ry="24" fill="#3DB87A"/>
+      <rect x="630" y="350" width="200" height="610" rx="24" ry="24" fill="#4A9FD4"/>
+    </g>
+
+    <!-- 체크마크 -->
+    <polyline
+      points="145,450 380,640 810,200"
+      fill="none"
+      stroke="white"
+      stroke-width="165"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- V 접점 안쪽 굴림 -->
+    <circle cx="380" cy="640" r="82" fill="white"/>
+  </g>
+</svg>
