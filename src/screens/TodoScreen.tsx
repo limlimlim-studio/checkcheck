@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, FlatList } from 'react-native';
 import { Appbar, Text, FAB, Button, Divider, Dialog, Portal } from 'react-native-paper';
 import { Colors } from '../theme';
 import { useNavigation, CommonActions } from '@react-navigation/native';
@@ -21,9 +21,51 @@ type Todo = {
   urgency?: number | null;
   importance?: number | null;
   isCompleted: number;
+  completedAt?: number | null;
   categoryId: number;
   sortOrder: number;
 };
+
+type ListItem =
+  | { type: 'header'; label: string; key: string }
+  | { type: 'todo'; todo: Todo };
+
+function formatDateLabel(ts: number | null | undefined): string {
+  if (!ts) return '날짜 없음';
+  const d = new Date(ts);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+  if (day.getTime() === today.getTime()) return '오늘';
+  if (day.getTime() === yesterday.getTime()) return '어제';
+  if (d.getFullYear() === now.getFullYear()) {
+    return `${d.getMonth() + 1}월 ${d.getDate()}일`;
+  }
+  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
+}
+
+function toDateKey(ts: number | null | undefined): string {
+  if (!ts) return 'none';
+  const d = new Date(ts);
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+
+function buildCompletedList(todos: Todo[]): ListItem[] {
+  const result: ListItem[] = [];
+  let lastKey = '';
+  for (const todo of todos) {
+    const key = toDateKey(todo.completedAt);
+    if (key !== lastKey) {
+      result.push({ type: 'header', label: formatDateLabel(todo.completedAt), key });
+      lastKey = key;
+    }
+    result.push({ type: 'todo', todo });
+  }
+  return result;
+}
 
 export default function TodoScreen() {
   const navigation = useNavigation<Nav>();
@@ -48,21 +90,39 @@ export default function TodoScreen() {
   const { mutate: clearCompleted } = useClearCompleted();
   const { mutate: reorderTodos } = useReorderTodos();
 
-  const currentTodos = activeTab === 'active' ? activeTodos : completedTodos;
   const getCategoryById = (id: number) => categories.find((c) => c.id === id);
 
-  const renderItem = ({ item, drag, isActive }: RenderItemParams<Todo>) => (
+  const renderActiveItem = ({ item, drag, isActive }: RenderItemParams<Todo>) => (
     <ScaleDecorator>
       <TodoItem
         todo={item}
         category={getCategoryById(item.categoryId)}
         onToggle={() => toggleTodo({ id: item.id, isCompleted: item.isCompleted })}
         onPress={() => navigation.navigate('TodoForm', { todo: item })}
-        onDrag={activeTab === 'active' ? drag : undefined}
+        onDrag={drag}
         isDragging={isActive}
       />
     </ScaleDecorator>
   );
+
+  const completedList = buildCompletedList(completedTodos as Todo[]);
+
+  const renderCompletedItem = ({ item }: { item: ListItem }) => {
+    if (item.type === 'header') {
+      return <Text style={styles.dateHeader}>{item.label}</Text>;
+    }
+    return (
+      <>
+        <TodoItem
+          todo={item.todo}
+          category={getCategoryById(item.todo.categoryId)}
+          onToggle={() => toggleTodo({ id: item.todo.id, isCompleted: item.todo.isCompleted })}
+          onPress={() => navigation.navigate('TodoForm', { todo: item.todo })}
+        />
+        <Divider />
+      </>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -92,25 +152,33 @@ export default function TodoScreen() {
         </Button>
       </View>
 
-      <DraggableFlatList
-        data={currentTodos as Todo[]}
-        keyExtractor={(item) => String(item.id)}
-        ItemSeparatorComponent={() => <Divider />}
-        ListEmptyComponent={
-          <Text style={styles.empty}>
-            {activeTab === 'active' ? '할 일이 없어요' : '완료된 항목이 없어요'}
-          </Text>
-        }
-        renderItem={renderItem}
-        onDragEnd={({ data }) => {
-          if (activeTab === 'active') {
-            reorderTodos(data.map((t) => t.id));
+      {activeTab === 'active' ? (
+        <DraggableFlatList
+          data={activeTodos as Todo[]}
+          keyExtractor={(item) => String(item.id)}
+          ItemSeparatorComponent={() => <Divider />}
+          ListEmptyComponent={
+            <Text style={styles.empty}>할 일이 없어요</Text>
           }
-        }}
-        autoscrollThreshold={80}
-        autoscrollSpeed={200}
-        containerStyle={{ flex: 1 }}
-      />
+          renderItem={renderActiveItem}
+          onDragEnd={({ data }) => reorderTodos(data.map((t) => t.id))}
+          autoscrollThreshold={80}
+          autoscrollSpeed={200}
+          containerStyle={{ flex: 1 }}
+        />
+      ) : (
+        <FlatList
+          data={completedList}
+          keyExtractor={(item, index) =>
+            item.type === 'header' ? `header-${item.key}` : `todo-${item.todo.id}`
+          }
+          renderItem={renderCompletedItem}
+          ListEmptyComponent={
+            <Text style={styles.empty}>완료된 항목이 없어요</Text>
+          }
+          style={{ flex: 1 }}
+        />
+      )}
 
       {activeTab === 'active' && (
         <FAB icon="plus" style={styles.fab} onPress={() => navigation.navigate('TodoForm')} />
@@ -150,4 +218,12 @@ const styles = StyleSheet.create({
   tabBtn: { flex: 1 },
   empty: { textAlign: 'center', marginTop: 60, color: Colors.textMuted },
   fab: { position: 'absolute', right: 16, bottom: 16 },
+  dateHeader: {
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    paddingBottom: 6,
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.textMuted,
+  },
 });
