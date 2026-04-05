@@ -11,7 +11,7 @@
  * 🔄 재생성 방법 (앱 재시작 필요):
  *   Expo DevTools 또는 앱 내 DB 쿼리 실행:
  *
- *     DELETE FROM app_settings WHERE key = 'seed_v1';
+ *     DELETE FROM app_settings WHERE key = 'seed_v3';
  *
  *   위 한 줄만 실행하면 다음 앱 시작 시 seed 데이터가 다시 생성됨.
  *   (기존 seed 완료 기록도 함께 초기화하려면 앱 삭제 후 재설치)
@@ -21,7 +21,7 @@ import { eq } from 'drizzle-orm';
 import { db } from './index';
 import { categories, todos, todoCompletions, appSettings } from './schema';
 
-const SEED_KEY = 'seed_v2';
+const SEED_KEY = 'seed_v3';
 
 // 카테고리별 하루 완료 확률 (0~1) — 다양한 패턴 연출
 const CATEGORY_FREQUENCY: Record<string, number> = {
@@ -59,7 +59,7 @@ export async function runDevSeed() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // 카테고리별 시드 todo 1개씩 생성
+  // 카테고리별 시드 todo 1개씩 생성 (잔디용)
   const seedTodoIds: Record<number, number> = {};
   for (const cat of allCategories) {
     const result = db.insert(todos).values({
@@ -74,7 +74,52 @@ export async function runDevSeed() {
     if (result) seedTodoIds[cat.id] = result.id;
   }
 
-  // 지난 365일 completions 생성
+  // 완료 탭 확인용 — 최근 30일에 걸쳐 다양한 날짜의 완료 todo 생성
+  const COMPLETED_TODO_TITLES: Record<string, string[]> = {
+    업무: ['기획서 작성', '팀 미팅 참석', '코드 리뷰', '보고서 제출', '이메일 정리', '주간 회의'],
+    개인: ['독서 30분', '일기 쓰기', '방 청소', '친구 연락', '영화 보기', '요리하기'],
+    운동: ['러닝 5km', '헬스장', '스트레칭', '자전거 타기', '수영', '요가'],
+    학습: ['알고리즘 풀기', '영어 단어 암기', '강의 수강', '책 읽기', 'TIL 작성', '사이드 프로젝트'],
+    쇼핑: ['장보기', '생필품 구매', '온라인 주문'],
+    미분류: ['메모 정리', '사진 백업', '앱 업데이트'],
+  };
+
+  const completedTodoValues: {
+    categoryId: number; title: string; sortOrder: number;
+    isCompleted: number; completedAt: number; createdAt: number; updatedAt: number;
+  }[] = [];
+
+  for (let daysAgo = 0; daysAgo <= 30; daysAgo++) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - daysAgo);
+    const ts = date.getTime() + 9 * 60 * 60 * 1000; // 오전 9시 기준
+
+    for (const cat of allCategories) {
+      const titles = COMPLETED_TODO_TITLES[cat.name] ?? COMPLETED_TODO_TITLES['미분류'];
+      // 날짜마다 0~3개 랜덤 생성
+      const count = Math.floor(Math.random() * 4);
+      const shuffled = [...titles].sort(() => Math.random() - 0.5).slice(0, count);
+      for (const title of shuffled) {
+        const offset = Math.floor(Math.random() * 8 * 60 * 60 * 1000); // 최대 8시간 내 랜덤
+        completedTodoValues.push({
+          categoryId: cat.id,
+          title,
+          sortOrder: -9998,
+          isCompleted: 1,
+          completedAt: ts + offset,
+          createdAt: ts,
+          updatedAt: ts + offset,
+        });
+      }
+    }
+  }
+
+  const BATCH_TODO = 50;
+  for (let i = 0; i < completedTodoValues.length; i += BATCH_TODO) {
+    db.insert(todos).values(completedTodoValues.slice(i, i + BATCH_TODO)).run();
+  }
+
+  // 지난 2년 completions 생성 (잔디용)
   const completionValues: { todoId: number; completedDate: string }[] = [];
 
   for (let i = SEED_DAYS - 1; i >= 0; i--) {
@@ -105,5 +150,5 @@ export async function runDevSeed() {
   // 완료 플래그 저장
   db.insert(appSettings).values({ key: SEED_KEY, value: '1' }).run();
 
-  console.log(`[seed] ${completionValues.length}개 completion 생성 완료`);
+  console.log(`[seed] todo ${completedTodoValues.length}개, completion ${completionValues.length}개 생성 완료`);
 }

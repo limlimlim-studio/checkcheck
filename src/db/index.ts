@@ -81,12 +81,7 @@ export const initDb = async () => {
 
   db = drizzle(sqlite, { schema });
 
-  // 개발 환경 임시 데이터 (1회 실행, 재생성은 seed.ts 주석 참고)
-  if (__DEV__) {
-    const { runDevSeed } = require('./seed');
-    runDevSeed();
-  }
-
+  // 기본 카테고리 삽입 (seed보다 먼저 실행되어야 함)
   const existing = db.select().from(schema.categories).all();
   if (existing.length === 0) {
     const now = Date.now();
@@ -98,5 +93,11 @@ export const initDb = async () => {
       { name: '학습', description: '공부 및 자기계발', color: '#FBBC05', sortOrder: 4, isDefault: 0, createdAt: now },
       { name: '쇼핑', description: '구매 목록', color: '#9C27B0', sortOrder: 5, isDefault: 0, createdAt: now },
     ]).run();
+  }
+
+  // 개발 환경 임시 데이터 (1회 실행, 재생성은 seed.ts 주석 참고)
+  if (__DEV__) {
+    const { runDevSeed } = require('./seed');
+    runDevSeed();
   }
 };

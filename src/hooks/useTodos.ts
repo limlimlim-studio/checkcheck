@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq } from 'drizzle-orm';
 import { db } from '../db';
 import { todos, todoCompletions } from '../db/schema';
 
@@ -9,7 +9,7 @@ export const useTodos = (isCompleted: 0 | 1) =>
     queryFn: () =>
       db.select().from(todos)
         .where(and(eq(todos.isCompleted, isCompleted), eq(todos.isDeleted, 0)))
-        .orderBy(asc(todos.sortOrder))
+        .orderBy(isCompleted === 1 ? desc(todos.completedAt) : asc(todos.sortOrder))
         .all(),
   });
 
