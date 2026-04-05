@@ -35,7 +35,6 @@ export const initDb = async () => {
       urgency INTEGER NOT NULL DEFAULT 0,
       importance INTEGER NOT NULL DEFAULT 0,
       sort_order INTEGER NOT NULL DEFAULT 0,
-      sort_order INTEGER NOT NULL DEFAULT 0,
       is_completed INTEGER NOT NULL DEFAULT 0,
       completed_at INTEGER,
       is_deleted INTEGER NOT NULL DEFAULT 0,
@@ -58,13 +57,6 @@ export const initDb = async () => {
     sqlite.execSync('ALTER TABLE todos ADD COLUMN deleted_at INTEGER;');
   } catch { /* already exists */ }
 
-  // migration: remove stale completion records for uncompleted/deleted todos
-  // (bug: toggle-back did not delete todoCompletions until fixed)
-  sqlite.execSync(`
-    DELETE FROM todo_completions
-    WHERE todo_id IN (SELECT id FROM todos WHERE is_completed = 0 OR is_deleted = 1);
-  `);
-
   sqlite.execSync(`
     CREATE TABLE IF NOT EXISTS app_settings (
       key TEXT PRIMARY KEY,
@@ -78,6 +70,13 @@ export const initDb = async () => {
       todo_id INTEGER NOT NULL REFERENCES todos(id) ON DELETE CASCADE,
       completed_date TEXT NOT NULL
     );
+  `);
+
+  // migration: remove stale completion records for uncompleted/deleted todos
+  // (bug: toggle-back did not delete todoCompletions until fixed)
+  sqlite.execSync(`
+    DELETE FROM todo_completions
+    WHERE todo_id IN (SELECT id FROM todos WHERE is_completed = 0 OR is_deleted = 1);
   `);
 
   db = drizzle(sqlite, { schema });
