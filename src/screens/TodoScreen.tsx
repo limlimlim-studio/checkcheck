@@ -75,11 +75,9 @@ export default function TodoScreen() {
   useEffect(() => {
     const parentNav = navigation.getParent();
     if (!parentNav) return;
-    return parentNav.addListener('focus', () => {
+    return parentNav.addListener('tabPress', () => {
       setActiveTab('active');
-      navigation.setOptions({ animation: 'none' });
       navigation.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'TodoList' }] }));
-      requestAnimationFrame(() => navigation.setOptions({ animation: 'default' }));
     });
   }, [navigation]);
 

@@ -22,7 +22,7 @@ const Stack = createNativeStackNavigator<TodoStackParamList>();
 
 export default function TodoStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
       <Stack.Screen name="TodoList" component={TodoScreen} />
       <Stack.Screen name="TodoForm" component={TodoFormScreen} />
     </Stack.Navigator>
