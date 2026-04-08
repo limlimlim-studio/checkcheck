@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.checkcheck"
+      "bundleIdentifier": "com.limlimlimstudio.checkcheck"
     },
     "android": {
       "adaptiveIcon": {
@@ -27,10 +27,7 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      "expo-sqlite",
-      "@react-native-community/datetimepicker"
-    ],
+    "plugins": ["expo-sqlite", "@react-native-community/datetimepicker"],
     "extra": {
       "eas": {
         "projectId": "22e653c4-68d4-4bff-a6a6-6f6a914f88a4"

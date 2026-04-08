@@ -43,6 +43,7 @@ export default function TodoFormScreen() {
   const [importance, setImportance] = useState('0');
   const [categoryId, setCategoryId] = useState<number | null>(null);
 
+
   useEffect(() => {
     setTitle(todo?.title ?? '');
     setDescription(todo?.description ?? '');
@@ -100,7 +101,6 @@ export default function TodoFormScreen() {
           onChangeText={setTitle}
           mode="outlined"
           style={styles.input}
-          autoFocus={!isEdit}
           keyboardAppearance="dark"
         />
 

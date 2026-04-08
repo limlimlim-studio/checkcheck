@@ -27,6 +27,7 @@ export default function CategoryFormScreen() {
   const [color, setColor] = useState(generateRandomColor);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
 
+
   useEffect(() => {
     setName(category?.name ?? '');
     setDescription(category?.description ?? '');
@@ -76,7 +77,6 @@ export default function CategoryFormScreen() {
           onChangeText={setName}
           mode="outlined"
           style={styles.input}
-          autoFocus={!isEdit}
           keyboardAppearance="dark"
         />
         <TextInput
