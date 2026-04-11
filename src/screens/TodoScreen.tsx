@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { useCategories } from '../hooks/useCategories';
 import { useTodos, useToggleTodo, useClearCompleted, useReorderTodos } from '../hooks/useTodos';
 import TodoItem from '../components/TodoItem';
+import BannerAdView from '../components/BannerAdView';
 import { TodoStackParamList } from '../navigation/TodoStack';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 
@@ -149,6 +150,8 @@ export default function TodoScreen() {
           완료 {completedTodos.length > 0 ? `(${completedTodos.length})` : ''}
         </Button>
       </View>
+
+      <BannerAdView />
 
       {activeTab === 'active' ? (
         <DraggableFlatList
