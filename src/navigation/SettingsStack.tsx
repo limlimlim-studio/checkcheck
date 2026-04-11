@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import SettingsScreen from '../screens/SettingsScreen';
 import CategoryManagementScreen from '../screens/CategoryManagementScreen';
 import CategoryFormScreen from '../screens/CategoryFormScreen';
+import PremiumScreen from '../screens/PremiumScreen';
 
 export type SettingsStackParamList = {
   SettingsHome: undefined;
@@ -14,6 +15,7 @@ export type SettingsStackParamList = {
       color: string;
     };
   } | undefined;
+  Premium: undefined;
 };
 
 const Stack = createNativeStackNavigator<SettingsStackParamList>();
@@ -24,6 +26,7 @@ export default function SettingsStack() {
       <Stack.Screen name="SettingsHome" component={SettingsScreen} />
       <Stack.Screen name="CategoryManagement" component={CategoryManagementScreen} />
       <Stack.Screen name="CategoryForm" component={CategoryFormScreen} />
+      <Stack.Screen name="Premium" component={PremiumScreen} />
     </Stack.Navigator>
   );
 }

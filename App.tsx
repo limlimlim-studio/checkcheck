@@ -8,6 +8,7 @@ import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { initDb } from './src/db';
 import { loadPremiumStatus } from './src/hooks/usePremiumStatus';
+import { configurePurchases } from './src/screens/PremiumScreen';
 import TabNavigator from './src/navigation/TabNavigator';
 import { AppTheme, NavTheme } from './src/theme';
 
@@ -17,6 +18,7 @@ export default function App() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    configurePurchases();
     initDb()
       .then(() => loadPremiumStatus())
       .then(() => setReady(true))

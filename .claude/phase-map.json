@@ -13,14 +13,14 @@
       "title": "배너 광고 구현",
       "issueNumber": 51,
       "branch": "feature/issue-51/banner-ad-implementation",
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "number": 3,
       "title": "인앱 구매 구현",
       "issueNumber": 52,
       "branch": "feature/issue-52/in-app-purchase-implementation",
-      "status": "pending"
+      "status": "in_progress"
     }
   ]
 }
