@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#1D1927"
     },
     "ios": {
       "supportsTablet": true,
@@ -27,7 +27,7 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-sqlite", "@react-native-community/datetimepicker"],
+    "plugins": ["expo-splash-screen", "expo-sqlite", "@react-native-community/datetimepicker"],
     "extra": {
       "eas": {
         "projectId": "22e653c4-68d4-4bff-a6a6-6f6a914f88a4"
