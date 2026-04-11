@@ -44,18 +44,14 @@ export const initDb = async () => {
     );
   `);
 
-  // migration: add sort_order if not exists (existing installs)
-  try {
+  // migration: add columns if not exists (safe check via PRAGMA)
+  const todoColumns = (sqlite.getAllSync('PRAGMA table_info(todos)') as { name: string }[]).map(c => c.name);
+  if (!todoColumns.includes('sort_order'))
     sqlite.execSync('ALTER TABLE todos ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0;');
-  } catch { /* already exists */ }
-
-  // migration: add soft delete columns if not exists
-  try {
+  if (!todoColumns.includes('is_deleted'))
     sqlite.execSync('ALTER TABLE todos ADD COLUMN is_deleted INTEGER NOT NULL DEFAULT 0;');
-  } catch { /* already exists */ }
-  try {
+  if (!todoColumns.includes('deleted_at'))
     sqlite.execSync('ALTER TABLE todos ADD COLUMN deleted_at INTEGER;');
-  } catch { /* already exists */ }
 
   sqlite.execSync(`
     CREATE TABLE IF NOT EXISTS app_settings (
