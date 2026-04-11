@@ -7,6 +7,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { initDb } from './src/db';
+import { loadPremiumStatus } from './src/hooks/usePremiumStatus';
 import TabNavigator from './src/navigation/TabNavigator';
 import { AppTheme, NavTheme } from './src/theme';
 
@@ -17,6 +18,7 @@ export default function App() {
 
   useEffect(() => {
     initDb()
+      .then(() => loadPremiumStatus())
       .then(() => setReady(true))
       .catch((e) => console.error('[initDb error]', e));
   }, []);
