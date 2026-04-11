@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Appbar, Text, Divider } from 'react-native-paper';
 import { Colors } from '../theme';
 import { useNavigation, CommonActions } from '@react-navigation/native';
@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import { SettingsStackParamList } from '../navigation/SettingsStack';
 import Constants from 'expo-constants';
 import { usePremiumStore } from '../stores/premiumStore';
+import { savePremiumStatus } from '../hooks/usePremiumStatus';
 
 type NavigationProp = NativeStackNavigationProp<SettingsStackParamList, 'SettingsHome'>;
 
@@ -78,6 +79,23 @@ export default function SettingsScreen() {
           }
         </TouchableOpacity>
       </View>
+
+      {__DEV__ && isPremium && (
+        <>
+          <Text variant="labelSmall" style={[styles.sectionLabel, { color: Colors.danger }]}>개발용</Text>
+          <View style={styles.section}>
+            <TouchableOpacity
+              style={styles.item}
+              onPress={() => Alert.alert('프리미엄 초기화', '프리미엄 상태를 초기화할까요?', [
+                { text: '취소', style: 'cancel' },
+                { text: '초기화', style: 'destructive', onPress: () => savePremiumStatus(false) },
+              ])}
+            >
+              <Text variant="bodyLarge" style={{ color: Colors.danger }}>프리미엄 초기화</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
 
       <Text variant="labelSmall" style={styles.sectionLabel}>앱</Text>
       <View style={styles.section}>
