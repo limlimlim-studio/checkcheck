@@ -30,7 +30,7 @@ export default function TabNavigator() {
         component={RecordScreen}
         options={{
           tabBarIcon: ({ color, size }: IconProps) => (
-            <MaterialCommunityIcons name="calendar-month-outline" size={size} color={color} />
+            <MaterialCommunityIcons name="view-grid-outline" size={size} color={color} />
           ),
         }}
       />
