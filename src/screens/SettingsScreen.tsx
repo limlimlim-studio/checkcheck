@@ -5,12 +5,19 @@ import { useNavigation, CommonActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useEffect } from 'react';
 import { SettingsStackParamList } from '../navigation/SettingsStack';
+import Constants from 'expo-constants';
 
 type NavigationProp = NativeStackNavigationProp<SettingsStackParamList, 'SettingsHome'>;
 
 const SETTINGS_ITEMS = [
   { key: 'CategoryManagement', label: '카테고리 관리', description: '카테고리 추가, 수정, 삭제' },
 ] as const;
+
+const APP_INFO = [
+  { label: '앱 이름', value: Constants.expoConfig?.name ?? 'checkcheck' },
+  { label: '버전', value: Constants.expoConfig?.version ?? '1.0.0' },
+  { label: '개발사', value: 'limlimlim studio' },
+];
 
 export default function SettingsScreen() {
   const navigation = useNavigation<NavigationProp>();
@@ -31,6 +38,7 @@ export default function SettingsScreen() {
         <Appbar.Content title="설정" />
       </Appbar.Header>
 
+      <Text variant="labelSmall" style={styles.sectionLabel}>일반</Text>
       <View style={styles.section}>
         {SETTINGS_ITEMS.map((item, index) => (
           <View key={item.key}>
@@ -48,6 +56,19 @@ export default function SettingsScreen() {
           </View>
         ))}
       </View>
+
+      <Text variant="labelSmall" style={styles.sectionLabel}>앱</Text>
+      <View style={styles.section}>
+        {APP_INFO.map((info, index) => (
+          <View key={info.label}>
+            <View style={styles.infoItem}>
+              <Text variant="bodyLarge">{info.label}</Text>
+              <Text variant="bodyMedium" style={styles.infoValue}>{info.value}</Text>
+            </View>
+            {index < APP_INFO.length - 1 && <Divider />}
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
@@ -56,7 +77,13 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   section: {
     backgroundColor: Colors.surface,
-    marginTop: 16,
+    marginTop: 4,
+  },
+  sectionLabel: {
+    color: Colors.textSecondary,
+    marginTop: 20,
+    marginHorizontal: 16,
+    marginBottom: 4,
   },
   item: {
     flexDirection: 'row',
@@ -66,4 +93,11 @@ const styles = StyleSheet.create({
   },
   description: { color: Colors.textSecondary, marginTop: 2 },
   arrow: { fontSize: 20, color: Colors.textMuted },
+  infoItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+  },
+  infoValue: { color: Colors.textSecondary },
 });
