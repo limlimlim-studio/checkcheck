@@ -49,7 +49,7 @@ export default function TodoItem({ todo, category, onToggle, onPress, onDrag, is
         />
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.content} onPress={onPress} activeOpacity={0.7}>
+      <TouchableOpacity style={styles.content} onPress={onPress} onLongPress={onDrag} activeOpacity={0.7}>
         <Text
           variant="bodyLarge"
           style={[styles.titleText, todo.isCompleted === 1 && styles.completed]}
@@ -85,11 +85,6 @@ export default function TodoItem({ todo, category, onToggle, onPress, onDrag, is
         </View>
       </TouchableOpacity>
 
-      {onDrag && (
-        <TouchableOpacity onLongPress={onDrag} style={styles.dragHandle} hitSlop={8}>
-          <Text style={styles.dragHandleText}>☰</Text>
-        </TouchableOpacity>
-      )}
     </View>
   );
 }
@@ -118,6 +113,4 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   badgeText: { fontSize: 10, fontWeight: '600' },
-  dragHandle: { paddingLeft: 8, paddingVertical: 4 },
-  dragHandleText: { color: Colors.textMuted, fontSize: 18 },
 });
