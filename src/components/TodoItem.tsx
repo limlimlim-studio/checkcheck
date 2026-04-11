@@ -85,6 +85,7 @@ export default function TodoItem({ todo, category, onToggle, onPress, onDrag, is
         </View>
       </TouchableOpacity>
 
+      {onDrag && <Text style={styles.dragHandle}>☰</Text>}
     </View>
   );
 }
@@ -113,4 +114,5 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   badgeText: { fontSize: 10, fontWeight: '600' },
+  dragHandle: { paddingLeft: 8, color: Colors.textMuted, fontSize: 18 },
 });
