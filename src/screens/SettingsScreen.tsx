@@ -6,6 +6,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useEffect } from 'react';
 import { SettingsStackParamList } from '../navigation/SettingsStack';
 import Constants from 'expo-constants';
+import { usePremiumStore } from '../stores/premiumStore';
 
 type NavigationProp = NativeStackNavigationProp<SettingsStackParamList, 'SettingsHome'>;
 
@@ -21,6 +22,7 @@ const APP_INFO = [
 
 export default function SettingsScreen() {
   const navigation = useNavigation<NavigationProp>();
+  const isPremium = usePremiumStore((s) => s.isPremium);
 
   useEffect(() => {
     const parentNav = navigation.getParent();
@@ -55,6 +57,26 @@ export default function SettingsScreen() {
             {index < SETTINGS_ITEMS.length - 1 && <Divider />}
           </View>
         ))}
+      </View>
+
+      <Text variant="labelSmall" style={styles.sectionLabel}>프리미엄</Text>
+      <View style={styles.section}>
+        <TouchableOpacity
+          style={styles.item}
+          onPress={() => navigation.navigate('Premium')}
+          disabled={isPremium}
+        >
+          <View>
+            <Text variant="bodyLarge">{isPremium ? '프리미엄 이용 중' : '광고 제거'}</Text>
+            <Text variant="bodySmall" style={styles.description}>
+              {isPremium ? '모든 광고가 제거된 상태입니다' : '일회성 구매로 광고를 영구 제거'}
+            </Text>
+          </View>
+          {isPremium
+            ? <Text style={styles.checkmark}>✓</Text>
+            : <Text style={styles.arrow}>›</Text>
+          }
+        </TouchableOpacity>
       </View>
 
       <Text variant="labelSmall" style={styles.sectionLabel}>앱</Text>
@@ -93,6 +115,7 @@ const styles = StyleSheet.create({
   },
   description: { color: Colors.textSecondary, marginTop: 2 },
   arrow: { fontSize: 20, color: Colors.textMuted },
+  checkmark: { fontSize: 18, color: '#A78BFA', fontWeight: '700' },
   infoItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
