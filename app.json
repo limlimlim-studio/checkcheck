@@ -14,7 +14,8 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.limlimlimstudio.checkcheck"
+      "bundleIdentifier": "com.limlimlimstudio.checkcheck",
+      "deploymentTarget": "16.0"
     },
     "android": {
       "adaptiveIcon": {
@@ -33,11 +34,10 @@
       [
         "react-native-google-mobile-ads",
         {
-          "android_app_id": "ca-app-pub-3940256099942544~3347511713",
-          "ios_app_id": "ca-app-pub-9156090950228888~8300764673"
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId": "ca-app-pub-9156090950228888~8300764673"
         }
       ],
-      "react-native-iap"
     ],
     "extra": {
       "eas": {

@@ -5,6 +5,7 @@ import { Colors } from '../theme';
 import { useCategories } from '../hooks/useCategories';
 import { useEarliestCompletionYear } from '../hooks/useCompletions';
 import ContributionGrid from '../components/ContributionGrid';
+import BannerAdView from '../components/BannerAdView';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -49,6 +50,7 @@ export default function RecordScreen() {
           </View>
         ))}
       </ScrollView>
+      <BannerAdView />
     </View>
   );
 }

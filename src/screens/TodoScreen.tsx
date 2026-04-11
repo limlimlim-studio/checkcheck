@@ -8,6 +8,7 @@ import { useCategories } from '../hooks/useCategories';
 import { useTodos, useToggleTodo, useClearCompleted, useReorderTodos } from '../hooks/useTodos';
 import TodoItem from '../components/TodoItem';
 import BannerAdView from '../components/BannerAdView';
+import { usePremiumStore } from '../stores/premiumStore';
 import { TodoStackParamList } from '../navigation/TodoStack';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 
@@ -88,6 +89,7 @@ export default function TodoScreen() {
   const { mutate: toggleTodo } = useToggleTodo();
   const { mutate: clearCompleted } = useClearCompleted();
   const { mutate: reorderTodos } = useReorderTodos();
+  const isPremium = usePremiumStore((s) => s.isPremium);
 
   const getCategoryById = (id: number) => categories.find((c) => c.id === id);
 
@@ -151,8 +153,6 @@ export default function TodoScreen() {
         </Button>
       </View>
 
-      <BannerAdView />
-
       {activeTab === 'active' ? (
         <DraggableFlatList
           data={activeTodos as Todo[]}
@@ -181,8 +181,10 @@ export default function TodoScreen() {
         />
       )}
 
+      <BannerAdView />
+
       {activeTab === 'active' && (
-        <FAB icon="plus" style={styles.fab} onPress={() => navigation.navigate('TodoForm')} />
+        <FAB icon="plus" style={[styles.fab, !isPremium && styles.fabWithAd]} onPress={() => navigation.navigate('TodoForm')} />
       )}
 
       <Portal>
@@ -219,6 +221,7 @@ const styles = StyleSheet.create({
   tabBtn: { flex: 1 },
   empty: { textAlign: 'center', marginTop: 60, color: Colors.textMuted },
   fab: { position: 'absolute', right: 16, bottom: 16 },
+  fabWithAd: { bottom: 74 },
   dateHeader: {
     paddingHorizontal: 16,
     paddingTop: 20,

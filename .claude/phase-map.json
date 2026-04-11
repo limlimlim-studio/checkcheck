@@ -1,0 +1,26 @@
+{
+  "planFile": "crispy-rolling-barto.md",
+  "phases": [
+    {
+      "number": 1,
+      "title": "기반 세팅",
+      "issueNumber": 50,
+      "branch": "feature/issue-50/admob-iap-base-setup",
+      "status": "done"
+    },
+    {
+      "number": 2,
+      "title": "배너 광고 구현",
+      "issueNumber": 51,
+      "branch": "feature/issue-51/banner-ad-implementation",
+      "status": "in_progress"
+    },
+    {
+      "number": 3,
+      "title": "인앱 구매 구현",
+      "issueNumber": 52,
+      "branch": "feature/issue-52/in-app-purchase-implementation",
+      "status": "pending"
+    }
+  ]
+}
