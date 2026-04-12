@@ -39,7 +39,10 @@ docs/
 - `routine_completions`: id, routine_id(FK), completed_date(YYYY-MM-DD)
 - `todo_completions`: id, todo_id(FK), completed_date(YYYY-MM-DD)
 
-## 메뉴 구성 (하단 탭 3개)
+## 메뉴 구성
+
+### 하단 탭 (2개)
+- 공통 헤더: [☰ Drawer] CheckCheck [⚙ 설정]
 
 ### 1. 할 일
 - 서브탭 4개: 오늘 / 할 일 / 미완료 / 완료
@@ -50,13 +53,17 @@ docs/
 - 모든 리스트 드래그 순서 변경 가능
 - FAB 버튼 → 새 화면으로 등록
 - 등록 입력값: 제목(필수), 상세 내용, 기한(필수, 기본값 오늘), 카테고리, 긴급도, 중요도
-- Appbar 헤더 없음, react-native-tab-view 기반 탭
+- react-native-tab-view 기반 탭
 
 ### 2. 기록
 - 카테고리별 GitHub 잔디 스타일 UI (식물/잔디 명칭 사용 안 함)
 - todo_completions 기반으로 날짜별 완료 이력 격자 시각화
 
-### 3. 설정
+### 3. 설정 (⚙ 아이콘)
+- 프리미엄 구매 (광고 제거)
+- 앱 정보
+
+### 4. Drawer (☰ 아이콘)
 - 카테고리 관리: 조회 / 생성 / 수정 / 삭제 / 드래그 순서 변경
 - 루틴 관리: 조회 / 생성 / 수정 / 삭제 / 드래그 순서 변경
 - 루틴 반복 주기: 매일 / 매주(요일 선택) / 매월(날짜 선택)
