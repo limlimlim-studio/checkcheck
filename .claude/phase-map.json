@@ -13,14 +13,14 @@
       "title": "할 일 탭 UI 개편",
       "issueNumber": 63,
       "branch": "feature/issue-63/todo-tab-ui-refactor",
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "number": 3,
       "title": "루틴 관리",
       "issueNumber": 64,
       "branch": "feature/issue-64/routine-management",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "number": 4,

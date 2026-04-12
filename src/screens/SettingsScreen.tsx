@@ -13,6 +13,7 @@ type NavigationProp = NativeStackNavigationProp<SettingsStackParamList, 'Setting
 
 const SETTINGS_ITEMS = [
   { key: 'CategoryManagement', label: '카테고리 관리', description: '카테고리 추가, 수정, 삭제' },
+  { key: 'RoutineManagement', label: '루틴 관리', description: '반복 루틴 추가, 수정, 삭제' },
 ] as const;
 
 const APP_INFO = [
