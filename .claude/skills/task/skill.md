@@ -1,8 +1,8 @@
 ---
-name: phase-dev
-description: 플랜을 단계별 이슈로 분리 → 단계별 구현 → 사용자 검증 후 PR. /phase-dev init으로 시작, /phase-dev [n]으로 단계 진행.
+name: task
+description: 플랜을 단계별 이슈로 분리 → 단계별 구현 → 사용자 검증 후 PR. /task init으로 시작, /task next로 다음 단계 진행.
 tools: Bash, Read, Write, Glob, Edit
-argument-hint: "[init | 단계번호]"
+argument-hint: "[init | next | 단계번호 | status | done]"
 ---
 
 ## 역할
@@ -47,15 +47,16 @@ argument-hint: "[init | 단계번호]"
 
 ---
 
-### `$ARGUMENTS`가 숫자이거나, phase-map이 있고 인자가 없을 때 → 단계 구현 모드
+### `$ARGUMENTS`가 숫자, `next`, 또는 비어있고 phase-map이 있을 때 → 단계 구현 모드
 
 1. `.claude/phase-map.json`을 읽어.
-   - 인자가 숫자면 해당 단계, 없으면 `status: "pending"`인 첫 번째 단계를 선택
+   - 인자가 숫자면 해당 단계 선택
+   - 인자가 `next` 또는 없으면 현재 `in_progress` 단계를 `"done"`으로 먼저 업데이트 후, `status: "pending"`인 첫 번째 단계를 선택
 
 2. 이전 단계가 `"done"` 또는 1단계면 진행. 아니면:
    ```
    이전 단계가 아직 완료되지 않았습니다.
-   검증이 끝났으면 /suggest-commit → /commit-push → /pr 을 실행해 주세요.
+   검증이 끝났으면 /apply 를 실행해 주세요.
    ```
    로 안내하고 중단.
 
@@ -80,12 +81,10 @@ argument-hint: "[init | 단계번호]"
    {이 단계에서 확인해야 할 항목들을 체크리스트로}
 
    검증이 완료되면:
-   1. /suggest-commit
-   2. /commit-push {메시지}
-   3. /pr
+   /apply
 
-   PR 머지 후 다음 단계: /phase-dev {N+1}
-   (마지막 단계라면 /phase-dev done)
+   PR 머지 후 다음 단계: /task next
+   (마지막 단계라면 /task done)
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    ```
 
@@ -119,9 +118,8 @@ Phase  제목                  이슈  브랜치              상태
 
 ---
 
-## 단계 완료 처리 (`/pr` 실행 후 자동이 아닌, 수동으로 기록)
-PR이 머지되면 `.claude/phase-map.json`에서 해당 단계를 `"done"`으로 수동 업데이트하거나,
-다음 단계(`/phase-dev [n+1]`) 실행 시 자동으로 이전 단계를 `"done"` 처리.
+## 단계 완료 처리
+`/task next` 실행 시 자동으로 현재 `in_progress` 단계를 `"done"` 처리 후 다음 pending 단계 시작.
 
 ---
 

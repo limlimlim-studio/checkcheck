@@ -22,7 +22,7 @@ export default function DrawerNavigator() {
       }}
     >
       <Drawer.Screen name="Main" component={TabNavigator} />
-      <Drawer.Screen name="SettingsMain" component={SettingsStack} />
+      <Drawer.Screen name="SettingsMain" component={SettingsStack} options={{ unmountOnBlur: true }} />
     </Drawer.Navigator>
   );
 }

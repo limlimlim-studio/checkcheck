@@ -6,14 +6,14 @@
       "title": "Drawer 내비게이션 구조 구축",
       "issueNumber": 71,
       "branch": "feature/issue-71/drawer-navigation-setup",
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "number": 2,
       "title": "화면 헤더 통합 및 설정 정리",
       "issueNumber": 72,
       "branch": "feature/issue-72/screen-header-and-settings-cleanup",
-      "status": "pending"
+      "status": "in_progress"
     }
   ]
 }

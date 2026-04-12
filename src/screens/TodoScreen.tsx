@@ -1,8 +1,7 @@
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
-import { FAB } from 'react-native-paper';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Appbar, FAB } from 'react-native-paper';
 import { TabView, TabBar } from 'react-native-tab-view';
-import { useNavigation, useIsFocused, CommonActions } from '@react-navigation/native';
+import { useNavigation, useIsFocused, CommonActions, DrawerActions } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState, useEffect } from 'react';
@@ -16,7 +15,6 @@ import TodoTabToday from '../components/TodoTabToday';
 import TodoTabList from '../components/TodoTabList';
 import TodoTabOverdue from '../components/TodoTabOverdue';
 import TodoTabCompleted from '../components/TodoTabCompleted';
-
 
 type Nav = NativeStackNavigationProp<TodoStackParamList, 'TodoList'>;
 
@@ -40,7 +38,6 @@ const renderScene = ({ route }: { route: { key: string } }) => {
 export default function TodoScreen() {
   const navigation = useNavigation<Nav>();
   const layout = useWindowDimensions();
-  const insets = useSafeAreaInsets();
   const [tabIndex, setTabIndex] = useState(0);
   const isPremium = usePremiumStore((s) => s.isPremium);
   const isFocused = useIsFocused();
@@ -75,7 +72,13 @@ export default function TodoScreen() {
   const showFab = tabIndex === 0 || tabIndex === 1;
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={styles.container}>
+      <Appbar.Header>
+        <Appbar.Action icon="menu" onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
+        <Appbar.Content title="CheckCheck" titleStyle={{ fontWeight: '700' }} />
+        <Appbar.Action icon="cog-outline" onPress={() => navigation.navigate('SettingsMain' as never)} />
+      </Appbar.Header>
+
       <TabView
         navigationState={{ index: tabIndex, routes: ROUTES }}
         renderScene={renderScene}
