@@ -3,31 +3,17 @@
   "phases": [
     {
       "number": 1,
-      "title": "DB 스키마 확장 및 기한 필수화",
-      "issueNumber": 62,
-      "branch": "feature/issue-62/db-schema-extension-and-due-date-required",
-      "status": "done"
+      "title": "Drawer 내비게이션 구조 구축",
+      "issueNumber": 71,
+      "branch": "feature/issue-71/drawer-navigation-setup",
+      "status": "in_progress"
     },
     {
       "number": 2,
-      "title": "할 일 탭 UI 개편",
-      "issueNumber": 63,
-      "branch": "feature/issue-63/todo-tab-ui-refactor",
-      "status": "done"
-    },
-    {
-      "number": 3,
-      "title": "루틴 관리",
-      "issueNumber": 64,
-      "branch": "feature/issue-64/routine-management",
-      "status": "done"
-    },
-    {
-      "number": 4,
-      "title": "오늘 탭 루틴 연동",
-      "issueNumber": 65,
-      "branch": "feature/issue-65/today-tab-routine-integration",
-      "status": "in_progress"
+      "title": "화면 헤더 통합 및 설정 정리",
+      "issueNumber": 72,
+      "branch": "feature/issue-72/screen-header-and-settings-cleanup",
+      "status": "pending"
     }
   ]
 }

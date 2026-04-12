@@ -10,7 +10,7 @@ import MobileAds from 'react-native-google-mobile-ads';
 import { initDb } from './src/db';
 import { loadPremiumStatus } from './src/hooks/usePremiumStatus';
 import { configurePurchases } from './src/screens/PremiumScreen';
-import TabNavigator from './src/navigation/TabNavigator';
+import DrawerNavigator from './src/navigation/DrawerNavigator';
 import { AppTheme, NavTheme } from './src/theme';
 
 const queryClient = new QueryClient();
@@ -48,7 +48,7 @@ export default function App() {
           <PaperProvider theme={AppTheme}>
             <NavigationContainer theme={NavTheme}>
               <StatusBar style="light" />
-              <TabNavigator />
+              <DrawerNavigator />
             </NavigationContainer>
           </PaperProvider>
         </SafeAreaProvider>
