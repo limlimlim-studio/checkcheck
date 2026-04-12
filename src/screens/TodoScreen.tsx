@@ -1,58 +1,50 @@
-import { StyleSheet, View, FlatList } from 'react-native';
-import { Appbar, Text, FAB, Button, Divider, Dialog, Portal } from 'react-native-paper';
-import { Colors } from '../theme';
-import { useNavigation, CommonActions } from '@react-navigation/native';
+import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { FAB } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { TabView, TabBar } from 'react-native-tab-view';
+import { useNavigation, useIsFocused, CommonActions } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useState, useEffect, useMemo } from 'react';
-import { toDateKey, formatDateLabel } from '../utils/date';
-import { useCategories } from '../hooks/useCategories';
-import { useTodos, useToggleTodo, useClearCompleted, useReorderTodos } from '../hooks/useTodos';
-import TodoItem from '../components/TodoItem';
-import BannerAdView from '../components/BannerAdView';
+import { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { Colors } from '../theme';
 import { usePremiumStore } from '../stores/premiumStore';
+import { runDueDateCheck } from '../hooks/useTodos';
 import { TodoStackParamList } from '../navigation/TodoStack';
-import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
+import BannerAdView from '../components/BannerAdView';
+import TodoTabToday from '../components/TodoTabToday';
+import TodoTabList from '../components/TodoTabList';
+import TodoTabOverdue from '../components/TodoTabOverdue';
+import TodoTabCompleted from '../components/TodoTabCompleted';
+
 
 type Nav = NativeStackNavigationProp<TodoStackParamList, 'TodoList'>;
-type Tab = 'active' | 'completed';
 
-type Todo = {
-  id: number;
-  title: string;
-  description?: string | null;
-  dueDate?: number | null;
-  urgency?: number | null;
-  importance?: number | null;
-  isCompleted: number;
-  completedAt?: number | null;
-  categoryId: number;
-  sortOrder: number;
-};
+const ROUTES = [
+  { key: 'today', title: '오늘' },
+  { key: 'list', title: '할 일' },
+  { key: 'overdue', title: '미완료' },
+  { key: 'completed', title: '완료' },
+];
 
-type ListItem =
-  | { type: 'header'; label: string; key: string }
-  | { type: 'todo'; todo: Todo };
-
-
-function buildCompletedList(todos: Todo[]): ListItem[] {
-  const result: ListItem[] = [];
-  let lastKey = '';
-  for (const todo of todos) {
-    const key = toDateKey(todo.completedAt);
-    if (key !== lastKey) {
-      result.push({ type: 'header', label: formatDateLabel(todo.completedAt), key });
-      lastKey = key;
-    }
-    result.push({ type: 'todo', todo });
+const renderScene = ({ route }: { route: { key: string } }) => {
+  switch (route.key) {
+    case 'today': return <TodoTabToday />;
+    case 'list': return <TodoTabList />;
+    case 'overdue': return <TodoTabOverdue />;
+    case 'completed': return <TodoTabCompleted />;
+    default: return null;
   }
-  return result;
-}
+};
 
 export default function TodoScreen() {
   const navigation = useNavigation<Nav>();
-  const [activeTab, setActiveTab] = useState<Tab>('active');
-  const [clearDialogVisible, setClearDialogVisible] = useState(false);
+  const layout = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const [tabIndex, setTabIndex] = useState(0);
+  const isPremium = usePremiumStore((s) => s.isPremium);
+  const isFocused = useIsFocused();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const parentNav = navigation.getParent<BottomTabNavigationProp<Record<string, undefined>>>();
@@ -62,159 +54,62 @@ export default function TodoScreen() {
       if (state && state.routes.length > 1) {
         navigation.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'TodoList' }] }));
       }
-      setActiveTab('active');
+      setTabIndex(0);
     });
   }, [navigation]);
 
-  const { data: activeTodos = [] } = useTodos(0);
-  const { data: completedTodos = [] } = useTodos(1);
-  const { data: categories = [] } = useCategories();
-  const { mutate: toggleTodo } = useToggleTodo();
-  const { mutate: clearCompleted } = useClearCompleted();
-  const { mutate: reorderTodos } = useReorderTodos();
-  const isPremium = usePremiumStore((s) => s.isPremium);
+  useEffect(() => {
+    if (!isFocused) return;
+    runDueDateCheck().then(() => {
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
+    });
+  }, [isFocused, queryClient]);
 
-  const categoryMap = useMemo(
-    () => new Map(categories.map((c) => [c.id, c])),
-    [categories]
-  );
-  const getCategoryById = (id: number) => categoryMap.get(id);
-
-  const renderActiveItem = ({ item, drag, isActive }: RenderItemParams<Todo>) => (
-    <ScaleDecorator>
-      <TodoItem
-        todo={item}
-        category={getCategoryById(item.categoryId)}
-        onToggle={() => toggleTodo({ id: item.id, isCompleted: item.isCompleted })}
-        onPress={() => navigation.navigate('TodoForm', { todo: item })}
-        onDrag={drag}
-        isDragging={isActive}
-      />
-    </ScaleDecorator>
-  );
-
-  const completedList = buildCompletedList(completedTodos as Todo[]);
-
-  const renderCompletedItem = ({ item }: { item: ListItem }) => {
-    if (item.type === 'header') {
-      return <Text style={styles.dateHeader}>{item.label}</Text>;
-    }
-    return (
-      <>
-        <TodoItem
-          todo={item.todo}
-          category={getCategoryById(item.todo.categoryId)}
-          onToggle={() => toggleTodo({ id: item.todo.id, isCompleted: item.todo.isCompleted })}
-          onPress={() => navigation.navigate('TodoForm', { todo: item.todo })}
-        />
-        <Divider />
-      </>
-    );
+  const handleTabIndexChange = (index: number) => {
+    setTabIndex(index);
+    runDueDateCheck().then(() => {
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
+    });
   };
 
+  const showFab = tabIndex === 0 || tabIndex === 1;
+
   return (
-    <View style={styles.container}>
-      <Appbar.Header>
-        <Appbar.Content title="할 일" />
-        {activeTab === 'completed' && completedTodos.length > 0 && (
-          <Appbar.Action icon="delete-sweep" onPress={() => setClearDialogVisible(true)} />
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <TabView
+        navigationState={{ index: tabIndex, routes: ROUTES }}
+        renderScene={renderScene}
+        onIndexChange={handleTabIndexChange}
+        initialLayout={{ width: layout.width }}
+        renderTabBar={(props) => (
+          <TabBar
+            {...props}
+            style={styles.tabBar}
+            indicatorStyle={styles.indicator}
+            activeColor={Colors.primary}
+            inactiveColor={Colors.textMuted}
+            pressColor={Colors.surfaceVariant}
+          />
         )}
-      </Appbar.Header>
-
-      <View style={styles.tabs}>
-        <Button
-          mode={activeTab === 'active' ? 'contained' : 'text'}
-          onPress={() => setActiveTab('active')}
-          style={styles.tabBtn}
-          compact
-        >
-          진행 중 {activeTodos.length > 0 ? `(${activeTodos.length})` : ''}
-        </Button>
-        <Button
-          mode={activeTab === 'completed' ? 'contained' : 'text'}
-          onPress={() => setActiveTab('completed')}
-          style={styles.tabBtn}
-          compact
-        >
-          완료 {completedTodos.length > 0 ? `(${completedTodos.length})` : ''}
-        </Button>
-      </View>
-
-      {activeTab === 'active' ? (
-        <DraggableFlatList
-          data={activeTodos as Todo[]}
-          keyExtractor={(item) => String(item.id)}
-          ItemSeparatorComponent={() => <Divider />}
-          ListEmptyComponent={
-            <Text style={styles.empty}>할 일이 없어요</Text>
-          }
-          renderItem={renderActiveItem}
-          onDragEnd={({ data }) => reorderTodos(data.map((t) => t.id))}
-          autoscrollThreshold={80}
-          autoscrollSpeed={200}
-          containerStyle={{ flex: 1 }}
-        />
-      ) : (
-        <FlatList
-          data={completedList}
-          keyExtractor={(item, index) =>
-            item.type === 'header' ? `header-${item.key}` : `todo-${item.todo.id}`
-          }
-          renderItem={renderCompletedItem}
-          ListEmptyComponent={
-            <Text style={styles.empty}>완료된 항목이 없어요</Text>
-          }
-          style={{ flex: 1 }}
-        />
-      )}
+      />
 
       <BannerAdView />
 
-      {activeTab === 'active' && (
-        <FAB icon="plus" style={[styles.fab, !isPremium && styles.fabWithAd]} onPress={() => navigation.navigate('TodoForm')} />
+      {showFab && (
+        <FAB
+          icon="plus"
+          style={[styles.fab, !isPremium && styles.fabWithAd]}
+          onPress={() => navigation.navigate('TodoForm')}
+        />
       )}
-
-      <Portal>
-        <Dialog visible={clearDialogVisible} onDismiss={() => setClearDialogVisible(false)}>
-          <Dialog.Title>완료 목록 비우기</Dialog.Title>
-          <Dialog.Content>
-            <Text>완료된 할 일이 목록에서 삭제됩니다.{'\n'}완료 기록은 기록 탭에 유지됩니다.</Text>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={() => setClearDialogVisible(false)}>취소</Button>
-            <Button
-              textColor={Colors.danger}
-              onPress={() => { clearCompleted(); setClearDialogVisible(false); }}
-            >
-              비우기
-            </Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
-  tabs: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    gap: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.tabBorder,
-  },
-  tabBtn: { flex: 1 },
-  empty: { textAlign: 'center', marginTop: 60, color: Colors.textMuted },
+  tabBar: { backgroundColor: Colors.surface },
+  indicator: { backgroundColor: Colors.primary },
   fab: { position: 'absolute', right: 16, bottom: 16 },
   fabWithAd: { bottom: 74 },
-  dateHeader: {
-    paddingHorizontal: 16,
-    paddingTop: 20,
-    paddingBottom: 6,
-    fontSize: 12,
-    fontWeight: '600',
-    color: Colors.textMuted,
-  },
 });

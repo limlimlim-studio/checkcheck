@@ -6,14 +6,14 @@
       "title": "DB 스키마 확장 및 기한 필수화",
       "issueNumber": 62,
       "branch": "feature/issue-62/db-schema-extension-and-due-date-required",
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "number": 2,
       "title": "할 일 탭 UI 개편",
       "issueNumber": 63,
       "branch": "feature/issue-63/todo-tab-ui-refactor",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "number": 3,

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { and, asc, desc, eq, gte, lt } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, isNull, lt, or } from 'drizzle-orm';
 import dayjs from 'dayjs';
 import { db } from '../db';
 import { todos, todoCompletions } from '../db/schema';
@@ -33,7 +33,7 @@ export const useTodosToday = () => {
   });
 };
 
-/** 할 일 탭: 기한 >= 오늘 AND 미완료 */
+/** 할 일 탭: 기한 >= 오늘 AND 미완료 (기한 없는 항목도 포함) */
 export const useTodosList = () => {
   const todayStart = dayjs().startOf('day').valueOf();
   return useQuery({
@@ -43,7 +43,7 @@ export const useTodosList = () => {
         .where(and(
           eq(todos.isCompleted, 0),
           eq(todos.isDeleted, 0),
-          gte(todos.dueDate, todayStart),
+          or(isNull(todos.dueDate), gte(todos.dueDate, todayStart)),
         ))
         .orderBy(asc(todos.sortOrder))
         .all(),
@@ -77,6 +77,66 @@ export const useTodosCompleted = () =>
         .orderBy(desc(todos.completedAt))
         .all(),
   });
+
+/** 오늘 탭 전용: 오늘 완료 체크된 todoId Set */
+export const useTodayCompletionIds = () => {
+  const today = dayjs().format('YYYY-MM-DD');
+  return useQuery({
+    queryKey: ['todayCompletionIds', today],
+    queryFn: () => {
+      const records = db.select().from(todoCompletions)
+        .where(eq(todoCompletions.completedDate, today))
+        .all();
+      return new Set(records.map((r) => r.todoId));
+    },
+  });
+};
+
+/** 오늘 탭 전용 토글: isCompleted 변경 없이 todo_completions만 기록 */
+export const useTodayToggle = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const today = dayjs().format('YYYY-MM-DD');
+      const existing = db.select().from(todoCompletions)
+        .where(and(eq(todoCompletions.todoId, id), eq(todoCompletions.completedDate, today)))
+        .get();
+      if (existing) {
+        await db.delete(todoCompletions)
+          .where(and(eq(todoCompletions.todoId, id), eq(todoCompletions.completedDate, today)))
+          .run();
+      } else {
+        await db.insert(todoCompletions).values({ todoId: id, completedDate: today }).run();
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['todayCompletionIds'] });
+      queryClient.invalidateQueries({ queryKey: ['completions'], exact: false });
+    },
+  });
+};
+
+/** 기한 체크: 기한이 지난 항목 중 완료 기록 있으면 isCompleted=1로 마이그레이션 */
+export const runDueDateCheck = async () => {
+  const todayStart = dayjs().startOf('day').valueOf();
+  const overdueTodos = db.select().from(todos)
+    .where(and(eq(todos.isCompleted, 0), eq(todos.isDeleted, 0), lt(todos.dueDate, todayStart)))
+    .all();
+
+  for (const todo of overdueTodos) {
+    const completion = db.select().from(todoCompletions)
+      .where(eq(todoCompletions.todoId, todo.id))
+      .get();
+    if (completion) {
+      const now = Date.now();
+      await db.update(todos).set({
+        isCompleted: 1,
+        completedAt: now,
+        updatedAt: now,
+      }).where(eq(todos.id, todo.id)).run();
+    }
+  }
+};
 
 export const useCreateTodo = () => {
   const queryClient = useQueryClient();
