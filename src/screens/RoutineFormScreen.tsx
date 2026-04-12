@@ -6,11 +6,11 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCreateRoutine, useUpdateRoutine, useDeleteRoutine } from '../hooks/useRoutines';
 import { useCategories } from '../hooks/useCategories';
-import { SettingsStackParamList } from '../navigation/SettingsStack';
+import { RoutineStackParamList } from '../navigation/RoutineStack';
 import { LEVEL_OPTIONS } from '../constants/todo';
 
-type Nav = NativeStackNavigationProp<SettingsStackParamList, 'RoutineForm'>;
-type Route = RouteProp<SettingsStackParamList, 'RoutineForm'>;
+type Nav = NativeStackNavigationProp<RoutineStackParamList, 'RoutineForm'>;
+type Route = RouteProp<RoutineStackParamList, 'RoutineForm'>;
 
 const DAY_OPTIONS = [
   { value: '0', label: '일' },
