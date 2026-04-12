@@ -1,6 +1,7 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, Checkbox } from 'react-native-paper';
 import { Colors } from '../theme';
+import { LEVEL_LABELS } from '../constants/todo';
 
 type Todo = {
   id: number;
@@ -28,9 +29,8 @@ type Props = {
   isDragging?: boolean;
 };
 
-const LEVEL_LABELS = ['', '낮음', '보통', '높음'];
-const URGENCY_COLOR = '#FF6B6B';
-const IMPORTANCE_COLOR = '#4ECDC4';
+const URGENCY_COLOR = Colors.urgency;
+const IMPORTANCE_COLOR = Colors.importance;
 
 export default function TodoItem({ todo, category, onToggle, onPress, onDrag, isDragging }: Props) {
   const dueDateStr = todo.dueDate

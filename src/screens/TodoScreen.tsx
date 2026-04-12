@@ -2,8 +2,10 @@ import { StyleSheet, View, FlatList } from 'react-native';
 import { Appbar, Text, FAB, Button, Divider, Dialog, Portal } from 'react-native-paper';
 import { Colors } from '../theme';
 import { useNavigation, CommonActions } from '@react-navigation/native';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { toDateKey, formatDateLabel } from '../utils/date';
 import { useCategories } from '../hooks/useCategories';
 import { useTodos, useToggleTodo, useClearCompleted, useReorderTodos } from '../hooks/useTodos';
 import TodoItem from '../components/TodoItem';
@@ -32,28 +34,6 @@ type ListItem =
   | { type: 'header'; label: string; key: string }
   | { type: 'todo'; todo: Todo };
 
-function formatDateLabel(ts: number | null | undefined): string {
-  if (!ts) return '날짜 없음';
-  const d = new Date(ts);
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-  const day = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-
-  if (day.getTime() === today.getTime()) return '오늘';
-  if (day.getTime() === yesterday.getTime()) return '어제';
-  if (d.getFullYear() === now.getFullYear()) {
-    return `${d.getMonth() + 1}월 ${d.getDate()}일`;
-  }
-  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
-}
-
-function toDateKey(ts: number | null | undefined): string {
-  if (!ts) return 'none';
-  const d = new Date(ts);
-  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-}
 
 function buildCompletedList(todos: Todo[]): ListItem[] {
   const result: ListItem[] = [];
@@ -75,7 +55,7 @@ export default function TodoScreen() {
   const [clearDialogVisible, setClearDialogVisible] = useState(false);
 
   useEffect(() => {
-    const parentNav = navigation.getParent();
+    const parentNav = navigation.getParent<BottomTabNavigationProp<Record<string, undefined>>>();
     if (!parentNav) return;
     return parentNav.addListener('tabPress', () => {
       setActiveTab('active');
@@ -91,7 +71,11 @@ export default function TodoScreen() {
   const { mutate: reorderTodos } = useReorderTodos();
   const isPremium = usePremiumStore((s) => s.isPremium);
 
-  const getCategoryById = (id: number) => categories.find((c) => c.id === id);
+  const categoryMap = useMemo(
+    () => new Map(categories.map((c) => [c.id, c])),
+    [categories]
+  );
+  const getCategoryById = (id: number) => categoryMap.get(id);
 
   const renderActiveItem = ({ item, drag, isActive }: RenderItemParams<Todo>) => (
     <ScaleDecorator>

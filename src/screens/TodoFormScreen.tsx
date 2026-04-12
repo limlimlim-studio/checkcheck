@@ -8,19 +8,13 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCategories } from '../hooks/useCategories';
 import { useCreateTodo, useUpdateTodo, useDeleteTodo } from '../hooks/useTodos';
 import { TodoStackParamList } from '../navigation/TodoStack';
+import { LEVEL_OPTIONS } from '../constants/todo';
 
 type Nav = NativeStackNavigationProp<TodoStackParamList, 'TodoForm'>;
 type Route = RouteProp<TodoStackParamList, 'TodoForm'>;
 
 const today = new Date();
 today.setHours(0, 0, 0, 0);
-
-const LEVEL_OPTIONS = [
-  { value: '0', label: '없음' },
-  { value: '1', label: '낮음' },
-  { value: '2', label: '보통' },
-  { value: '3', label: '높음' },
-];
 
 export default function TodoFormScreen() {
   const navigation = useNavigation<Nav>();
@@ -204,7 +198,7 @@ export default function TodoFormScreen() {
         {isEdit && (
           <Button
             mode="outlined"
-            textColor="#B03A2E"
+            textColor={Colors.dangerDark}
             icon="delete-outline"
             onPress={() => setDeleteDialogVisible(true)}
             style={styles.deleteButton}
@@ -223,7 +217,7 @@ export default function TodoFormScreen() {
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={() => setDeleteDialogVisible(false)}>취소</Button>
-            <Button textColor="#EA4335" onPress={handleDelete}>삭제</Button>
+            <Button textColor={Colors.danger} onPress={handleDelete}>삭제</Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>

@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   },
   description: { color: Colors.textSecondary, marginTop: 2 },
   arrow: { fontSize: 20, color: Colors.textMuted },
-  checkmark: { fontSize: 18, color: '#A78BFA', fontWeight: '700' },
+  checkmark: { fontSize: 18, color: Colors.primary, fontWeight: '700' },
   infoItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
