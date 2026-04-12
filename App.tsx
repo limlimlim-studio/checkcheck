@@ -6,6 +6,7 @@ import { View, ActivityIndicator } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import MobileAds from 'react-native-google-mobile-ads';
 import { initDb } from './src/db';
 import { loadPremiumStatus } from './src/hooks/usePremiumStatus';
 import { configurePurchases } from './src/screens/PremiumScreen';
@@ -19,10 +20,11 @@ export default function App() {
 
   useEffect(() => {
     configurePurchases();
-    initDb()
+    MobileAds().initialize()
+      .then(() => initDb())
       .then(() => loadPremiumStatus())
       .then(() => setReady(true))
-      .catch((e) => console.error('[initDb error]', e));
+      .catch((e) => console.error('[init error]', e));
   }, []);
 
   if (!ready) {

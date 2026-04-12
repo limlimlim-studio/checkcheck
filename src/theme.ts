@@ -46,5 +46,9 @@ export const Colors = {
   textMuted: '#636366',
   border: '#3A3A3C',
   danger: '#FF453A',
+  dangerDark: '#B03A2E',
   tabBorder: '#2C2C2E',
+  primary: '#A78BFA',
+  urgency: '#FF6B6B',
+  importance: '#4ECDC4',
 };
