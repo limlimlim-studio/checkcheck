@@ -17,8 +17,8 @@
   <!-- Background -->
   <rect width="1024" height="1024" fill="#1E2030"/>
 
-  <!-- 체크 + 막대 그룹: 중앙 정렬 후 64% 축소 (기존 80%에서 20% 축소) -->
-  <g transform="translate(512,512) scale(0.64) translate(-477,-539)">
+  <!-- 체크 + 막대 그룹: 중앙 정렬 후 44.8% 축소 (icon.svg 64%에서 30% 추가 축소) -->
+  <g transform="translate(512,512) scale(0.448) translate(-477,-539)">
     <!-- 막대 -->
     <g mask="url(#barMask)">
       <rect x="110" y="510" width="220" height="450" rx="24" ry="24" fill="#E8674A"/>
