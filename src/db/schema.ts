@@ -41,3 +41,28 @@ export const todoCompletions = sqliteTable('todo_completions', {
     .references(() => todos.id, { onDelete: 'cascade' }),
   completedDate: text('completed_date').notNull(), // 'YYYY-MM-DD'
 });
+
+export const routines = sqliteTable('routines', {
+  id: int('id').primaryKey({ autoIncrement: true }),
+  categoryId: int('category_id')
+    .notNull()
+    .references(() => categories.id),
+  title: text('title').notNull(),
+  description: text('description'),
+  repeatType: text('repeat_type').notNull(), // 'daily' | 'weekly' | 'monthly'
+  repeatValue: text('repeat_value'),         // weekly: '1,3,5' (0=일), monthly: '15' (날짜)
+  urgency: int('urgency').default(0),
+  importance: int('importance').default(0),
+  sortOrder: int('sort_order').notNull().default(0),
+  isActive: int('is_active').notNull().default(1),
+  createdAt: int('created_at').notNull(),
+  updatedAt: int('updated_at').notNull(),
+});
+
+export const routineCompletions = sqliteTable('routine_completions', {
+  id: int('id').primaryKey({ autoIncrement: true }),
+  routineId: int('routine_id')
+    .notNull()
+    .references(() => routines.id, { onDelete: 'cascade' }),
+  completedDate: text('completed_date').notNull(), // 'YYYY-MM-DD'
+});

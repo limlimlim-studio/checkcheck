@@ -29,7 +29,7 @@ export default function TodoFormScreen() {
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [dueDate, setDueDate] = useState<Date | null>(null);
+  const [dueDate, setDueDate] = useState<Date>(new Date(today));
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
 
@@ -41,7 +41,7 @@ export default function TodoFormScreen() {
   useEffect(() => {
     setTitle(todo?.title ?? '');
     setDescription(todo?.description ?? '');
-    setDueDate(todo?.dueDate ? new Date(todo.dueDate) : null);
+    setDueDate(todo?.dueDate ? new Date(todo.dueDate) : new Date(today));
     setUrgency(String(todo?.urgency ?? 0));
     setImportance(String(todo?.importance ?? 0));
     setCategoryId(todo?.categoryId ?? (categories[0]?.id ?? null));
@@ -52,7 +52,7 @@ export default function TodoFormScreen() {
     const data = {
       title: title.trim(),
       description: description.trim() || undefined,
-      dueDate: dueDate ? dueDate.getTime() : undefined,
+      dueDate: dueDate.getTime(),
       urgency: Number(urgency),
       importance: Number(importance),
       categoryId,
@@ -109,44 +109,30 @@ export default function TodoFormScreen() {
           keyboardAppearance="dark"
         />
 
-        <Text variant="labelLarge" style={styles.label}>기한</Text>
+        <Text variant="labelLarge" style={styles.label}>기한 *</Text>
         <TouchableOpacity
           style={styles.dateButton}
-          onPress={() => {
-            if (!dueDate) setDueDate(new Date(today));
-            setShowDatePicker(true);
-          }}
+          onPress={() => setShowDatePicker(true)}
         >
-          <Text style={[styles.dateText, !dueDate && styles.datePlaceholder]}>
-            {dueDate
-              ? dueDate.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
-              : '기한 없음'}
+          <Text style={styles.dateText}>
+            {dueDate.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
           </Text>
-          {dueDate && (
-            <TouchableOpacity onPress={() => setDueDate(null)} hitSlop={8}>
-              <Text style={styles.dateClear}>✕</Text>
-            </TouchableOpacity>
-          )}
         </TouchableOpacity>
 
         {showDatePicker && (
           <DateTimePicker
-            value={dueDate ?? today}
+            value={dueDate}
             mode="date"
             display="spinner"
             locale="ko"
-            minimumDate={today}
             textColor="#F2F2F7"
             onChange={(_, date) => {
-              if (date && date >= today) setDueDate(date);
+              if (date) setDueDate(date);
             }}
           />
         )}
         {showDatePicker && (
           <View style={styles.dateConfirmRow}>
-            <Button mode="text" onPress={() => { setDueDate(null); setShowDatePicker(false); }}>
-              초기화
-            </Button>
             <Button mode="contained" onPress={() => setShowDatePicker(false)}>
               확인
             </Button>
