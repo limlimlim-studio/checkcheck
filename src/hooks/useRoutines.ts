@@ -50,7 +50,10 @@ export const useCreateRoutine = () => {
         updatedAt: now,
       }).run();
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['routines'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['routines'] });
+      queryClient.invalidateQueries({ queryKey: ['routinesToday'] });
+    },
   });
 };
 
@@ -87,7 +90,10 @@ export const useUpdateRoutine = () => {
         updatedAt: Date.now(),
       }).where(eq(routines.id, id)).run();
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['routines'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['routines'] });
+      queryClient.invalidateQueries({ queryKey: ['routinesToday'] });
+    },
   });
 };
 
@@ -100,7 +106,10 @@ export const useDeleteRoutine = () => {
         updatedAt: Date.now(),
       }).where(eq(routines.id, id)).run();
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['routines'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['routines'] });
+      queryClient.invalidateQueries({ queryKey: ['routinesToday'] });
+    },
   });
 };
 
@@ -112,7 +121,10 @@ export const useReorderRoutines = () => {
         await db.update(routines).set({ sortOrder: i }).where(eq(routines.id, orderedIds[i])).run();
       }
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['routines'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['routines'] });
+      queryClient.invalidateQueries({ queryKey: ['routinesToday'] });
+    },
   });
 };
 

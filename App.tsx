@@ -1,8 +1,8 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, focusManager } from '@tanstack/react-query';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, AppState, AppStateStatus } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -14,6 +14,12 @@ import TabNavigator from './src/navigation/TabNavigator';
 import { AppTheme, NavTheme } from './src/theme';
 
 const queryClient = new QueryClient();
+
+// 앱이 포그라운드로 돌아올 때 TanStack Query 자동 갱신
+function onAppStateChange(status: AppStateStatus) {
+  focusManager.setFocused(status === 'active');
+}
+AppState.addEventListener('change', onAppStateChange);
 
 export default function App() {
   const [ready, setReady] = useState(false);

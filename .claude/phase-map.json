@@ -20,14 +20,14 @@
       "title": "루틴 관리",
       "issueNumber": 64,
       "branch": "feature/issue-64/routine-management",
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "number": 4,
       "title": "오늘 탭 루틴 연동",
       "issueNumber": 65,
       "branch": "feature/issue-65/today-tab-routine-integration",
-      "status": "pending"
+      "status": "in_progress"
     }
   ]
 }
