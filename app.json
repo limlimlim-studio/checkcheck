@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#1E2030"
     },
     "ios": {
       "supportsTablet": true,
@@ -38,6 +38,16 @@
           "iosAppId": "ca-app-pub-9156090950228888~8300764673"
         }
       ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "buildSettings": {
+              "ENABLE_USER_SCRIPT_SANDBOXING": "NO"
+            }
+          }
+        }
+      ]
     ],
     "extra": {
       "eas": {
