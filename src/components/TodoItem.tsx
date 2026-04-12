@@ -27,12 +27,14 @@ type Props = {
   onPress: () => void;
   onDrag?: () => void;
   isDragging?: boolean;
+  forceCompleted?: boolean; // 오늘 탭: isCompleted=0이어도 체크된 것처럼 표시
 };
 
 const URGENCY_COLOR = Colors.urgency;
 const IMPORTANCE_COLOR = Colors.importance;
 
-export default function TodoItem({ todo, category, onToggle, onPress, onDrag, isDragging }: Props) {
+export default function TodoItem({ todo, category, onToggle, onPress, onDrag, isDragging, forceCompleted }: Props) {
+  const showAsCompleted = todo.isCompleted === 1 || forceCompleted;
   const dueDateStr = todo.dueDate
     ? new Date(todo.dueDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })
     : null;
@@ -44,7 +46,7 @@ export default function TodoItem({ todo, category, onToggle, onPress, onDrag, is
     <View style={[styles.container, isDragging && styles.containerDragging]}>
       <TouchableOpacity onPress={onToggle} activeOpacity={0.6} style={styles.checkboxArea}>
         <Checkbox.Android
-          status={todo.isCompleted === 1 ? 'checked' : 'unchecked'}
+          status={showAsCompleted ? 'checked' : 'unchecked'}
           color={category?.color}
         />
       </TouchableOpacity>
@@ -52,7 +54,7 @@ export default function TodoItem({ todo, category, onToggle, onPress, onDrag, is
       <TouchableOpacity style={styles.content} onPress={onPress} onLongPress={onDrag} activeOpacity={0.7}>
         <Text
           variant="bodyLarge"
-          style={[styles.titleText, todo.isCompleted === 1 && styles.completed]}
+          style={[styles.titleText, showAsCompleted && styles.completed]}
         >
           {todo.title}
         </Text>
