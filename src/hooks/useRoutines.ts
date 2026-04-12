@@ -152,6 +152,7 @@ export const useToggleRoutineCompletion = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['routineCompletions'] });
       queryClient.invalidateQueries({ queryKey: ['routinesToday'] });
+      queryClient.invalidateQueries({ queryKey: ['completions'], exact: false });
     },
   });
 };
