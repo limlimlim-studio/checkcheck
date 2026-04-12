@@ -3,24 +3,31 @@
   "phases": [
     {
       "number": 1,
-      "title": "기반 세팅",
-      "issueNumber": 50,
-      "branch": "feature/issue-50/admob-iap-base-setup",
-      "status": "done"
+      "title": "DB 스키마 확장 및 기한 필수화",
+      "issueNumber": 62,
+      "branch": "feature/issue-62/db-schema-extension-and-due-date-required",
+      "status": "in_progress"
     },
     {
       "number": 2,
-      "title": "배너 광고 구현",
-      "issueNumber": 51,
-      "branch": "feature/issue-51/banner-ad-implementation",
-      "status": "done"
+      "title": "할 일 탭 UI 개편",
+      "issueNumber": 63,
+      "branch": "feature/issue-63/todo-tab-ui-refactor",
+      "status": "pending"
     },
     {
       "number": 3,
-      "title": "인앱 구매 구현",
-      "issueNumber": 52,
-      "branch": "feature/issue-52/in-app-purchase-implementation",
-      "status": "in_progress"
+      "title": "루틴 관리",
+      "issueNumber": 64,
+      "branch": "feature/issue-64/routine-management",
+      "status": "pending"
+    },
+    {
+      "number": 4,
+      "title": "오늘 탭 루틴 연동",
+      "issueNumber": 65,
+      "branch": "feature/issue-65/today-tab-routine-integration",
+      "status": "pending"
     }
   ]
 }

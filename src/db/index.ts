@@ -68,6 +68,31 @@ export const initDb = async () => {
     );
   `);
 
+  sqlite.execSync(`
+    CREATE TABLE IF NOT EXISTS routines (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      category_id INTEGER NOT NULL REFERENCES categories(id),
+      title TEXT NOT NULL,
+      description TEXT,
+      repeat_type TEXT NOT NULL,
+      repeat_value TEXT,
+      urgency INTEGER NOT NULL DEFAULT 0,
+      importance INTEGER NOT NULL DEFAULT 0,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      is_active INTEGER NOT NULL DEFAULT 1,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+  `);
+
+  sqlite.execSync(`
+    CREATE TABLE IF NOT EXISTS routine_completions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      routine_id INTEGER NOT NULL REFERENCES routines(id) ON DELETE CASCADE,
+      completed_date TEXT NOT NULL
+    );
+  `);
+
   // migration: remove stale completion records for uncompleted/deleted todos
   // (bug: toggle-back did not delete todoCompletions until fixed)
   sqlite.execSync(`
