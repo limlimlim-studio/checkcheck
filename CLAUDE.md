@@ -34,28 +34,32 @@ docs/
 ## DB 스키마
 
 - `categories`: id, name, color, description, created_at
-- `todos`: id, category_id(FK), title, description, due_date, urgency, importance, is_completed, completed_at, created_at, updated_at
+- `todos`: id, category_id(FK), title, description, due_date(필수), urgency, importance, is_completed, completed_at, created_at, updated_at
+- `routines`: id, category_id(FK), title, description, repeat_type(daily/weekly/monthly), repeat_value, urgency, importance, created_at, updated_at
+- `routine_completions`: id, routine_id(FK), completed_date(YYYY-MM-DD)
 - `todo_completions`: id, todo_id(FK), completed_date(YYYY-MM-DD)
-
-> 현재 구현된 스키마에서 추가 필요: todos(due_date, urgency, importance), categories(description)
 
 ## 메뉴 구성 (하단 탭 3개)
 
-### 1. 할일
-- 미완료 / 완료 탭으로 구성
-- FAB 버튼 → 바텀시트로 등록 (페이지 이동 아님)
-- 등록 입력값: 제목(필수), 상세 내용, 기한, 카테고리, 시급도, 중요도
-- 아이템 탭 → 바텀시트로 수정/삭제
-- 완료 탭: 비우기(전체 삭제) + 개별 삭제
+### 1. 할 일
+- 서브탭 4개: 오늘 / 할 일 / 미완료 / 완료
+- **오늘**: 루틴(오늘 해당) + 기한==오늘인 할 일 필터 뷰
+- **할 일**: 기한 >= 오늘인 단발 할 일 필터 뷰
+- **미완료**: 기한 < 오늘이며 미완료인 항목
+- **완료**: 완료된 항목 (날짜별 그룹)
+- 모든 리스트 드래그 순서 변경 가능
+- FAB 버튼 → 새 화면으로 등록
+- 등록 입력값: 제목(필수), 상세 내용, 기한(필수, 기본값 오늘), 카테고리, 긴급도, 중요도
+- Appbar 헤더 없음, react-native-tab-view 기반 탭
 
 ### 2. 기록
 - 카테고리별 GitHub 잔디 스타일 UI (식물/잔디 명칭 사용 안 함)
 - todo_completions 기반으로 날짜별 완료 이력 격자 시각화
 
 ### 3. 설정
-- 카테고리 관리: 조회 / 생성 / 수정 / 삭제
-- 카테고리 생성: 바텀시트 → 이름, 설명, 색상 입력
-- 등록된 카테고리는 할일 등록 시 선택 가능
+- 카테고리 관리: 조회 / 생성 / 수정 / 삭제 / 드래그 순서 변경
+- 루틴 관리: 조회 / 생성 / 수정 / 삭제 / 드래그 순서 변경
+- 루틴 반복 주기: 매일 / 매주(요일 선택) / 매월(날짜 선택)
 
 ## Git 컨벤션
 
