@@ -4,8 +4,11 @@ import { Colors } from '../theme';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useMemo } from 'react';
 import { useRoutines, useReorderRoutines } from '../hooks/useRoutines';
+import { useCategories } from '../hooks/useCategories';
 import { SettingsStackParamList } from '../navigation/SettingsStack';
+import { LEVEL_LABELS } from '../constants/todo';
 
 type Nav = NativeStackNavigationProp<SettingsStackParamList, 'RoutineManagement'>;
 
@@ -47,28 +50,67 @@ function repeatDescription(routine: Routine): string {
   return REPEAT_LABELS[routine.repeatType] ?? routine.repeatType;
 }
 
+const URGENCY_COLOR = Colors.urgency;
+const IMPORTANCE_COLOR = Colors.importance;
+
 export default function RoutineManagementScreen() {
   const navigation = useNavigation<Nav>();
   const { data: routines = [] } = useRoutines();
+  const { data: categories = [] } = useCategories();
   const { mutate: reorderRoutines } = useReorderRoutines();
 
-  const renderItem = ({ item, drag, isActive }: RenderItemParams<Routine>) => (
-    <ScaleDecorator>
-      <TouchableOpacity
-        style={[styles.item, isActive && styles.itemDragging]}
-        onPress={() => navigation.navigate('RoutineForm', { routine: item })}
-        onLongPress={drag}
-        disabled={isActive}
-      >
-        <View style={styles.itemText}>
-          <Text variant="bodyLarge">{item.title}</Text>
-          <Text variant="bodySmall" style={styles.repeatText}>{repeatDescription(item)}</Text>
-        </View>
-        <Text style={styles.dragHandle}>☰</Text>
-      </TouchableOpacity>
-      <Divider />
-    </ScaleDecorator>
+  const categoryMap = useMemo(
+    () => new Map(categories.map((c) => [c.id, c])),
+    [categories],
   );
+
+  const renderItem = ({ item, drag, isActive }: RenderItemParams<Routine>) => {
+    const category = categoryMap.get(item.categoryId);
+    const urgencyLevel = item.urgency ?? 0;
+    const importanceLevel = item.importance ?? 0;
+
+    return (
+      <ScaleDecorator>
+        <TouchableOpacity
+          style={[styles.item, isActive && styles.itemDragging]}
+          onPress={() => navigation.navigate('RoutineForm', { routine: item })}
+          onLongPress={drag}
+          disabled={isActive}
+        >
+          <View style={styles.itemText}>
+            <Text variant="bodyLarge">{item.title}</Text>
+            <View style={styles.meta}>
+              {category && (
+                <View style={[styles.categoryDot, { backgroundColor: category.color }]} />
+              )}
+              {category && (
+                <Text variant="labelSmall" style={[styles.metaText, { color: category.color }]}>
+                  {category.name}
+                </Text>
+              )}
+              <Text variant="labelSmall" style={styles.metaText}>{repeatDescription(item)}</Text>
+              {urgencyLevel > 0 && (
+                <View style={[styles.badge, { backgroundColor: URGENCY_COLOR + '33' }]}>
+                  <Text style={[styles.badgeText, { color: URGENCY_COLOR }]}>
+                    긴급 {LEVEL_LABELS[urgencyLevel]}
+                  </Text>
+                </View>
+              )}
+              {importanceLevel > 0 && (
+                <View style={[styles.badge, { backgroundColor: IMPORTANCE_COLOR + '33' }]}>
+                  <Text style={[styles.badgeText, { color: IMPORTANCE_COLOR }]}>
+                    중요 {LEVEL_LABELS[importanceLevel]}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+          <Text style={styles.dragHandle}>☰</Text>
+        </TouchableOpacity>
+        <Divider />
+      </ScaleDecorator>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -110,7 +152,11 @@ const styles = StyleSheet.create({
   },
   itemDragging: { backgroundColor: Colors.surfaceVariant, elevation: 4 },
   itemText: { flex: 1 },
-  repeatText: { color: Colors.textSecondary, marginTop: 2 },
+  meta: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' },
+  categoryDot: { width: 8, height: 8, borderRadius: 4 },
+  metaText: { color: Colors.textSecondary },
+  badge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
+  badgeText: { fontSize: 10, fontWeight: '600' },
   dragHandle: { color: Colors.textMuted, fontSize: 18 },
   fab: { position: 'absolute', right: 16, bottom: 16 },
   empty: { textAlign: 'center', marginTop: 60, color: Colors.textMuted },
