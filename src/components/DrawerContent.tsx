@@ -5,11 +5,6 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '../theme';
 
 export default function DrawerContent(props: DrawerContentComponentProps) {
-  const navigate = (screen: string) => {
-    props.navigation.navigate('SettingsMain', { screen });
-    props.navigation.closeDrawer();
-  };
-
   return (
     <DrawerContentScrollView
       {...props}
@@ -27,7 +22,10 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
           icon={({ color, size }) => (
             <MaterialCommunityIcons name="tag-outline" size={size} color={color} />
           )}
-          onPress={() => navigate('CategoryManagement')}
+          onPress={() => {
+            props.navigation.navigate('CategoryDrawer');
+            props.navigation.closeDrawer();
+          }}
         />
         <DrawerItem
           label="루틴 관리"
@@ -35,7 +33,10 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
           icon={({ color, size }) => (
             <MaterialCommunityIcons name="repeat" size={size} color={color} />
           )}
-          onPress={() => navigate('RoutineManagement')}
+          onPress={() => {
+            props.navigation.navigate('RoutineDrawer');
+            props.navigation.closeDrawer();
+          }}
         />
       </View>
     </DrawerContentScrollView>

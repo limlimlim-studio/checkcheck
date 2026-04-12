@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
 import { Appbar, Text, IconButton } from 'react-native-paper';
+import { useNavigation, DrawerActions } from '@react-navigation/native';
 import { Colors } from '../theme';
 import { useCategories } from '../hooks/useCategories';
 import { useEarliestCompletionYear } from '../hooks/useCompletions';
@@ -10,6 +11,7 @@ import BannerAdView from '../components/BannerAdView';
 const CURRENT_YEAR = new Date().getFullYear();
 
 export default function RecordScreen() {
+  const navigation = useNavigation();
   const [year, setYear] = useState(CURRENT_YEAR);
   const { data: categories = [] } = useCategories();
   const { data: earliestYear = CURRENT_YEAR } = useEarliestCompletionYear();
@@ -17,20 +19,26 @@ export default function RecordScreen() {
   return (
     <View style={styles.container}>
       <Appbar.Header>
+        <Appbar.Action icon="menu" onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
+        <Appbar.Content title="CheckCheck" titleStyle={{ fontWeight: '700' }} />
+        <Appbar.Action icon="cog-outline" onPress={() => navigation.navigate('SettingsMain' as never)} />
+      </Appbar.Header>
+
+      <View style={styles.yearRow}>
         <IconButton
           icon="chevron-left"
           iconColor={year <= earliestYear ? Colors.textMuted : Colors.text}
           disabled={year <= earliestYear}
           onPress={() => setYear((y) => y - 1)}
         />
-        <Appbar.Content title={String(year)} titleStyle={styles.yearTitle} />
+        <Text style={styles.yearText}>{year}</Text>
         <IconButton
           icon="chevron-right"
           iconColor={year >= CURRENT_YEAR ? Colors.textMuted : Colors.text}
           disabled={year >= CURRENT_YEAR}
           onPress={() => setYear((y) => y + 1)}
         />
-      </Appbar.Header>
+      </View>
 
       <ScrollView contentContainerStyle={styles.content}>
         {categories.map((category) => (
@@ -57,7 +65,16 @@ export default function RecordScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
-  yearTitle: { textAlign: 'center', fontWeight: '700', fontSize: 18 },
+  yearRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 4,
+    backgroundColor: Colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  yearText: { color: Colors.text, fontWeight: '700', fontSize: 16, minWidth: 40, textAlign: 'center' },
   content: { paddingVertical: 8 },
   section: {
     paddingHorizontal: 2,

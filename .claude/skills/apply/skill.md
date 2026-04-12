@@ -1,5 +1,5 @@
 ---
-name: ship
+name: apply
 description: 변경 사항 분석 → 커밋 메시지 자동 선택 → 커밋 → 푸시 → PR 생성까지 한 번에 처리
 tools: Bash
 ---

@@ -7,10 +7,10 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMemo } from 'react';
 import { useRoutines, useReorderRoutines } from '../hooks/useRoutines';
 import { useCategories } from '../hooks/useCategories';
-import { SettingsStackParamList } from '../navigation/SettingsStack';
+import { RoutineStackParamList } from '../navigation/RoutineStack';
 import { LEVEL_LABELS } from '../constants/todo';
 
-type Nav = NativeStackNavigationProp<SettingsStackParamList, 'RoutineManagement'>;
+type Nav = NativeStackNavigationProp<RoutineStackParamList, 'RoutineManagement'>;
 
 type Routine = {
   id: number;

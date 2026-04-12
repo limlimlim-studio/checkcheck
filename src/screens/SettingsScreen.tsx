@@ -1,20 +1,14 @@
 import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Appbar, Text, Divider } from 'react-native-paper';
 import { Colors } from '../theme';
-import { useNavigation, CommonActions } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useEffect } from 'react';
 import { SettingsStackParamList } from '../navigation/SettingsStack';
 import Constants from 'expo-constants';
 import { usePremiumStore } from '../stores/premiumStore';
 import { savePremiumStatus } from '../hooks/usePremiumStatus';
 
 type NavigationProp = NativeStackNavigationProp<SettingsStackParamList, 'SettingsHome'>;
-
-const SETTINGS_ITEMS = [
-  { key: 'CategoryManagement', label: '카테고리 관리', description: '카테고리 추가, 수정, 삭제' },
-  { key: 'RoutineManagement', label: '루틴 관리', description: '반복 루틴 추가, 수정, 삭제' },
-] as const;
 
 const APP_INFO = [
   { label: '앱 이름', value: Constants.expoConfig?.name ?? 'checkcheck' },
@@ -26,40 +20,12 @@ export default function SettingsScreen() {
   const navigation = useNavigation<NavigationProp>();
   const isPremium = usePremiumStore((s) => s.isPremium);
 
-  useEffect(() => {
-    const parentNav = navigation.getParent();
-    if (!parentNav) return;
-    return parentNav.addListener('focus', () => {
-      navigation.setOptions({ animation: 'none' });
-      navigation.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'SettingsHome' }] }));
-      requestAnimationFrame(() => navigation.setOptions({ animation: 'default' }));
-    });
-  }, [navigation]);
-
   return (
     <View style={styles.container}>
       <Appbar.Header>
+        <Appbar.BackAction onPress={() => navigation.goBack()} />
         <Appbar.Content title="설정" />
       </Appbar.Header>
-
-      <Text variant="labelSmall" style={styles.sectionLabel}>일반</Text>
-      <View style={styles.section}>
-        {SETTINGS_ITEMS.map((item, index) => (
-          <View key={item.key}>
-            <TouchableOpacity
-              style={styles.item}
-              onPress={() => navigation.navigate(item.key)}
-            >
-              <View>
-                <Text variant="bodyLarge">{item.label}</Text>
-                <Text variant="bodySmall" style={styles.description}>{item.description}</Text>
-              </View>
-              <Text style={styles.arrow}>›</Text>
-            </TouchableOpacity>
-            {index < SETTINGS_ITEMS.length - 1 && <Divider />}
-          </View>
-        ))}
-      </View>
 
       <Text variant="labelSmall" style={styles.sectionLabel}>프리미엄</Text>
       <View style={styles.section}>
