@@ -1,4 +1,4 @@
-import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, View, useWindowDimensions, InteractionManager } from 'react-native';
 import { Appbar, FAB } from 'react-native-paper';
 import { TabView, TabBar } from 'react-native-tab-view';
 import { useNavigation, useIsFocused, CommonActions, DrawerActions } from '@react-navigation/native';
@@ -57,23 +57,23 @@ export default function TodoScreen() {
 
   useEffect(() => {
     if (!isFocused) return;
-    runDueDateCheck().then(() => {
-      queryClient.invalidateQueries({ queryKey: ['todos'] });
+    const task = InteractionManager.runAfterInteractions(() => {
+      runDueDateCheck().then((changed) => {
+        if (changed) queryClient.invalidateQueries({ queryKey: ['todos'] });
+      });
     });
+    return () => task.cancel();
   }, [isFocused, queryClient]);
 
   const handleTabIndexChange = (index: number) => {
     setTabIndex(index);
-    runDueDateCheck().then(() => {
-      queryClient.invalidateQueries({ queryKey: ['todos'] });
-    });
   };
 
   const showFab = tabIndex === 0 || tabIndex === 1;
 
   return (
     <View style={styles.container}>
-      <Appbar.Header>
+      <Appbar.Header style={styles.header}>
         <Appbar.Action icon="menu" onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
         <Appbar.Content title="CheckCheck" titleStyle={{ fontWeight: '700' }} />
         <Appbar.Action icon="cog-outline" onPress={() => navigation.navigate('SettingsMain' as never)} />
@@ -111,6 +111,7 @@ export default function TodoScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
+  header: { height: 72 },
   tabBar: { backgroundColor: Colors.surface },
   indicator: { backgroundColor: Colors.primary },
   fab: { position: 'absolute', right: 16, bottom: 16 },

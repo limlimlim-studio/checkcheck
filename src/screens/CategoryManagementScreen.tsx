@@ -106,5 +106,5 @@ const styles = StyleSheet.create({
   },
   description: { color: Colors.textSecondary, marginTop: 2 },
   dragHandle: { color: Colors.textMuted, fontSize: 18 },
-  fab: { position: 'absolute', right: 16, bottom: 16 },
+  fab: { position: 'absolute', right: 16, bottom: 48 },
 });

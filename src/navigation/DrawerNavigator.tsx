@@ -23,15 +23,13 @@ export default function DrawerNavigator() {
         headerShown: false,
         drawerType: 'front',
         swipeEnabled: false,
+        drawerStyle: { width: '62%' },
       }}
     >
-      <Drawer.Screen name="Main" component={TabNavigator} options={{ swipeEnabled: true }} />
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-      <Drawer.Screen name="CategoryDrawer" component={CategoryStack} options={{ unmountOnBlur: true } as any} />
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-      <Drawer.Screen name="RoutineDrawer" component={RoutineStack} options={{ unmountOnBlur: true } as any} />
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-      <Drawer.Screen name="SettingsMain" component={SettingsStack} options={{ unmountOnBlur: true } as any} />
+      <Drawer.Screen name="Main" component={TabNavigator} />
+      <Drawer.Screen name="CategoryDrawer" component={CategoryStack} />
+      <Drawer.Screen name="RoutineDrawer" component={RoutineStack} />
+      <Drawer.Screen name="SettingsMain" component={SettingsStack} />
     </Drawer.Navigator>
   );
 }

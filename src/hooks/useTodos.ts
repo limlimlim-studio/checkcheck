@@ -116,13 +116,21 @@ export const useTodayToggle = () => {
   });
 };
 
-/** 기한 체크: 기한이 지난 항목 중 완료 기록 있으면 isCompleted=1로 마이그레이션 */
-export const runDueDateCheck = async () => {
+/** 기한 체크: 기한이 지난 항목 중 완료 기록 있으면 isCompleted=1로 마이그레이션.
+ *  하루 1회만 실행 (JS 스레드 동기 SQLite 블로킹 최소화) */
+let _lastDueDateCheckDate = '';
+
+export const runDueDateCheck = async (): Promise<boolean> => {
+  const today = dayjs().format('YYYY-MM-DD');
+  if (_lastDueDateCheckDate === today) return false;
+  _lastDueDateCheckDate = today;
+
   const todayStart = dayjs().startOf('day').valueOf();
   const overdueTodos = db.select().from(todos)
     .where(and(eq(todos.isCompleted, 0), eq(todos.isDeleted, 0), lt(todos.dueDate, todayStart)))
     .all();
 
+  let changed = false;
   for (const todo of overdueTodos) {
     const completion = db.select().from(todoCompletions)
       .where(eq(todoCompletions.todoId, todo.id))
@@ -134,8 +142,10 @@ export const runDueDateCheck = async () => {
         completedAt: now,
         updatedAt: now,
       }).where(eq(todos.id, todo.id)).run();
+      changed = true;
     }
   }
+  return changed;
 };
 
 export const useCreateTodo = () => {
