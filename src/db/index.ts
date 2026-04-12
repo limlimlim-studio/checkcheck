@@ -93,12 +93,6 @@ export const initDb = async () => {
     );
   `);
 
-  // migration: remove stale completion records for uncompleted/deleted todos
-  // (bug: toggle-back did not delete todoCompletions until fixed)
-  sqlite.execSync(`
-    DELETE FROM todo_completions
-    WHERE todo_id IN (SELECT id FROM todos WHERE is_completed = 0 OR is_deleted = 1);
-  `);
 
   db = drizzle(sqlite, { schema });
 
