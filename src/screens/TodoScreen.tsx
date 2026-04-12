@@ -58,8 +58,11 @@ export default function TodoScreen() {
     const parentNav = navigation.getParent<BottomTabNavigationProp<Record<string, undefined>>>();
     if (!parentNav) return;
     return parentNav.addListener('tabPress', () => {
+      const state = navigation.getState();
+      if (state && state.routes.length > 1) {
+        navigation.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'TodoList' }] }));
+      }
       setActiveTab('active');
-      navigation.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'TodoList' }] }));
     });
   }, [navigation]);
 
