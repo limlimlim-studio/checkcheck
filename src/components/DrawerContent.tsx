@@ -1,27 +1,39 @@
-import { View, StyleSheet } from 'react-native';
-import { DrawerContentScrollView, DrawerItem, DrawerContentComponentProps } from '@react-navigation/drawer';
+import { View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { DrawerContentComponentProps } from '@react-navigation/drawer';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '../theme';
 
+function DrawerItem({ label, icon, onPress }: {
+  label: string;
+  icon: string;
+  onPress: () => void;
+}) {
+  return (
+    <TouchableOpacity style={styles.item} onPress={onPress} activeOpacity={0.7}>
+      <MaterialCommunityIcons name={icon as any} size={22} color={Colors.text} style={styles.itemIcon} />
+      <Text variant="bodyLarge" style={styles.itemLabel}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
 export default function DrawerContent(props: DrawerContentComponentProps) {
   return (
-    <DrawerContentScrollView
-      {...props}
-      contentContainerStyle={styles.container}
-    >
-      <View style={styles.header}>
+    <View style={styles.container}>
+      <SafeAreaView edges={['top']} style={styles.header}>
         <Text variant="titleLarge" style={styles.appName}>CheckCheck</Text>
-      </View>
+      </SafeAreaView>
 
-      <View style={styles.section}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <Text variant="labelSmall" style={styles.sectionLabel}>관리</Text>
         <DrawerItem
           label="카테고리 관리"
-          labelStyle={styles.itemLabel}
-          icon={({ color, size }) => (
-            <MaterialCommunityIcons name="tag-outline" size={size} color={color} />
-          )}
+          icon="tag-outline"
           onPress={() => {
             props.navigation.navigate('CategoryDrawer');
             props.navigation.closeDrawer();
@@ -29,17 +41,14 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
         />
         <DrawerItem
           label="루틴 관리"
-          labelStyle={styles.itemLabel}
-          icon={({ color, size }) => (
-            <MaterialCommunityIcons name="repeat" size={size} color={color} />
-          )}
+          icon="repeat"
           onPress={() => {
             props.navigation.navigate('RoutineDrawer');
             props.navigation.closeDrawer();
           }}
         />
-      </View>
-    </DrawerContentScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -52,12 +61,20 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.border,
   },
   appName: { color: Colors.primary, fontWeight: '700' },
-  section: { paddingTop: 8 },
+  scrollView: { flex: 1 },
+  scrollContent: { paddingTop: 8, paddingBottom: 24 },
   sectionLabel: {
     color: Colors.textSecondary,
     marginHorizontal: 16,
     marginTop: 12,
     marginBottom: 4,
   },
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  itemIcon: { marginRight: 12 },
   itemLabel: { color: Colors.text },
 });

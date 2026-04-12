@@ -1,4 +1,4 @@
-import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, View, useWindowDimensions, InteractionManager } from 'react-native';
 import { Appbar, FAB } from 'react-native-paper';
 import { TabView, TabBar } from 'react-native-tab-view';
 import { useNavigation, useIsFocused, CommonActions, DrawerActions } from '@react-navigation/native';
@@ -57,16 +57,16 @@ export default function TodoScreen() {
 
   useEffect(() => {
     if (!isFocused) return;
-    runDueDateCheck().then(() => {
-      queryClient.invalidateQueries({ queryKey: ['todos'] });
+    const task = InteractionManager.runAfterInteractions(() => {
+      runDueDateCheck().then((changed) => {
+        if (changed) queryClient.invalidateQueries({ queryKey: ['todos'] });
+      });
     });
+    return () => task.cancel();
   }, [isFocused, queryClient]);
 
   const handleTabIndexChange = (index: number) => {
     setTabIndex(index);
-    runDueDateCheck().then(() => {
-      queryClient.invalidateQueries({ queryKey: ['todos'] });
-    });
   };
 
   const showFab = tabIndex === 0 || tabIndex === 1;
