@@ -73,7 +73,7 @@ export default function TodoScreen() {
 
   return (
     <View style={styles.container}>
-      <Appbar.Header>
+      <Appbar.Header style={styles.header}>
         <Appbar.Action icon="menu" onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
         <Appbar.Content title="CheckCheck" titleStyle={{ fontWeight: '700' }} />
         <Appbar.Action icon="cog-outline" onPress={() => navigation.navigate('SettingsMain' as never)} />
@@ -111,6 +111,7 @@ export default function TodoScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
+  header: { height: 72 },
   tabBar: { backgroundColor: Colors.surface },
   indicator: { backgroundColor: Colors.primary },
   fab: { position: 'absolute', right: 16, bottom: 16 },

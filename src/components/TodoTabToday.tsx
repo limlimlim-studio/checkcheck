@@ -68,6 +68,7 @@ export default function TodoTabToday() {
       ItemSeparatorComponent={() => <Divider />}
       renderItem={renderTodoItem}
       onDragEnd={({ data }) => reorderTodos(data.map((t) => t.id))}
+      activationDistance={20}
       autoscrollThreshold={80}
       autoscrollSpeed={200}
       containerStyle={styles.list}

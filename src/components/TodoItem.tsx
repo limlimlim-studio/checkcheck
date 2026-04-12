@@ -1,4 +1,5 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { useRef } from 'react';
 import { Text, Checkbox } from 'react-native-paper';
 import { Colors } from '../theme';
 import { LEVEL_LABELS } from '../constants/todo';
@@ -35,6 +36,7 @@ const IMPORTANCE_COLOR = Colors.importance;
 
 export default function TodoItem({ todo, category, onToggle, onPress, onDrag, isDragging, forceCompleted }: Props) {
   const showAsCompleted = todo.isCompleted === 1 || forceCompleted;
+  const pressStartX = useRef(0);
   const dueDateStr = todo.dueDate
     ? new Date(todo.dueDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })
     : null;
@@ -51,7 +53,13 @@ export default function TodoItem({ todo, category, onToggle, onPress, onDrag, is
         />
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.content} onPress={onPress} onLongPress={onDrag} activeOpacity={0.7}>
+      <TouchableOpacity
+        style={styles.content}
+        onPressIn={(e) => { pressStartX.current = e.nativeEvent.pageX; }}
+        onPress={(e) => { if (Math.abs(e.nativeEvent.pageX - pressStartX.current) < 10) onPress(); }}
+        onLongPress={onDrag}
+        activeOpacity={0.7}
+      >
         <Text
           variant="bodyLarge"
           style={[styles.titleText, showAsCompleted && styles.completed]}

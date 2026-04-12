@@ -60,6 +60,7 @@ export default function TodoTabList() {
       }
       renderItem={renderItem}
       onDragEnd={({ data }) => reorderTodos(data.map((t) => t.id))}
+      activationDistance={20}
       autoscrollThreshold={80}
       autoscrollSpeed={200}
       containerStyle={styles.list}

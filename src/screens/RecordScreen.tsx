@@ -18,7 +18,7 @@ export default function RecordScreen() {
 
   return (
     <View style={styles.container}>
-      <Appbar.Header>
+      <Appbar.Header style={styles.header}>
         <Appbar.Action icon="menu" onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
         <Appbar.Content title="CheckCheck" titleStyle={{ fontWeight: '700' }} />
         <Appbar.Action icon="cog-outline" onPress={() => navigation.navigate('SettingsMain' as never)} />
@@ -65,6 +65,7 @@ export default function RecordScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
+  header: { height: 72 },
   yearRow: {
     flexDirection: 'row',
     alignItems: 'center',
