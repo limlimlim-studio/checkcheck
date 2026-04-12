@@ -13,8 +13,11 @@ import { LEVEL_OPTIONS } from '../constants/todo';
 type Nav = NativeStackNavigationProp<TodoStackParamList, 'TodoForm'>;
 type Route = RouteProp<TodoStackParamList, 'TodoForm'>;
 
-const today = new Date();
-today.setHours(0, 0, 0, 0);
+function getTodayMidnight() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
 
 export default function TodoFormScreen() {
   const navigation = useNavigation<Nav>();
@@ -29,7 +32,7 @@ export default function TodoFormScreen() {
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [dueDate, setDueDate] = useState<Date>(new Date(today));
+  const [dueDate, setDueDate] = useState<Date>(getTodayMidnight);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
 
@@ -41,7 +44,7 @@ export default function TodoFormScreen() {
   useEffect(() => {
     setTitle(todo?.title ?? '');
     setDescription(todo?.description ?? '');
-    setDueDate(todo?.dueDate ? new Date(todo.dueDate) : new Date(today));
+    setDueDate(todo?.dueDate ? new Date(todo.dueDate) : getTodayMidnight());
     setUrgency(String(todo?.urgency ?? 0));
     setImportance(String(todo?.importance ?? 0));
     setCategoryId(todo?.categoryId ?? (categories[0]?.id ?? null));
@@ -52,7 +55,7 @@ export default function TodoFormScreen() {
     const data = {
       title: title.trim(),
       description: description.trim() || undefined,
-      dueDate: dueDate.getTime(),
+      dueDate: new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()).getTime(),
       urgency: Number(urgency),
       importance: Number(importance),
       categoryId,
@@ -127,7 +130,10 @@ export default function TodoFormScreen() {
             locale="ko"
             textColor="#F2F2F7"
             onChange={(_, date) => {
-              if (date) setDueDate(date);
+              if (date) {
+                const midnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                setDueDate(midnight);
+              }
             }}
           />
         )}
