@@ -111,13 +111,16 @@ export const useTodayToggle = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todayCompletionIds'] });
+      queryClient.invalidateQueries({ queryKey: ['todos', 'list'] });
       queryClient.invalidateQueries({ queryKey: ['completions'], exact: false });
     },
   });
 };
 
-/** 기한 체크: 기한이 지난 항목 중 완료 기록 있으면 isCompleted=1로 마이그레이션.
- *  하루 1회만 실행 (JS 스레드 동기 SQLite 블로킹 최소화) */
+/** 기한/완료 체크: 아래 두 조건 중 하나라도 해당하면 isCompleted=1로 이동.
+ *  1. 기한이 지난 항목 중 완료 기록이 있는 경우
+ *  2. 기한에 관계없이 이전 날짜에 완료 기록된 항목 (어제 이전에 체크한 항목)
+ *  앱 포그라운드 진입 및 탭 포커스 시 실행, 하루 1회만 실제 처리 */
 let _lastDueDateCheckDate = '';
 
 export const runDueDateCheck = async (): Promise<boolean> => {
@@ -126,11 +129,13 @@ export const runDueDateCheck = async (): Promise<boolean> => {
   _lastDueDateCheckDate = today;
 
   const todayStart = dayjs().startOf('day').valueOf();
+  let changed = false;
+
+  // 1. 기한이 지난 항목 중 완료 기록 있는 경우
   const overdueTodos = db.select().from(todos)
     .where(and(eq(todos.isCompleted, 0), eq(todos.isDeleted, 0), lt(todos.dueDate, todayStart)))
     .all();
 
-  let changed = false;
   for (const todo of overdueTodos) {
     const completion = db.select().from(todoCompletions)
       .where(eq(todoCompletions.todoId, todo.id))
@@ -145,6 +150,29 @@ export const runDueDateCheck = async (): Promise<boolean> => {
       changed = true;
     }
   }
+
+  // 2. 이전 날짜에 체크된 항목 (오늘 이전 completedDate 기록이 있는 미완료 항목)
+  const prevCompletions = db.select({ todoId: todoCompletions.todoId })
+    .from(todoCompletions)
+    .where(lt(todoCompletions.completedDate, today))
+    .all();
+
+  const prevIds = [...new Set(prevCompletions.map((r) => r.todoId))];
+  for (const id of prevIds) {
+    const todo = db.select().from(todos)
+      .where(and(eq(todos.id, id), eq(todos.isCompleted, 0), eq(todos.isDeleted, 0)))
+      .get();
+    if (todo) {
+      const now = Date.now();
+      await db.update(todos).set({
+        isCompleted: 1,
+        completedAt: now,
+        updatedAt: now,
+      }).where(eq(todos.id, id)).run();
+      changed = true;
+    }
+  }
+
   return changed;
 };
 
@@ -244,6 +272,7 @@ export const useToggleTodo = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todos'] });
+      queryClient.invalidateQueries({ queryKey: ['todayCompletionIds'] });
       queryClient.invalidateQueries({ queryKey: ['completions'], exact: false });
     },
   });
