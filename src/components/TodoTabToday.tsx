@@ -11,6 +11,7 @@ import { useRoutinesToday, useToggleRoutineCompletion } from '../hooks/useRoutin
 import { useCategories } from '../hooks/useCategories';
 import TodoItem from './TodoItem';
 import RoutineItem from './RoutineItem';
+import TodayProgressBar from './TodayProgressBar';
 import { TodoStackParamList } from '../navigation/TodoStack';
 
 type Nav = NativeStackNavigationProp<TodoStackParamList, 'TodoList'>;
@@ -45,6 +46,28 @@ export default function TodoTabToday() {
     [categories],
   );
 
+  const progressData = useMemo(() => {
+    const countMap = new Map<number, number>();
+    for (const r of routines) {
+      if (r.isCompletedToday) {
+        countMap.set(r.categoryId, (countMap.get(r.categoryId) ?? 0) + 1);
+      }
+    }
+    for (const t of todos) {
+      if (completedIds.has(t.id)) {
+        countMap.set(t.categoryId, (countMap.get(t.categoryId) ?? 0) + 1);
+      }
+    }
+    const segments = [...countMap.entries()].map(([categoryId, count]) => ({
+      categoryId,
+      color: categoryMap.get(categoryId)?.color ?? Colors.textMuted,
+      count,
+    }));
+    const totalCompleted = segments.reduce((sum, s) => sum + s.count, 0);
+    const total = routines.length + todos.length;
+    return { segments, totalCompleted, total };
+  }, [routines, todos, completedIds, categoryMap]);
+
   const renderTodoItem = ({ item, drag, isActive }: RenderItemParams<Todo>) => (
     <ScaleDecorator>
       <TodoItem
@@ -62,6 +85,12 @@ export default function TodoTabToday() {
   const isEmpty = routines.length === 0 && todos.length === 0;
 
   return (
+    <View style={styles.container}>
+      <TodayProgressBar
+        segments={progressData.segments}
+        totalCompleted={progressData.totalCompleted}
+        total={progressData.total}
+      />
     <DraggableFlatList
       data={todos as Todo[]}
       keyExtractor={(item) => `todo-${item.id}`}
@@ -105,10 +134,12 @@ export default function TodoTabToday() {
         </>
       }
     />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: { flex: 1 },
   list: { flex: 1 },
   sectionLabel: {
     color: Colors.textSecondary,
