@@ -5,7 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMemo } from 'react';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { Colors } from '../theme';
-import { useTodosList, useToggleTodo, useReorderTodos } from '../hooks/useTodos';
+import { useTodosList, useTodayCompletionIds, useTodayToggle, useReorderTodos } from '../hooks/useTodos';
 import { useCategories } from '../hooks/useCategories';
 import TodoItem from './TodoItem';
 import { TodoStackParamList } from '../navigation/TodoStack';
@@ -28,8 +28,9 @@ type Todo = {
 export default function TodoTabList() {
   const navigation = useNavigation<Nav>();
   const { data: todos = [] } = useTodosList();
+  const { data: completedIds = new Set<number>() } = useTodayCompletionIds();
   const { data: categories = [] } = useCategories();
-  const { mutate: toggleTodo } = useToggleTodo();
+  const { mutate: toggleTodo } = useTodayToggle();
   const { mutate: reorderTodos } = useReorderTodos();
 
   const categoryMap = useMemo(
@@ -42,7 +43,8 @@ export default function TodoTabList() {
       <TodoItem
         todo={item}
         category={categoryMap.get(item.categoryId)}
-        onToggle={() => toggleTodo({ id: item.id, isCompleted: item.isCompleted })}
+        forceCompleted={completedIds.has(item.id)}
+        onToggle={() => toggleTodo(item.id)}
         onPress={() => navigation.navigate('TodoForm', { todo: item })}
         onDrag={drag}
         isDragging={isActive}
