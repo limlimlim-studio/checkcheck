@@ -129,6 +129,7 @@ export default function TodoFormScreen() {
             display="spinner"
             locale="ko"
             textColor="#F2F2F7"
+            minimumDate={getTodayMidnight()}
             onChange={(_, date) => {
               if (date) {
                 const midnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
