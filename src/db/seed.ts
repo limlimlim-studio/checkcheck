@@ -21,7 +21,7 @@ import { eq } from 'drizzle-orm';
 import { db } from './index';
 import { categories, todos, todoCompletions, appSettings } from './schema';
 
-const SEED_KEY = 'seed_v3';
+const SEED_KEY = 'seed_v6';
 
 // 카테고리별 하루 완료 확률 (0~1) — 다양한 패턴 연출
 const CATEGORY_FREQUENCY: Record<string, number> = {
@@ -74,7 +74,7 @@ export async function runDevSeed() {
     if (result) seedTodoIds[cat.id] = result.id;
   }
 
-  // 완료 탭 확인용 — 최근 30일에 걸쳐 다양한 날짜의 완료 todo 생성
+  // 완료 탭 확인용 — 최근 400일에 걸쳐 다양한 날짜의 완료 todo 생성 (1/6/12개월 필터 테스트)
   const COMPLETED_TODO_TITLES: Record<string, string[]> = {
     업무: ['기획서 작성', '팀 미팅 참석', '코드 리뷰', '보고서 제출', '이메일 정리', '주간 회의'],
     개인: ['독서 30분', '일기 쓰기', '방 청소', '친구 연락', '영화 보기', '요리하기'],
@@ -89,7 +89,7 @@ export async function runDevSeed() {
     isCompleted: number; completedAt: number; createdAt: number; updatedAt: number;
   }[] = [];
 
-  for (let daysAgo = 0; daysAgo <= 30; daysAgo++) {
+  for (let daysAgo = 0; daysAgo <= 400; daysAgo++) {
     const date = new Date(today);
     date.setDate(date.getDate() - daysAgo);
     const ts = date.getTime() + 9 * 60 * 60 * 1000; // 오전 9시 기준

@@ -22,6 +22,5 @@ export function formatDateLabel(ts: number | null | undefined): string {
 
   if (d.isSame(today)) return '오늘';
   if (d.isSame(today.subtract(1, 'day'))) return '어제';
-  if (d.year() === today.year()) return d.format('M월 D일');
   return d.format('YYYY년 M월 D일');
 }
