@@ -22,28 +22,38 @@ argument-hint: "[init | next | 단계번호 | status | done]"
    - 단계 제목은 한국어로 간결하게 (예: "기반 세팅", "광고 배너 구현", "인앱 구매 구현")
    - 각 단계에 포함되는 플랜 항목 명시
 
-3. 각 단계별로 GitHub 이슈를 순서대로 생성해 (`gh issue create`):
+3. **메인 이슈 먼저 생성** (`gh issue create`):
+   - 제목: 플랜 전체를 아우르는 기능 제목 (예: "내비게이션 구조 개편")
+   - 본문: 배경/목적 + 전체 단계 목록 (체크리스트 형식)
+   - `[Phase N] {제목}` 형식으로 각 서브 이슈를 예고
+   - 생성된 이슈 번호를 `mainIssueNumber`로 저장
+
+4. **각 단계별 서브 이슈 생성** (`gh issue create`):
    - 제목: `[Phase N] {단계 제목}` 형식
+   - 본문 첫 줄: `Part of #{{mainIssueNumber}}` (메인 이슈 연결)
    - 본문: 해당 단계의 구현 항목 체크리스트
    - CLAUDE.md 프로젝트 컨벤션 준수
 
-4. `.claude/phase-map.json`에 저장:
+5. `.claude/phase-map.json`에 저장:
    ```json
    {
      "planFile": "{플랜 파일명}",
+     "mainIssueNumber": {메인이슈번호},
      "phases": [
        {
          "number": 1,
          "title": "{단계 제목}",
-         "issueNumber": {이슈번호},
-         "branch": "feature/issue-{번호}/{kebab-title}",
+         "issueNumber": {서브이슈번호},
+         "branch": "feature/issue-{메인번호}/{kebab-title}",
          "status": "pending"
        }
      ]
    }
    ```
+   - 브랜치명은 메인 이슈 번호 기준으로 생성 (`feature/issue-{mainIssueNumber}/...`)
+   - 커밋 prefix도 메인 이슈 번호 기준 (`feat: #{mainIssueNumber}`)
 
-5. 1단계 구현 시작 (아래 "단계 구현" 참고)
+6. 1단계 구현 시작 (아래 "단계 구현" 참고)
 
 ---
 
@@ -124,7 +134,20 @@ Phase  제목                  이슈  브랜치              상태
 ---
 
 ## Git/GitHub 컨벤션
-- 브랜치: `feature/issue-{번호}/{kebab-case-title}`
-- 커밋 prefix: `feat: #{번호}`
+- 브랜치: `feature/issue-{mainIssueNumber}/{kebab-case-title}` (메인 이슈 번호 기준)
+- 커밋 prefix: `feat: #{mainIssueNumber}` (메인 이슈 번호 기준)
 - PR 타겟: 항상 `develop`
-- 이슈 제목에 `[Phase N]` 접두사 포함
+- PR 본문에 서브 이슈 `Closes #{subIssueNumber}` 포함
+
+## 이슈 구조 예시
+
+```
+메인 이슈 #100: 내비게이션 구조 개편
+  ├── 서브 이슈 #101: [Phase 1] RootNavigator 기반 세팅  (Part of #100)
+  ├── 서브 이슈 #102: [Phase 2] 3-dot 메뉴 구현          (Part of #100)
+  └── 서브 이슈 #103: [Phase 3] Drawer 제거 및 정리      (Part of #100)
+
+브랜치: feature/issue-100/navigation-restructure
+커밋:   feat: #100 RootNavigator 기반 세팅
+PR:     Closes #101
+```
