@@ -14,7 +14,6 @@ import BannerAdView from '../components/BannerAdView';
 import TodoTabToday from '../components/TodoTabToday';
 import TodoTabList from '../components/TodoTabList';
 import TodoTabOverdue from '../components/TodoTabOverdue';
-import TodoTabCompleted from '../components/TodoTabCompleted';
 
 type Nav = NativeStackNavigationProp<TodoStackParamList, 'TodoList'>;
 
@@ -22,7 +21,6 @@ const ROUTES = [
   { key: 'today', title: '오늘' },
   { key: 'list', title: '할 일' },
   { key: 'overdue', title: '미완료' },
-  { key: 'completed', title: '완료' },
 ];
 
 const renderScene = ({ route }: { route: { key: string } }) => {
@@ -30,7 +28,6 @@ const renderScene = ({ route }: { route: { key: string } }) => {
     case 'today': return <TodoTabToday />;
     case 'list': return <TodoTabList />;
     case 'overdue': return <TodoTabOverdue />;
-    case 'completed': return <TodoTabCompleted />;
     default: return null;
   }
 };
