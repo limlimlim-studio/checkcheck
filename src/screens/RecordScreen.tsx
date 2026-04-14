@@ -1,17 +1,21 @@
 import { useState } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
-import { Appbar, Text, IconButton } from 'react-native-paper';
+import { Appbar, Text, IconButton, TouchableRipple } from 'react-native-paper';
 import { useNavigation, DrawerActions } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Colors } from '../theme';
 import { useCategories } from '../hooks/useCategories';
 import { useEarliestCompletionYear } from '../hooks/useCompletions';
 import ContributionGrid from '../components/ContributionGrid';
 import BannerAdView from '../components/BannerAdView';
+import { RecordStackParamList } from '../navigation/RecordStack';
+
+type Nav = NativeStackNavigationProp<RecordStackParamList, 'RecordHome'>;
 
 const CURRENT_YEAR = new Date().getFullYear();
 
 export default function RecordScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<Nav>();
   const [year, setYear] = useState(CURRENT_YEAR);
   const { data: categories = [] } = useCategories();
   const { data: earliestYear = CURRENT_YEAR } = useEarliestCompletionYear();
@@ -43,17 +47,32 @@ export default function RecordScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         {categories.map((category) => (
           <View key={category.id} style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <View style={[styles.dot, { backgroundColor: category.color }]} />
-              <Text variant="titleSmall" style={styles.categoryName}>
-                {category.name}
-              </Text>
-              {category.description ? (
-                <Text variant="bodySmall" style={styles.categoryDesc} numberOfLines={1} ellipsizeMode="tail">
-                  {category.description}
+            <TouchableRipple
+              onPress={() => navigation.navigate('CategoryCompleted', {
+                categoryId: category.id,
+                categoryName: category.name,
+                categoryColor: category.color,
+              })}
+              rippleColor={Colors.surfaceVariant}
+            >
+              <View style={styles.sectionHeader}>
+                <View style={[styles.dot, { backgroundColor: category.color }]} />
+                <Text variant="titleSmall" style={styles.categoryName}>
+                  {category.name}
                 </Text>
-              ) : null}
-            </View>
+                {category.description ? (
+                  <Text variant="bodySmall" style={styles.categoryDesc} numberOfLines={1} ellipsizeMode="tail">
+                    {category.description}
+                  </Text>
+                ) : null}
+                <IconButton
+                  icon="chevron-right"
+                  size={16}
+                  iconColor={Colors.textMuted}
+                  style={styles.chevron}
+                />
+              </View>
+            </TouchableRipple>
             <ContributionGrid categoryId={category.id} color={category.color} year={year} />
           </View>
         ))}
@@ -87,7 +106,9 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 10,
     paddingHorizontal: 12,
+    paddingVertical: 4,
   },
+  chevron: { marginLeft: 'auto', margin: 0 },
   dot: { width: 10, height: 10, borderRadius: 5 },
   categoryName: { color: Colors.text },
   categoryDesc: { color: Colors.textMuted, flexShrink: 1 },

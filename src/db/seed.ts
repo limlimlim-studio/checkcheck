@@ -21,7 +21,7 @@ import { eq } from 'drizzle-orm';
 import { db } from './index';
 import { categories, todos, todoCompletions, appSettings } from './schema';
 
-const SEED_KEY = 'seed_v6';
+const SEED_KEY = 'seed_v7';
 
 // 카테고리별 하루 완료 확률 (0~1) — 다양한 패턴 연출
 const CATEGORY_FREQUENCY: Record<string, number> = {
@@ -84,8 +84,53 @@ export async function runDevSeed() {
     미분류: ['메모 정리', '사진 백업', '앱 업데이트'],
   };
 
+  const COMPLETED_TODO_DESCRIPTIONS: Record<string, string[]> = {
+    업무: [
+      '3분기 목표 대비 달성률 정리, 주요 지표 시각화 포함',
+      '팀원 5명 참석, 다음 스프린트 우선순위 결정',
+      'PR #42 리뷰 완료, 성능 관련 코멘트 2건 남김',
+      '경영진 보고용 주간 실적 요약 작성 및 제출',
+      '받은 편지함 50건 처리, 중요 건 5건 별도 분류',
+      '팀 전체 현황 공유, 블로커 이슈 2건 논의',
+    ],
+    개인: [
+      '원자 습관 3장까지 완독, 핵심 내용 메모',
+      '오늘 있었던 일 3가지 기록, 감사한 점 작성',
+      '거실·주방 청소 완료, 분리수거 처리',
+      '오랜만에 통화, 다음 달 만남 약속',
+      '넷플릭스로 감상, 리뷰 메모 남김',
+      '파스타 직접 만들기, 레시피 저장해둠',
+    ],
+    운동: [
+      '한강 코스 완주, 페이스 5:30/km 유지',
+      '하체 위주 루틴, 스쿼트 100개 달성',
+      '기상 직후 15분 전신 스트레칭',
+      '공원 코스 12km, 날씨 맑아서 쾌적했음',
+      '수영장 25m × 20랩 완료',
+      '요가 매트 꺼내서 40분 플로우 진행',
+    ],
+    학습: [
+      '프로그래머스 Level 2 문제 2개 풀이, 시간복잡도 분석',
+      '단어 50개 복습, 틀린 것 15개 재암기',
+      '인프런 강의 2강 수강, 실습 코드 따라치기',
+      '이번 주 읽은 챕터 요약 정리 완료',
+      '오늘 배운 것 정리해서 노션에 업로드',
+      '기능 구현 3시간, 커밋 메시지 작성까지 완료',
+    ],
+    쇼핑: [
+      '주간 식재료 구매, 채소·단백질 위주로 담음',
+      '화장지, 세제, 샴푸 등 재고 보충',
+      '쿠팡에서 주문 완료, 내일 도착 예정',
+    ],
+    미분류: [
+      '노션 받은 받침함 정리, 불필요한 페이지 삭제',
+      '갤러리 정리 및 구글 포토 백업 완료',
+      'iOS 17.4 업데이트 설치 완료',
+    ],
+  };
+
   const completedTodoValues: {
-    categoryId: number; title: string; sortOrder: number;
+    categoryId: number; title: string; description: string | null; sortOrder: number;
     isCompleted: number; completedAt: number; createdAt: number; updatedAt: number;
   }[] = [];
 
@@ -96,14 +141,18 @@ export async function runDevSeed() {
 
     for (const cat of allCategories) {
       const titles = COMPLETED_TODO_TITLES[cat.name] ?? COMPLETED_TODO_TITLES['미분류'];
+      const descriptions = COMPLETED_TODO_DESCRIPTIONS[cat.name] ?? COMPLETED_TODO_DESCRIPTIONS['미분류'];
       // 날짜마다 0~3개 랜덤 생성
       const count = Math.floor(Math.random() * 4);
-      const shuffled = [...titles].sort(() => Math.random() - 0.5).slice(0, count);
-      for (const title of shuffled) {
+      const shuffled = [...titles.keys()].sort(() => Math.random() - 0.5).slice(0, count);
+      for (const idx of shuffled) {
         const offset = Math.floor(Math.random() * 8 * 60 * 60 * 1000); // 최대 8시간 내 랜덤
+        // 절반 확률로 설명 포함
+        const description = Math.random() > 0.5 ? descriptions[idx % descriptions.length] : null;
         completedTodoValues.push({
           categoryId: cat.id,
-          title,
+          title: titles[idx],
+          description,
           sortOrder: -9998,
           isCompleted: 1,
           completedAt: ts + offset,

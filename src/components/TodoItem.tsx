@@ -30,6 +30,7 @@ type Props = {
   isDragging?: boolean;
   forceCompleted?: boolean; // 오늘 탭: isCompleted=0이어도 체크된 것처럼 표시
   showCheckbox?: boolean;   // 기본 false이면 선택 모드일 때만 체크박스 표시
+  showDescription?: boolean; // 설명 표시 (최대 2줄, 말줄임)
   isSelecting?: boolean;    // 다중 선택 모드
   isSelected?: boolean;     // 선택됨 여부
 };
@@ -37,7 +38,7 @@ type Props = {
 const URGENCY_COLOR = Colors.urgency;
 const IMPORTANCE_COLOR = Colors.importance;
 
-export default function TodoItem({ todo, category, onToggle, onPress, onDrag, isDragging, forceCompleted, showCheckbox = true, isSelecting, isSelected }: Props) {
+export default function TodoItem({ todo, category, onToggle, onPress, onDrag, isDragging, forceCompleted, showCheckbox = true, showDescription, isSelecting, isSelected }: Props) {
   const showAsCompleted = !isSelecting && showCheckbox && (todo.isCompleted === 1 || forceCompleted);
   const checkboxStatus = isSelecting ? (isSelected ? 'checked' : 'unchecked') : (showAsCompleted ? 'checked' : 'unchecked');
   const checkboxVisible = isSelecting || showCheckbox;
@@ -79,6 +80,16 @@ export default function TodoItem({ todo, category, onToggle, onPress, onDrag, is
         >
           {todo.title}
         </Text>
+        {showDescription && !!todo.description && (
+          <Text
+            variant="bodySmall"
+            style={styles.descriptionText}
+            numberOfLines={2}
+            ellipsizeMode="tail"
+          >
+            {todo.description}
+          </Text>
+        )}
         <View style={styles.meta}>
           {category && (
             <View style={[styles.categoryDot, { backgroundColor: category.color }]} />
@@ -128,6 +139,7 @@ const styles = StyleSheet.create({
   content: { flex: 1, marginLeft: 4, paddingVertical: 4 },
   titleText: { flexShrink: 1 },
   completed: { textDecorationLine: 'line-through', color: Colors.textMuted },
+  descriptionText: { color: Colors.textSecondary, marginTop: 2 },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' },
   categoryDot: { width: 8, height: 8, borderRadius: 4 },
   metaText: { color: Colors.textSecondary },
