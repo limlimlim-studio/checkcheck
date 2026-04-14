@@ -14,14 +14,14 @@
       "title": "헤더 3-dot 메뉴 구현",
       "issueNumber": 99,
       "branch": "feature/issue-97/header-three-dot-menu",
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "number": 3,
       "title": "Drawer 제거 및 관련 파일 정리",
       "issueNumber": 100,
       "branch": "feature/issue-97/remove-drawer",
-      "status": "pending"
+      "status": "in_progress"
     }
   ]
 }

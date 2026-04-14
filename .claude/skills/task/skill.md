@@ -100,6 +100,51 @@ argument-hint: "[init | next | 단계번호 | status | done]"
 
 ---
 
+### `$ARGUMENTS`가 `all`일 때 → 자동 전체 완료 모드
+
+모든 `pending` 단계가 없어질 때까지 아래 루프를 반복해:
+
+1. `.claude/phase-map.json`을 읽어 다음 `pending` 단계를 찾아.
+   - 없으면 루프 종료 → `done` 흐름으로 이동
+
+2. 현재 `in_progress` 단계가 있으면 `"done"`으로 업데이트.
+
+3. **브랜치 생성**:
+   ```
+   git checkout develop && git pull origin develop
+   git checkout -b {branch}
+   ```
+
+4. **해당 단계의 모든 구현 항목을 완료**해. 플랜 파일과 이슈 내용을 참고.
+
+5. `.claude/phase-map.json`에서 해당 단계 `status`를 `"in_progress"`로 업데이트.
+
+6. **apply**: 변경 사항을 커밋 → 푸시 → PR 생성 (apply 스킬 로직과 동일하게 직접 실행):
+   - `git add -A`
+   - `git commit -m "feat: #{mainIssueNumber} {단계 제목}"`
+   - `git push -u origin {branch}`
+   - `gh pr create --base develop --title "#{subIssueNumber} {이슈 제목}" --body "..."`
+
+7. **merge**: PR을 squash 머지하고 브랜치 삭제 후 develop으로 복귀 (merge 스킬 로직과 동일하게 직접 실행):
+   - `gh pr merge {pr번호} --squash --delete-branch`
+   - `git branch -d {branch} 2>/dev/null || true`
+   - `git checkout develop && git pull origin develop`
+
+8. 해당 단계 `status`를 `"done"`으로 업데이트.
+
+9. 진행 상황 출력:
+   ```
+   ✅ Phase {N} 완료: {단계 제목}
+      커밋: feat: #{mainIssueNumber} {단계 제목}
+      PR: {PR URL} → merged
+   ```
+
+10. 1번으로 돌아가 반복.
+
+루프 종료 후 `done` 흐름 실행.
+
+---
+
 ### `$ARGUMENTS`가 `done`일 때
 
 `.claude/phase-map.json`의 모든 단계 `status`를 확인하고 완료 요약 출력:
