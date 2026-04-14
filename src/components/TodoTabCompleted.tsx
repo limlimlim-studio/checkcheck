@@ -1,10 +1,11 @@
 import { View, FlatList, StyleSheet } from 'react-native';
-import { Text, Divider, Button, Dialog, Portal, FAB } from 'react-native-paper';
+import { Text, Divider, Button, Menu } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMemo, useState } from 'react';
 import { Colors } from '../theme';
-import { useTodosCompleted, useToggleTodo, useClearCompleted } from '../hooks/useTodos';
+import dayjs from 'dayjs';
+import { useTodosCompleted, useToggleTodo } from '../hooks/useTodos';
 import { useCategories } from '../hooks/useCategories';
 import TodoItem from './TodoItem';
 import { toDateKey, formatDateLabel } from '../utils/date';
@@ -43,20 +44,34 @@ function buildCompletedList(todos: Todo[]): ListItem[] {
   return result;
 }
 
+type PeriodValue = '1m' | '6m' | '12m';
+const PERIOD_OPTIONS: { value: PeriodValue; label: string; days: number }[] = [
+  { value: '1m', label: '1개월', days: 30 },
+  { value: '6m', label: '6개월', days: 180 },
+  { value: '12m', label: '12개월', days: 365 },
+];
+
 export default function TodoTabCompleted() {
   const navigation = useNavigation<Nav>();
-  const [clearDialogVisible, setClearDialogVisible] = useState(false);
-  const { data: todos = [] } = useTodosCompleted();
+  const [period, setPeriod] = useState<PeriodValue>('1m');
+  const [menuVisible, setMenuVisible] = useState(false);
+
+  const { data: allTodos = [] } = useTodosCompleted();
   const { data: categories = [] } = useCategories();
   const { mutate: toggleTodo } = useToggleTodo();
-  const { mutate: clearCompleted } = useClearCompleted();
 
   const categoryMap = useMemo(
     () => new Map(categories.map((c) => [c.id, c])),
-    [categories]
+    [categories],
   );
 
-  const completedList = buildCompletedList(todos as Todo[]);
+  const todos = useMemo(() => {
+    const days = PERIOD_OPTIONS.find((o) => o.value === period)?.days ?? 30;
+    const cutoff = dayjs().subtract(days, 'day').startOf('day').valueOf();
+    return (allTodos as Todo[]).filter((t) => t.completedAt != null && t.completedAt >= cutoff);
+  }, [allTodos, period]);
+
+  const completedList = buildCompletedList(todos);
 
   const renderItem = ({ item }: { item: ListItem }) => {
     if (item.type === 'header') {
@@ -78,6 +93,35 @@ export default function TodoTabCompleted() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.filterRow}>
+        <Menu
+          visible={menuVisible}
+          onDismiss={() => setMenuVisible(false)}
+          anchor={
+            <Button
+              mode="text"
+              compact
+              icon="chevron-down"
+              contentStyle={styles.filterBtnContent}
+              labelStyle={styles.filterBtnLabel}
+              onPress={() => setMenuVisible(true)}
+            >
+              {PERIOD_OPTIONS.find((o) => o.value === period)?.label}
+            </Button>
+          }
+          anchorPosition="bottom"
+        >
+          {PERIOD_OPTIONS.map((opt) => (
+            <Menu.Item
+              key={opt.value}
+              title={opt.label}
+              titleStyle={period === opt.value ? styles.menuItemActive : undefined}
+              onPress={() => { setPeriod(opt.value); setMenuVisible(false); }}
+            />
+          ))}
+        </Menu>
+      </View>
+
       <FlatList
         data={completedList}
         keyExtractor={(item) =>
@@ -89,46 +133,24 @@ export default function TodoTabCompleted() {
         }
         style={styles.list}
       />
-
-      {todos.length > 0 && (
-        <FAB
-          size="small"
-          icon="delete-sweep"
-          style={styles.fab}
-          onPress={() => setClearDialogVisible(true)}
-        />
-      )}
-
-      <Portal>
-        <Dialog visible={clearDialogVisible} onDismiss={() => setClearDialogVisible(false)}>
-          <Dialog.Title>완료 목록 비우기</Dialog.Title>
-          <Dialog.Content>
-            <Text>완료된 할 일이 목록에서 삭제됩니다.{'\n'}완료 기록은 기록 탭에 유지됩니다.</Text>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={() => setClearDialogVisible(false)}>취소</Button>
-            <Button
-              textColor={Colors.danger}
-              onPress={() => { clearCompleted(); setClearDialogVisible(false); }}
-            >
-              비우기
-            </Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  filterRow: {
+    alignItems: 'flex-end',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: Colors.border,
+  },
+  filterBtnContent: { flexDirection: 'row-reverse' },
+  filterBtnLabel: { fontSize: 13, color: Colors.textSecondary },
+  menuItemActive: { color: Colors.primary },
   list: { flex: 1 },
   empty: { textAlign: 'center', marginTop: 60, color: Colors.textMuted },
-  fab: {
-    position: 'absolute',
-    right: 16,
-    bottom: 16,
-  },
   dateHeader: {
     paddingHorizontal: 16,
     paddingTop: 20,

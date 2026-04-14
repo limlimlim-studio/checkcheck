@@ -67,7 +67,7 @@ export const useTodosOverdue = () => {
   });
 };
 
-/** 완료 탭: 완료된 항목, 최신순 */
+/** 완료 탭: 완료된 항목 전체, 최신순 */
 export const useTodosCompleted = () =>
   useQuery({
     queryKey: ['todos', 'completed'],
