@@ -1,17 +1,15 @@
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, FlatList } from 'react-native';
 import { Text, Divider } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMemo } from 'react';
-import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import dayjs from 'dayjs';
 import { Colors } from '../theme';
-import { useTodosToday, useTodayCompletionIds, useTodayToggle, useReorderTodos } from '../hooks/useTodos';
+import { useTodosToday, useTodayCompletionIds, useTodayToggle } from '../hooks/useTodos';
 import { useRoutinesToday, useToggleRoutineCompletion } from '../hooks/useRoutines';
 import { useCategories } from '../hooks/useCategories';
 import { useCategoryMap } from '../hooks/useCategoryMap';
 import { useCheckable } from '../hooks/useCheckable';
-import { useDraggable } from '../hooks/useDraggable';
 import TodoItem from './TodoItem';
 import RoutineItem from './RoutineItem';
 import TodayProgressBar from './TodayProgressBar';
@@ -27,15 +25,12 @@ export default function TodoTabToday() {
   const { data: routines = [] } = useRoutinesToday();
   const { data: categories = [] } = useCategories();
   const { mutate: todayToggle } = useTodayToggle();
-  const { mutate: reorderTodos } = useReorderTodos();
   const { mutate: toggleRoutine } = useToggleRoutineCompletion();
 
   const today = dayjs().format('YYYY-MM-DD');
 
   const categoryMap = useCategoryMap(categories);
   const getCheckable = useCheckable({ mode: 'today', completedIds, toggleFn: todayToggle });
-  const { onDragEnd, activationDistance, autoscrollThreshold, autoscrollSpeed } =
-    useDraggable<Todo>({ reorderFn: reorderTodos });
 
   const progressData = useMemo(() => {
     const countMap = new Map<number, number>();
@@ -59,21 +54,17 @@ export default function TodoTabToday() {
     return { segments, totalCompleted, total };
   }, [routines, todos, completedIds, categoryMap]);
 
-  const renderTodoItem = ({ item, drag, isActive }: RenderItemParams<Todo>) => {
+  const renderTodoItem = ({ item }: { item: Todo }) => {
     const { checked, onCheck } = getCheckable(item);
     return (
-      <ScaleDecorator>
-        <TodoItem
-          todo={item}
-          category={categoryMap.get(item.categoryId)}
-          checked={checked}
-          onCheck={onCheck}
-          onPress={() => navigation.navigate('TodoForm', { todo: item })}
-          onDrag={drag}
-          isDragging={isActive}
-          showDescription
-        />
-      </ScaleDecorator>
+      <TodoItem
+        todo={item}
+        category={categoryMap.get(item.categoryId)}
+        checked={checked}
+        onCheck={onCheck}
+        onPress={() => navigation.navigate('TodoForm', { todo: item })}
+        showDescription
+      />
     );
   };
 
@@ -86,16 +77,12 @@ export default function TodoTabToday() {
         totalCompleted={progressData.totalCompleted}
         total={progressData.total}
       />
-      <DraggableFlatList
+      <FlatList
         data={todos as Todo[]}
         keyExtractor={(item) => `todo-${item.id}`}
         ItemSeparatorComponent={() => <Divider />}
         renderItem={renderTodoItem}
-        onDragEnd={onDragEnd}
-        activationDistance={activationDistance}
-        autoscrollThreshold={autoscrollThreshold}
-        autoscrollSpeed={autoscrollSpeed}
-        containerStyle={styles.list}
+        style={styles.list}
         ListHeaderComponent={
           <>
             {routines.length > 0 && (
@@ -135,7 +122,7 @@ export default function TodoTabToday() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  list: { flex: 1 },
+  list: { flex: 1, backgroundColor: Colors.background },
   sectionLabel: {
     color: Colors.textSecondary,
     marginHorizontal: 16,

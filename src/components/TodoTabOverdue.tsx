@@ -1,15 +1,13 @@
 import { useState, useMemo } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, FlatList } from 'react-native';
 import { Text, Divider, Button, FAB, Dialog, Portal, Snackbar } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { Colors } from '../theme';
-import { useTodosOverdue, useToggleTodo, useReorderTodos, useBulkMoveToToday, useBulkDeleteTodos } from '../hooks/useTodos';
+import { useTodosOverdue, useToggleTodo, useBulkMoveToToday, useBulkDeleteTodos } from '../hooks/useTodos';
 import { useCategories } from '../hooks/useCategories';
 import { useCategoryMap } from '../hooks/useCategoryMap';
 import { useSelectable } from '../hooks/useSelectable';
-import { useDraggable } from '../hooks/useDraggable';
 import TodoItem from './TodoItem';
 import DateSeparator from './DateSeparator';
 import { TodoStackParamList } from '../navigation/TodoStack';
@@ -27,7 +25,7 @@ function buildGroupedList(todos: Todo[]): ListItem[] {
     if (a.dueDate === null && b.dueDate === null) return a.sortOrder - b.sortOrder;
     if (a.dueDate === null) return 1;
     if (b.dueDate === null) return -1;
-    return a.dueDate - b.dueDate || a.sortOrder - b.sortOrder;
+    return b.dueDate - a.dueDate || a.sortOrder - b.sortOrder;
   });
 
   const result: ListItem[] = [];
@@ -48,7 +46,6 @@ export default function TodoTabOverdue() {
   const { data: todos = [] } = useTodosOverdue();
   const { data: categories = [] } = useCategories();
   const { mutate: toggleTodo } = useToggleTodo();
-  const { mutate: reorderTodos } = useReorderTodos();
   const { mutate: bulkMoveToToday } = useBulkMoveToToday();
   const { mutate: bulkDelete } = useBulkDeleteTodos();
 
@@ -59,8 +56,6 @@ export default function TodoTabOverdue() {
   const categoryMap = useCategoryMap(categories);
   const { isSelecting, selectedIds, startSelecting, clearSelection, toggleSelection } =
     useSelectable(todos as Todo[]);
-  const { activationDistance, autoscrollThreshold, autoscrollSpeed } =
-    useDraggable<Todo>({ reorderFn: reorderTodos, disabled: isSelecting });
 
   const listItems = useMemo(() => buildGroupedList(todos as Todo[]), [todos]);
 
@@ -79,7 +74,7 @@ export default function TodoTabOverdue() {
     clearSelection();
   };
 
-  const renderItem = ({ item, drag, isActive }: RenderItemParams<ListItem>) => {
+  const renderItem = ({ item }: { item: ListItem }) => {
     if (item.type === 'header') {
       return <DateSeparator label={item.label} />;
     }
@@ -93,25 +88,21 @@ export default function TodoTabOverdue() {
       : () => navigation.navigate('TodoForm', { todo });
 
     return (
-      <ScaleDecorator>
-        <TodoItem
-          todo={todo}
-          category={categoryMap.get(todo.categoryId)}
-          checked={checked}
-          onCheck={onCheck}
-          onPress={onPress}
-          checkboxVisible={isSelecting}
-          onDrag={drag}
-          isDragging={isActive}
-          showDescription
-        />
-      </ScaleDecorator>
+      <TodoItem
+        todo={todo}
+        category={categoryMap.get(todo.categoryId)}
+        checked={checked}
+        onCheck={onCheck}
+        onPress={onPress}
+        checkboxVisible={isSelecting}
+        showDescription
+      />
     );
   };
 
   return (
     <View style={styles.container}>
-      <DraggableFlatList
+      <FlatList
         data={listItems}
         keyExtractor={(item) => item.key}
         ItemSeparatorComponent={({ leadingItem }) =>
@@ -119,16 +110,7 @@ export default function TodoTabOverdue() {
         }
         ListEmptyComponent={<Text style={styles.empty}>미완료 항목이 없어요</Text>}
         renderItem={renderItem}
-        onDragEnd={({ data }) => {
-          const ids = data
-            .filter((item): item is Extract<ListItem, { type: 'todo' }> => item.type === 'todo')
-            .map((item) => item.todo.id);
-          reorderTodos(ids);
-        }}
-        activationDistance={isSelecting ? 9999 : activationDistance}
-        autoscrollThreshold={autoscrollThreshold}
-        autoscrollSpeed={autoscrollSpeed}
-        containerStyle={styles.list}
+        style={styles.list}
       />
 
       {isSelecting ? (
@@ -191,7 +173,7 @@ export default function TodoTabOverdue() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  list: { flex: 1 },
+  list: { flex: 1, backgroundColor: Colors.background },
   empty: { textAlign: 'center', marginTop: 60, color: Colors.textMuted },
   snackbar: { marginBottom: 80 },
   fab: { position: 'absolute', right: 16, bottom: 16 },
