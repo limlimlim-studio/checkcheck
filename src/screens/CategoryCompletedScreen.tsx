@@ -4,26 +4,14 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMemo } from 'react';
 import { Colors } from '../theme';
-import { useTodosCompletedByCategory, useToggleTodo } from '../hooks/useTodos';
+import { useTodosCompletedByCategory } from '../hooks/useTodos';
 import TodoItem from '../components/TodoItem';
 import { toDateKey, formatDateLabel } from '../utils/date';
 import { RecordStackParamList } from '../navigation/RecordStack';
+import { Todo } from '../types';
 
 type Nav = NativeStackNavigationProp<RecordStackParamList, 'CategoryCompleted'>;
 type Route = RouteProp<RecordStackParamList, 'CategoryCompleted'>;
-
-type Todo = {
-  id: number;
-  title: string;
-  description?: string | null;
-  dueDate?: number | null;
-  urgency?: number | null;
-  importance?: number | null;
-  isCompleted: number;
-  completedAt?: number | null;
-  categoryId: number;
-  sortOrder: number;
-};
 
 type ListItem =
   | { type: 'header'; label: string; key: string }
@@ -50,8 +38,6 @@ export default function CategoryCompletedScreen() {
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useTodosCompletedByCategory(categoryId);
-  const { mutate: toggleTodo } = useToggleTodo();
-
   const flatTodos = useMemo(
     () => (data?.pages.flat() ?? []) as Todo[],
     [data],
@@ -67,10 +53,10 @@ export default function CategoryCompletedScreen() {
       <>
         <TodoItem
           todo={item.todo}
-          showCheckbox={false}
+          checked={false}
+          onCheck={() => {}}
+          checkboxVisible={false}
           showDescription
-          onToggle={() => toggleTodo({ id: item.todo.id, isCompleted: item.todo.isCompleted })}
-          onPress={() => {}}
         />
         <Divider />
       </>

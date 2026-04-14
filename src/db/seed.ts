@@ -11,7 +11,7 @@
  * 🔄 재생성 방법 (앱 재시작 필요):
  *   Expo DevTools 또는 앱 내 DB 쿼리 실행:
  *
- *     DELETE FROM app_settings WHERE key = 'seed_v3';
+ *     DELETE FROM app_settings WHERE key = 'seed_v8';
  *
  *   위 한 줄만 실행하면 다음 앱 시작 시 seed 데이터가 다시 생성됨.
  *   (기존 seed 완료 기록도 함께 초기화하려면 앱 삭제 후 재설치)
@@ -21,7 +21,7 @@ import { eq } from 'drizzle-orm';
 import { db } from './index';
 import { categories, todos, todoCompletions, appSettings } from './schema';
 
-const SEED_KEY = 'seed_v7';
+const SEED_KEY = 'seed_v8';
 
 // 카테고리별 하루 완료 확률 (0~1) — 다양한 패턴 연출
 const CATEGORY_FREQUENCY: Record<string, number> = {
@@ -130,7 +130,8 @@ export async function runDevSeed() {
   };
 
   const completedTodoValues: {
-    categoryId: number; title: string; description: string | null; sortOrder: number;
+    categoryId: number; title: string; description: string | null;
+    urgency: number; importance: number; sortOrder: number;
     isCompleted: number; completedAt: number; createdAt: number; updatedAt: number;
   }[] = [];
 
@@ -153,6 +154,8 @@ export async function runDevSeed() {
           categoryId: cat.id,
           title: titles[idx],
           description,
+          urgency: Math.random() < 0.4 ? Math.ceil(Math.random() * 3) : 0,
+          importance: Math.random() < 0.4 ? Math.ceil(Math.random() * 3) : 0,
           sortOrder: -9998,
           isCompleted: 1,
           completedAt: ts + offset,

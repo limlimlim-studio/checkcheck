@@ -1,69 +1,69 @@
-import { useState, useMemo, useCallback } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { useState, useMemo } from 'react';
+import { View, StyleSheet, FlatList } from 'react-native';
 import { Text, Divider, Button, FAB, Dialog, Portal, Snackbar } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { Colors } from '../theme';
-import { useTodosOverdue, useToggleTodo, useReorderTodos, useBulkMoveToToday, useBulkDeleteTodos } from '../hooks/useTodos';
+import { useTodosOverdue, useToggleTodo, useBulkMoveToToday, useBulkDeleteTodos } from '../hooks/useTodos';
 import { useCategories } from '../hooks/useCategories';
+import { useCategoryMap } from '../hooks/useCategoryMap';
+import { useSelectable } from '../hooks/useSelectable';
 import TodoItem from './TodoItem';
+import DateSeparator from './DateSeparator';
 import { TodoStackParamList } from '../navigation/TodoStack';
+import { Todo } from '../types';
+import { toDateKey, formatDueDateLabel } from '../utils/date';
 
 type Nav = NativeStackNavigationProp<TodoStackParamList, 'TodoList'>;
 
-type Todo = {
-  id: number;
-  title: string;
-  description?: string | null;
-  dueDate?: number | null;
-  urgency?: number | null;
-  importance?: number | null;
-  isCompleted: number;
-  completedAt?: number | null;
-  categoryId: number;
-  sortOrder: number;
-};
+type ListItem =
+  | { type: 'header'; key: string; label: string }
+  | { type: 'todo'; key: string; todo: Todo };
+
+function buildGroupedList(todos: Todo[]): ListItem[] {
+  const sorted = [...todos].sort((a, b) => {
+    if (a.dueDate === null && b.dueDate === null) return a.sortOrder - b.sortOrder;
+    if (a.dueDate === null) return 1;
+    if (b.dueDate === null) return -1;
+    return b.dueDate - a.dueDate || a.sortOrder - b.sortOrder;
+  });
+
+  const result: ListItem[] = [];
+  let lastKey = '';
+  for (const todo of sorted) {
+    const key = toDateKey(todo.dueDate);
+    if (key !== lastKey) {
+      result.push({ type: 'header', key: `header-${key}`, label: formatDueDateLabel(todo.dueDate) });
+      lastKey = key;
+    }
+    result.push({ type: 'todo', key: `todo-${todo.id}`, todo });
+  }
+  return result;
+}
 
 export default function TodoTabOverdue() {
   const navigation = useNavigation<Nav>();
   const { data: todos = [] } = useTodosOverdue();
   const { data: categories = [] } = useCategories();
   const { mutate: toggleTodo } = useToggleTodo();
-  const { mutate: reorderTodos } = useReorderTodos();
   const { mutate: bulkMoveToToday } = useBulkMoveToToday();
   const { mutate: bulkDelete } = useBulkDeleteTodos();
 
-  const [isSelecting, setIsSelecting] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
 
-  const categoryMap = useMemo(
-    () => new Map(categories.map((c) => [c.id, c])),
-    [categories],
-  );
+  const categoryMap = useCategoryMap(categories);
+  const { isSelecting, selectedIds, startSelecting, clearSelection, toggleSelection } =
+    useSelectable(todos as Todo[]);
 
-  const toggleSelection = useCallback((id: number) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }, []);
-
-  const handleCancelSelect = () => {
-    setIsSelecting(false);
-    setSelectedIds(new Set());
-  };
+  const listItems = useMemo(() => buildGroupedList(todos as Todo[]), [todos]);
 
   const handleMoveToToday = () => {
     if (selectedIds.size === 0) return;
     const count = selectedIds.size;
     bulkMoveToToday([...selectedIds]);
-    handleCancelSelect();
+    clearSelection();
     setSnackbarMessage(`${count}개 항목을 오늘 할 일로 이동했어요`);
     setSnackbarVisible(true);
   };
@@ -71,51 +71,48 @@ export default function TodoTabOverdue() {
   const handleDeleteConfirm = () => {
     bulkDelete([...selectedIds]);
     setShowDeleteDialog(false);
-    handleCancelSelect();
+    clearSelection();
   };
 
-  const renderItem = ({ item, drag, isActive }: RenderItemParams<Todo>) => (
-    <ScaleDecorator>
+  const renderItem = ({ item }: { item: ListItem }) => {
+    if (item.type === 'header') {
+      return <DateSeparator label={item.label} />;
+    }
+    const { todo } = item;
+    const checked = isSelecting ? selectedIds.has(todo.id) : false;
+    const onCheck = isSelecting
+      ? () => toggleSelection(todo.id)
+      : () => toggleTodo({ id: todo.id, isCompleted: todo.isCompleted });
+    const onPress = isSelecting
+      ? () => toggleSelection(todo.id)
+      : () => navigation.navigate('TodoForm', { todo });
+
+    return (
       <TodoItem
-        todo={item}
-        category={categoryMap.get(item.categoryId)}
-        showCheckbox={false}
+        todo={todo}
+        category={categoryMap.get(todo.categoryId)}
+        checked={checked}
+        onCheck={onCheck}
+        onPress={onPress}
+        checkboxVisible={isSelecting}
         showDescription
-        onToggle={
-          isSelecting
-            ? () => toggleSelection(item.id)
-            : () => toggleTodo({ id: item.id, isCompleted: item.isCompleted })
-        }
-        onPress={() => {
-          if (isSelecting) toggleSelection(item.id);
-          else navigation.navigate('TodoForm', { todo: item });
-        }}
-        onDrag={drag}
-        isDragging={isActive}
-        isSelecting={isSelecting}
-        isSelected={selectedIds.has(item.id)}
       />
-    </ScaleDecorator>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
-      <DraggableFlatList
-        data={todos as Todo[]}
-        keyExtractor={(item) => String(item.id)}
-        ItemSeparatorComponent={() => <Divider />}
-        ListEmptyComponent={
-          <Text style={styles.empty}>미완료 항목이 없어요</Text>
+      <FlatList
+        data={listItems}
+        keyExtractor={(item) => item.key}
+        ItemSeparatorComponent={({ leadingItem }) =>
+          leadingItem?.type === 'header' ? null : <Divider />
         }
+        ListEmptyComponent={<Text style={styles.empty}>미완료 항목이 없어요</Text>}
         renderItem={renderItem}
-        onDragEnd={({ data }) => reorderTodos(data.map((t) => t.id))}
-        activationDistance={isSelecting ? 9999 : 20}
-        autoscrollThreshold={80}
-        autoscrollSpeed={200}
-        containerStyle={styles.list}
+        style={styles.list}
       />
 
-      {/* 선택 모드 액션 */}
       {isSelecting ? (
         <View style={styles.actionColumn}>
           <FAB
@@ -137,7 +134,7 @@ export default function TodoTabOverdue() {
             size="small"
             icon="close"
             style={styles.fabAction}
-            onPress={handleCancelSelect}
+            onPress={clearSelection}
           />
         </View>
       ) : (
@@ -145,7 +142,7 @@ export default function TodoTabOverdue() {
           size="small"
           icon="checkbox-multiple-outline"
           style={styles.fab}
-          onPress={() => setIsSelecting(true)}
+          onPress={startSelecting}
         />
       )}
 
@@ -176,14 +173,10 @@ export default function TodoTabOverdue() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  list: { flex: 1 },
+  list: { flex: 1, backgroundColor: Colors.background },
   empty: { textAlign: 'center', marginTop: 60, color: Colors.textMuted },
   snackbar: { marginBottom: 80 },
-  fab: {
-    position: 'absolute',
-    right: 16,
-    bottom: 16,
-  },
+  fab: { position: 'absolute', right: 16, bottom: 16 },
   actionColumn: {
     position: 'absolute',
     right: 16,
@@ -193,10 +186,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   fabAction: {},
-  fabDanger: {
-    backgroundColor: Colors.surfaceVariant,
-  },
-  fabDisabled: {
-    opacity: 0.4,
-  },
+  fabDanger: { backgroundColor: Colors.surfaceVariant },
+  fabDisabled: { opacity: 0.4 },
 });

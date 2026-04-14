@@ -24,3 +24,17 @@ export function formatDateLabel(ts: number | null | undefined): string {
   if (d.isSame(today.subtract(1, 'day'))) return '어제';
   return d.format('YYYY년 M월 D일');
 }
+
+/** dueDate 기준 날짜 구분선 레이블 (할 일/미완료 탭용) */
+export function formatDueDateLabel(ts: number | null | undefined): string {
+  if (!ts) return '날짜 없음';
+  const d = dayjs(ts).startOf('day');
+  const today = dayjs().startOf('day');
+  const diff = d.diff(today, 'day');
+
+  if (diff === 0) return '오늘';
+  if (diff === 1) return '내일';
+  if (diff === -1) return '어제';
+  if (d.year() === today.year()) return d.format('M월 D일 (ddd)');
+  return d.format('YYYY년 M월 D일 (ddd)');
+}
