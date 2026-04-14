@@ -1,27 +1,20 @@
 {
   "planFile": "shimmying-snuggling-cat.md",
-  "mainIssueNumber": 97,
+  "mainIssueNumber": 104,
   "phases": [
     {
       "number": 1,
-      "title": "RootNavigator 기반 세팅 및 설정 탭 추가",
-      "issueNumber": 98,
-      "branch": "feature/issue-97/root-navigator-setup",
-      "status": "done"
+      "title": "훅 4종 구현",
+      "issueNumber": 105,
+      "branch": "refactor/issue-104/extract-hooks",
+      "status": "in_progress"
     },
     {
       "number": 2,
-      "title": "헤더 3-dot 메뉴 구현",
-      "issueNumber": 99,
-      "branch": "feature/issue-97/header-three-dot-menu",
-      "status": "done"
-    },
-    {
-      "number": 3,
-      "title": "Drawer 제거 및 관련 파일 정리",
-      "issueNumber": 100,
-      "branch": "feature/issue-97/remove-drawer",
-      "status": "in_progress"
+      "title": "TodoItem 리팩토링 + 탭 컴포넌트 훅 적용",
+      "issueNumber": 106,
+      "branch": "refactor/issue-104/refactor-todo-item",
+      "status": "pending"
     }
   ]
 }
