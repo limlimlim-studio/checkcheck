@@ -11,7 +11,7 @@ import MobileAds from 'react-native-google-mobile-ads';
 import { initDb } from './src/db';
 import { loadPremiumStatus } from './src/hooks/usePremiumStatus';
 import { configurePurchases } from './src/screens/PremiumScreen';
-import DrawerNavigator from './src/navigation/DrawerNavigator';
+import RootNavigator from './src/navigation/RootNavigator';
 import { AppTheme, NavTheme } from './src/theme';
 
 // JS 로드 직후 스플래시를 자동으로 숨기지 않도록 유지
@@ -63,7 +63,7 @@ export default function App() {
           <PaperProvider theme={AppTheme}>
             <NavigationContainer theme={NavTheme}>
               <StatusBar style="light" />
-              <DrawerNavigator />
+              <RootNavigator />
             </NavigationContainer>
           </PaperProvider>
         </SafeAreaProvider>

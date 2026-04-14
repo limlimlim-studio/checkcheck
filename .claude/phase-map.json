@@ -1,26 +1,27 @@
 {
   "planFile": "shimmying-snuggling-cat.md",
+  "mainIssueNumber": 97,
   "phases": [
     {
       "number": 1,
-      "title": "무한 스크롤 훅 및 RecordStack 네비게이션 기반 세팅",
-      "issueNumber": 91,
-      "branch": "feature/issue-91/record-stack-and-infinite-hook",
-      "status": "done"
+      "title": "RootNavigator 기반 세팅 및 설정 탭 추가",
+      "issueNumber": 98,
+      "branch": "feature/issue-97/root-navigator-setup",
+      "status": "in_progress"
     },
     {
       "number": 2,
-      "title": "기록 화면 카테고리 탭 연결 및 CategoryCompletedScreen 구현",
-      "issueNumber": 92,
-      "branch": "feature/issue-92/category-completed-screen",
-      "status": "done"
+      "title": "헤더 3-dot 메뉴 구현",
+      "issueNumber": 99,
+      "branch": "feature/issue-97/header-three-dot-menu",
+      "status": "pending"
     },
     {
       "number": 3,
-      "title": "할 일 화면 완료 탭 제거 및 TodoTabCompleted 삭제",
-      "issueNumber": 93,
-      "branch": "feature/issue-93/remove-completed-tab",
-      "status": "in_progress"
+      "title": "Drawer 제거 및 관련 파일 정리",
+      "issueNumber": 100,
+      "branch": "feature/issue-97/remove-drawer",
+      "status": "pending"
     }
   ]
 }
