@@ -7,14 +7,14 @@
       "title": "훅 4종 구현",
       "issueNumber": 105,
       "branch": "refactor/issue-104/extract-hooks",
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "number": 2,
       "title": "TodoItem 리팩토링 + 탭 컴포넌트 훅 적용",
       "issueNumber": 106,
       "branch": "refactor/issue-104/refactor-todo-item",
-      "status": "pending"
+      "status": "in_progress"
     }
   ]
 }

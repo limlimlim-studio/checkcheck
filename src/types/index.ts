@@ -10,8 +10,12 @@ export interface Todo {
   categoryId: number;
   title: string;
   description: string | null;
+  dueDate: number | null;
+  urgency: number | null;
+  importance: number | null;
   isCompleted: number; // 0 | 1 (SQLite boolean)
   completedAt: number | null;
+  sortOrder: number;
   createdAt: number;
   updatedAt: number;
 }
