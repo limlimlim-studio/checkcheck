@@ -1,5 +1,5 @@
 import { View, FlatList, StyleSheet } from 'react-native';
-import { Text, Divider, Button, Dialog, Portal } from 'react-native-paper';
+import { Text, Divider, Button, Dialog, Portal, FAB } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMemo, useState } from 'react';
@@ -67,6 +67,7 @@ export default function TodoTabCompleted() {
         <TodoItem
           todo={item.todo}
           category={categoryMap.get(item.todo.categoryId)}
+          showCheckbox={false}
           onToggle={() => toggleTodo({ id: item.todo.id, isCompleted: item.todo.isCompleted })}
           onPress={() => navigation.navigate('TodoForm', { todo: item.todo })}
         />
@@ -77,19 +78,6 @@ export default function TodoTabCompleted() {
 
   return (
     <View style={styles.container}>
-      {todos.length > 0 && (
-        <View style={styles.clearRow}>
-          <Button
-            icon="delete-sweep"
-            mode="text"
-            textColor={Colors.textMuted}
-            compact
-            onPress={() => setClearDialogVisible(true)}
-          >
-            전체 삭제
-          </Button>
-        </View>
-      )}
       <FlatList
         data={completedList}
         keyExtractor={(item) =>
@@ -101,6 +89,15 @@ export default function TodoTabCompleted() {
         }
         style={styles.list}
       />
+
+      {todos.length > 0 && (
+        <FAB
+          size="small"
+          icon="delete-sweep"
+          style={styles.fab}
+          onPress={() => setClearDialogVisible(true)}
+        />
+      )}
 
       <Portal>
         <Dialog visible={clearDialogVisible} onDismiss={() => setClearDialogVisible(false)}>
@@ -127,12 +124,10 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   list: { flex: 1 },
   empty: { textAlign: 'center', marginTop: 60, color: Colors.textMuted },
-  clearRow: {
-    alignItems: 'flex-end',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.tabBorder,
+  fab: {
+    position: 'absolute',
+    right: 16,
+    bottom: 16,
   },
   dateHeader: {
     paddingHorizontal: 16,
