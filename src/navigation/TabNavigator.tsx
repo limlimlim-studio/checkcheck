@@ -1,7 +1,7 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import TodoStack from './TodoStack';
-import RecordScreen from '../screens/RecordScreen';
+import RecordStack from './RecordStack';
 
 const Tab = createBottomTabNavigator();
 
@@ -26,7 +26,7 @@ export default function TabNavigator() {
       />
       <Tab.Screen
         name="기록"
-        component={RecordScreen}
+        component={RecordStack}
         options={{
           tabBarIcon: ({ color, size }: IconProps) => (
             <MaterialCommunityIcons name="view-grid-outline" size={size} color={color} />
