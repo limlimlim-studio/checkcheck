@@ -44,6 +44,7 @@ export default function TodoTabList() {
         todo={item}
         category={categoryMap.get(item.categoryId)}
         forceCompleted={completedIds.has(item.id)}
+        showDescription
         onToggle={() => toggleTodo(item.id)}
         onPress={() => navigation.navigate('TodoForm', { todo: item })}
         onDrag={drag}

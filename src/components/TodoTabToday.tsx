@@ -74,6 +74,7 @@ export default function TodoTabToday() {
         todo={item}
         category={categoryMap.get(item.categoryId)}
         forceCompleted={completedIds.has(item.id)}
+        showDescription
         onToggle={() => todayToggle(item.id)}
         onPress={() => navigation.navigate('TodoForm', { todo: item })}
         onDrag={drag}

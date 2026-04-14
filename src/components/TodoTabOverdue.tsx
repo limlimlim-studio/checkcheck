@@ -80,6 +80,7 @@ export default function TodoTabOverdue() {
         todo={item}
         category={categoryMap.get(item.categoryId)}
         showCheckbox={false}
+        showDescription
         onToggle={
           isSelecting
             ? () => toggleSelection(item.id)

@@ -6,14 +6,14 @@
       "title": "무한 스크롤 훅 및 RecordStack 네비게이션 기반 세팅",
       "issueNumber": 91,
       "branch": "feature/issue-91/record-stack-and-infinite-hook",
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "number": 2,
       "title": "기록 화면 카테고리 탭 연결 및 CategoryCompletedScreen 구현",
       "issueNumber": 92,
       "branch": "feature/issue-92/category-completed-screen",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "number": 3,

@@ -3,16 +3,13 @@ import { Appbar, Text, Divider } from 'react-native-paper';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMemo } from 'react';
-import dayjs from 'dayjs';
 import { Colors } from '../theme';
 import { useTodosCompletedByCategory, useToggleTodo } from '../hooks/useTodos';
-import { useCategories } from '../hooks/useCategories';
 import TodoItem from '../components/TodoItem';
 import { toDateKey, formatDateLabel } from '../utils/date';
 import { RecordStackParamList } from '../navigation/RecordStack';
-import { TodoStackParamList } from '../navigation/TodoStack';
 
-type Nav = NativeStackNavigationProp<TodoStackParamList, 'TodoList'>;
+type Nav = NativeStackNavigationProp<RecordStackParamList, 'CategoryCompleted'>;
 type Route = RouteProp<RecordStackParamList, 'CategoryCompleted'>;
 
 type Todo = {
@@ -53,13 +50,7 @@ export default function CategoryCompletedScreen() {
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useTodosCompletedByCategory(categoryId);
-  const { data: categories = [] } = useCategories();
   const { mutate: toggleTodo } = useToggleTodo();
-
-  const categoryMap = useMemo(
-    () => new Map(categories.map((c) => [c.id, c])),
-    [categories],
-  );
 
   const flatTodos = useMemo(
     () => (data?.pages.flat() ?? []) as Todo[],
@@ -76,8 +67,8 @@ export default function CategoryCompletedScreen() {
       <>
         <TodoItem
           todo={item.todo}
-          category={categoryMap.get(item.todo.categoryId)}
           showCheckbox={false}
+          showDescription
           onToggle={() => toggleTodo({ id: item.todo.id, isCompleted: item.todo.isCompleted })}
           onPress={() => {}}
         />
@@ -90,8 +81,14 @@ export default function CategoryCompletedScreen() {
     <View style={styles.container}>
       <Appbar.Header style={styles.header}>
         <Appbar.BackAction onPress={() => navigation.goBack()} />
-        <View style={[styles.dot, { backgroundColor: categoryColor }]} />
-        <Appbar.Content title={categoryName} titleStyle={{ fontWeight: '700' }} />
+        <Appbar.Content
+          title={
+            <View style={styles.titleRow}>
+              <View style={[styles.dot, { backgroundColor: categoryColor }]} />
+              <Text style={styles.titleText}>{categoryName}</Text>
+            </View>
+          }
+        />
       </Appbar.Header>
 
       <FlatList
@@ -100,8 +97,8 @@ export default function CategoryCompletedScreen() {
           item.type === 'header' ? `header-${item.key}` : `todo-${item.todo.id}`
         }
         renderItem={renderItem}
-        onEndReached={() => { if (hasNextPage) fetchNextPage(); }}
-        onEndReachedThreshold={0.3}
+        onEndReached={() => { if (hasNextPage && !isFetchingNextPage) fetchNextPage(); }}
+        onEndReachedThreshold={0.5}
         ListFooterComponent={
           isFetchingNextPage ? (
             <ActivityIndicator style={styles.footer} color={Colors.primary} />
@@ -119,7 +116,9 @@ export default function CategoryCompletedScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   header: { height: 72 },
-  dot: { width: 10, height: 10, borderRadius: 5, marginRight: 4 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  dot: { width: 10, height: 10, borderRadius: 5 },
+  titleText: { fontWeight: '700', fontSize: 18, color: Colors.text },
   list: { flex: 1 },
   empty: { textAlign: 'center', marginTop: 60, color: Colors.textMuted },
   footer: { paddingVertical: 16 },
