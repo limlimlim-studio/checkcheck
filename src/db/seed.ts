@@ -147,8 +147,41 @@ export async function runDevSeed() {
     db.insert(todoCompletions).values(completionValues.slice(i, i + BATCH)).run();
   }
 
+  // 미완료 탭 확인용 — 기한이 지난 미완료 할 일 생성
+  const OVERDUE_TODO_TITLES: Record<string, string[]> = {
+    업무: ['분기 보고서 작성', '클라이언트 미팅 준비', '계약서 검토'],
+    개인: ['세금 신고', '보험 갱신', '치과 예약'],
+    운동: ['PT 예약', '러닝화 구매'],
+    학습: ['온라인 강의 완료', '자격증 신청'],
+    쇼핑: ['냉장고 정리', '청소 용품 구매'],
+    미분류: ['차 점검 예약', '공과금 납부'],
+  };
+
+  const overdueDaysAgo = [1, 3, 5, 7, 14, 21];
+  for (const daysAgo of overdueDaysAgo) {
+    const dueDate = new Date(today);
+    dueDate.setDate(dueDate.getDate() - daysAgo);
+    dueDate.setHours(0, 0, 0, 0);
+
+    for (const cat of allCategories) {
+      const titles = OVERDUE_TODO_TITLES[cat.name] ?? OVERDUE_TODO_TITLES['미분류'];
+      const title = titles[daysAgo % titles.length];
+      db.insert(todos).values({
+        categoryId: cat.id,
+        title: `[미완료] ${title}`,
+        dueDate: dueDate.getTime(),
+        urgency: Math.floor(Math.random() * 3),
+        importance: Math.floor(Math.random() * 3),
+        sortOrder: -9997,
+        isCompleted: 0,
+        createdAt: now,
+        updatedAt: now,
+      }).run();
+    }
+  }
+
   // 완료 플래그 저장
   db.insert(appSettings).values({ key: SEED_KEY, value: '1' }).run();
 
-  console.log(`[seed] todo ${completedTodoValues.length}개, completion ${completionValues.length}개 생성 완료`);
+  console.log(`[seed] todo ${completedTodoValues.length}개, completion ${completionValues.length}개, 미완료 ${overdueDaysAgo.length * allCategories.length}개 생성 완료`);
 }

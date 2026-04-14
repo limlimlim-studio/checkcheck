@@ -66,7 +66,7 @@ export default function TodoTabCompleted() {
   );
 
   const todos = useMemo(() => {
-    const days = PERIOD_OPTIONS.find((o) => o.value === period)?.days ?? 1;
+    const days = PERIOD_OPTIONS.find((o) => o.value === period)?.days ?? 30;
     const cutoff = dayjs().subtract(days, 'day').startOf('day').valueOf();
     return (allTodos as Todo[]).filter((t) => t.completedAt != null && t.completedAt >= cutoff);
   }, [allTodos, period]);
