@@ -67,6 +67,7 @@ export default function TodoTabCompleted() {
         <TodoItem
           todo={item.todo}
           category={categoryMap.get(item.todo.categoryId)}
+          showCheckbox={false}
           onToggle={() => toggleTodo({ id: item.todo.id, isCompleted: item.todo.isCompleted })}
           onPress={() => navigation.navigate('TodoForm', { todo: item.todo })}
         />

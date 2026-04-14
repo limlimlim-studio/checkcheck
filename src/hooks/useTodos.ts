@@ -318,3 +318,32 @@ export const useReorderTodos = () => {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos'] }),
   });
 };
+
+export const useBulkMoveToToday = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (ids: number[]) => {
+      const todayMidnight = dayjs().startOf('day').valueOf();
+      const now = Date.now();
+      for (const id of ids) {
+        await db.update(todos).set({ dueDate: todayMidnight, updatedAt: now })
+          .where(eq(todos.id, id)).run();
+      }
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos'] }),
+  });
+};
+
+export const useBulkDeleteTodos = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (ids: number[]) => {
+      const now = Date.now();
+      for (const id of ids) {
+        await db.update(todos).set({ isDeleted: 1, deletedAt: now, updatedAt: now })
+          .where(eq(todos.id, id)).run();
+      }
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos'] }),
+  });
+};

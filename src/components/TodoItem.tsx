@@ -29,13 +29,18 @@ type Props = {
   onDrag?: () => void;
   isDragging?: boolean;
   forceCompleted?: boolean; // 오늘 탭: isCompleted=0이어도 체크된 것처럼 표시
+  showCheckbox?: boolean;   // 기본 false이면 선택 모드일 때만 체크박스 표시
+  isSelecting?: boolean;    // 다중 선택 모드
+  isSelected?: boolean;     // 선택됨 여부
 };
 
 const URGENCY_COLOR = Colors.urgency;
 const IMPORTANCE_COLOR = Colors.importance;
 
-export default function TodoItem({ todo, category, onToggle, onPress, onDrag, isDragging, forceCompleted }: Props) {
-  const showAsCompleted = todo.isCompleted === 1 || forceCompleted;
+export default function TodoItem({ todo, category, onToggle, onPress, onDrag, isDragging, forceCompleted, showCheckbox = true, isSelecting, isSelected }: Props) {
+  const showAsCompleted = !isSelecting && showCheckbox && (todo.isCompleted === 1 || forceCompleted);
+  const checkboxStatus = isSelecting ? (isSelected ? 'checked' : 'unchecked') : (showAsCompleted ? 'checked' : 'unchecked');
+  const checkboxVisible = isSelecting || showCheckbox;
   const pressStartX = useRef(0);
   const dueDateStr = todo.dueDate
     ? new Date(todo.dueDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })
@@ -44,20 +49,28 @@ export default function TodoItem({ todo, category, onToggle, onPress, onDrag, is
   const urgencyLevel = todo.urgency ?? 0;
   const importanceLevel = todo.importance ?? 0;
 
+  const handlePress = (e: { nativeEvent: { pageX: number } }) => {
+    if (Math.abs(e.nativeEvent.pageX - pressStartX.current) < 10) {
+      isSelecting ? onToggle() : onPress();
+    }
+  };
+
   return (
     <View style={[styles.container, isDragging && styles.containerDragging]}>
-      <TouchableOpacity onPress={onToggle} activeOpacity={0.6} style={styles.checkboxArea}>
-        <Checkbox.Android
-          status={showAsCompleted ? 'checked' : 'unchecked'}
-          color={category?.color}
-        />
-      </TouchableOpacity>
+      {checkboxVisible && (
+        <TouchableOpacity onPress={onToggle} activeOpacity={0.6} style={styles.checkboxArea}>
+          <Checkbox.Android
+            status={checkboxStatus}
+            color={Colors.primary}
+          />
+        </TouchableOpacity>
+      )}
 
       <TouchableOpacity
         style={styles.content}
         onPressIn={(e) => { pressStartX.current = e.nativeEvent.pageX; }}
-        onPress={(e) => { if (Math.abs(e.nativeEvent.pageX - pressStartX.current) < 10) onPress(); }}
-        onLongPress={onDrag}
+        onPress={handlePress}
+        onLongPress={isSelecting ? undefined : onDrag}
         activeOpacity={0.7}
       >
         <Text
@@ -95,7 +108,7 @@ export default function TodoItem({ todo, category, onToggle, onPress, onDrag, is
         </View>
       </TouchableOpacity>
 
-      {onDrag && <Text style={styles.dragHandle}>☰</Text>}
+      {!isSelecting && onDrag && <Text style={styles.dragHandle}>☰</Text>}
     </View>
   );
 }

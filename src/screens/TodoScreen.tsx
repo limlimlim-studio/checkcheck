@@ -100,6 +100,7 @@ export default function TodoScreen() {
 
       {showFab && (
         <FAB
+          size="small"
           icon="plus"
           style={[styles.fab, !isPremium && styles.fabWithAd]}
           onPress={() => navigation.navigate('TodoForm')}
