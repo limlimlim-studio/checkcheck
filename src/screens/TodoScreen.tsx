@@ -1,7 +1,7 @@
 import { StyleSheet, View, useWindowDimensions, InteractionManager } from 'react-native';
-import { Appbar, FAB } from 'react-native-paper';
+import { Appbar, FAB, Menu } from 'react-native-paper';
 import { TabView, TabBar } from 'react-native-tab-view';
-import { useNavigation, useIsFocused, CommonActions, DrawerActions } from '@react-navigation/native';
+import { useNavigation, useIsFocused, CommonActions } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState, useEffect } from 'react';
@@ -36,6 +36,7 @@ export default function TodoScreen() {
   const navigation = useNavigation<Nav>();
   const layout = useWindowDimensions();
   const [tabIndex, setTabIndex] = useState(0);
+  const [menuVisible, setMenuVisible] = useState(false);
   const isPremium = usePremiumStore((s) => s.isPremium);
   const isFocused = useIsFocused();
   const queryClient = useQueryClient();
@@ -71,9 +72,25 @@ export default function TodoScreen() {
   return (
     <View style={styles.container}>
       <Appbar.Header style={styles.header}>
-        <Appbar.Action icon="menu" onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
         <Appbar.Content title="CheckCheck" titleStyle={{ fontWeight: '700' }} />
-        <Appbar.Action icon="cog-outline" onPress={() => navigation.navigate('SettingsMain' as never)} />
+        <Menu
+          visible={menuVisible}
+          onDismiss={() => setMenuVisible(false)}
+          anchor={
+            <Appbar.Action icon="dots-vertical" onPress={() => setMenuVisible(true)} />
+          }
+        >
+          <Menu.Item
+            leadingIcon="tag-outline"
+            title="카테고리 관리"
+            onPress={() => { setMenuVisible(false); navigation.navigate('CategoryRoot' as never); }}
+          />
+          <Menu.Item
+            leadingIcon="repeat"
+            title="루틴 관리"
+            onPress={() => { setMenuVisible(false); navigation.navigate('RoutineRoot' as never); }}
+          />
+        </Menu>
       </Appbar.Header>
 
       <TabView

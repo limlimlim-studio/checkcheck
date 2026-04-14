@@ -7,14 +7,14 @@
       "title": "RootNavigator 기반 세팅 및 설정 탭 추가",
       "issueNumber": 98,
       "branch": "feature/issue-97/root-navigator-setup",
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "number": 2,
       "title": "헤더 3-dot 메뉴 구현",
       "issueNumber": 99,
       "branch": "feature/issue-97/header-three-dot-menu",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "number": 3,

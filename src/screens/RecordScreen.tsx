@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
-import { Appbar, Text, IconButton, TouchableRipple } from 'react-native-paper';
-import { useNavigation, DrawerActions } from '@react-navigation/native';
+import { Appbar, Text, IconButton, TouchableRipple, Menu } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Colors } from '../theme';
 import { useCategories } from '../hooks/useCategories';
@@ -17,15 +17,32 @@ const CURRENT_YEAR = new Date().getFullYear();
 export default function RecordScreen() {
   const navigation = useNavigation<Nav>();
   const [year, setYear] = useState(CURRENT_YEAR);
+  const [menuVisible, setMenuVisible] = useState(false);
   const { data: categories = [] } = useCategories();
   const { data: earliestYear = CURRENT_YEAR } = useEarliestCompletionYear();
 
   return (
     <View style={styles.container}>
       <Appbar.Header style={styles.header}>
-        <Appbar.Action icon="menu" onPress={() => navigation.dispatch(DrawerActions.openDrawer())} />
         <Appbar.Content title="CheckCheck" titleStyle={{ fontWeight: '700' }} />
-        <Appbar.Action icon="cog-outline" onPress={() => navigation.navigate('SettingsMain' as never)} />
+        <Menu
+          visible={menuVisible}
+          onDismiss={() => setMenuVisible(false)}
+          anchor={
+            <Appbar.Action icon="dots-vertical" onPress={() => setMenuVisible(true)} />
+          }
+        >
+          <Menu.Item
+            leadingIcon="tag-outline"
+            title="카테고리 관리"
+            onPress={() => { setMenuVisible(false); navigation.navigate('CategoryRoot' as never); }}
+          />
+          <Menu.Item
+            leadingIcon="repeat"
+            title="루틴 관리"
+            onPress={() => { setMenuVisible(false); navigation.navigate('RoutineRoot' as never); }}
+          />
+        </Menu>
       </Appbar.Header>
 
       <View style={styles.yearRow}>
