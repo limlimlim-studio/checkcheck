@@ -1,8 +1,8 @@
-// GitHub 태그 스타일 — 채도 낮은 파스텔 계열 랜덤 생성
+// 다크 화면 최적화 — 채도를 낮추고 밝기를 높여 눈에 편한 색상 생성
 export const generateRandomColor = (): string => {
   const hue = Math.floor(Math.random() * 360);
-  const saturation = 55 + Math.floor(Math.random() * 20); // 55~75%
-  const lightness = 45 + Math.floor(Math.random() * 15);  // 45~60%
+  const saturation = 30 + Math.floor(Math.random() * 20); // 30~50% (낮은 채도)
+  const lightness = 60 + Math.floor(Math.random() * 15);  // 60~75% (높은 밝기)
   return hslToHex(hue, saturation, lightness);
 };
 
