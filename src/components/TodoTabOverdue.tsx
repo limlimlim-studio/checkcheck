@@ -117,14 +117,14 @@ export default function TodoTabOverdue() {
         <View style={styles.actionColumn}>
           <FAB
             size="small"
-            icon="calendar-today"
+            icon="calendar-arrow-right"
             style={[styles.fabAction, selectedIds.size === 0 && styles.fabDisabled]}
             onPress={handleMoveToToday}
             disabled={selectedIds.size === 0}
           />
           <FAB
             size="small"
-            icon="delete-outline"
+            icon="trash-can-outline"
             style={[styles.fabAction, styles.fabDanger, selectedIds.size === 0 && styles.fabDisabled]}
             color={Colors.danger}
             onPress={() => selectedIds.size > 0 && setShowDeleteDialog(true)}
@@ -132,15 +132,14 @@ export default function TodoTabOverdue() {
           />
           <FAB
             size="small"
-            icon="close"
+            icon="close-circle-outline"
             style={styles.fabAction}
             onPress={clearSelection}
           />
         </View>
       ) : (
         <FAB
-          size="small"
-          icon="checkbox-multiple-outline"
+          icon="check-circle-outline"
           style={styles.fab}
           onPress={startSelecting}
         />
