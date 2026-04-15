@@ -1,10 +1,14 @@
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '../../theme';
-import { LEVEL_LABELS } from '../../constants/todo';
 
 const URGENCY_COLOR = Colors.urgency;
 const IMPORTANCE_COLOR = Colors.importance;
+
+// 레벨별 아이콘 수 (1→1개, 2→2개, 3→3개)
+const URGENCY_ICON = 'lightning-bolt';
+const IMPORTANCE_ICON = 'star';
 
 type Category = {
   id: number;
@@ -25,25 +29,33 @@ export default function TodoItemMeta({ category, urgency, importance }: Props) {
   return (
     <View style={styles.meta}>
       {category && (
-        <View style={[styles.categoryDot, { backgroundColor: category.color }]} />
-      )}
-      {category && (
-        <Text variant="labelSmall" style={[styles.metaText, { color: category.color }]}>
-          {category.name}
-        </Text>
+        <View style={[styles.tag, { backgroundColor: category.color + '28' }]}>
+          <View style={[styles.tagDot, { backgroundColor: category.color }]} />
+          <Text style={[styles.tagText, { color: category.color }]}>{category.name}</Text>
+        </View>
       )}
       {urgencyLevel > 0 && (
-        <View style={[styles.badge, { backgroundColor: URGENCY_COLOR + '33' }]}>
-          <Text style={[styles.badgeText, { color: URGENCY_COLOR }]}>
-            긴급 {LEVEL_LABELS[urgencyLevel]}
-          </Text>
+        <View style={[styles.tag, { backgroundColor: URGENCY_COLOR + '22' }]}>
+          {Array.from({ length: urgencyLevel }).map((_, i) => (
+            <MaterialCommunityIcons
+              key={i}
+              name={URGENCY_ICON}
+              size={10}
+              color={URGENCY_COLOR}
+            />
+          ))}
         </View>
       )}
       {importanceLevel > 0 && (
-        <View style={[styles.badge, { backgroundColor: IMPORTANCE_COLOR + '33' }]}>
-          <Text style={[styles.badgeText, { color: IMPORTANCE_COLOR }]}>
-            중요 {LEVEL_LABELS[importanceLevel]}
-          </Text>
+        <View style={[styles.tag, { backgroundColor: IMPORTANCE_COLOR + '22' }]}>
+          {Array.from({ length: importanceLevel }).map((_, i) => (
+            <MaterialCommunityIcons
+              key={i}
+              name={IMPORTANCE_ICON}
+              size={10}
+              color={IMPORTANCE_COLOR}
+            />
+          ))}
         </View>
       )}
     </View>
@@ -52,8 +64,14 @@ export default function TodoItemMeta({ category, urgency, importance }: Props) {
 
 const styles = StyleSheet.create({
   meta: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' },
-  categoryDot: { width: 8, height: 8, borderRadius: 4 },
-  metaText: { color: Colors.textSecondary },
-  badge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
-  badgeText: { fontSize: 10, fontWeight: '600' },
+  tag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  tagDot: { width: 6, height: 6, borderRadius: 3 },
+  tagText: { fontSize: 10, fontWeight: '600' },
 });
