@@ -116,14 +116,12 @@ export default function TodoTabOverdue() {
       {isSelecting ? (
         <View style={styles.actionColumn}>
           <FAB
-            size="small"
             icon="calendar-arrow-right"
             style={[styles.fabAction, selectedIds.size === 0 && styles.fabDisabled]}
             onPress={handleMoveToToday}
             disabled={selectedIds.size === 0}
           />
           <FAB
-            size="small"
             icon="trash-can-outline"
             style={[styles.fabAction, styles.fabDanger, selectedIds.size === 0 && styles.fabDisabled]}
             color={Colors.danger}
@@ -131,7 +129,6 @@ export default function TodoTabOverdue() {
             disabled={selectedIds.size === 0}
           />
           <FAB
-            size="small"
             icon="close-circle-outline"
             style={styles.fabAction}
             onPress={clearSelection}
