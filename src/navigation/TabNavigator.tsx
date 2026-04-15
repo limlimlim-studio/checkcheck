@@ -21,7 +21,7 @@ export default function TabNavigator() {
         component={TodoStack}
         options={{
           tabBarIcon: ({ color, size }: IconProps) => (
-            <MaterialCommunityIcons name="checkbox-marked-circle-outline" size={size} color={color} />
+            <MaterialCommunityIcons name="check-circle-outline" size={size} color={color} />
           ),
         }}
       />
@@ -30,7 +30,7 @@ export default function TabNavigator() {
         component={RecordStack}
         options={{
           tabBarIcon: ({ color, size }: IconProps) => (
-            <MaterialCommunityIcons name="view-grid-outline" size={size} color={color} />
+            <MaterialCommunityIcons name="calendar-month-outline" size={size} color={color} />
           ),
         }}
       />

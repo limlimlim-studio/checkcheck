@@ -81,12 +81,12 @@ export default function TodoScreen() {
           }
         >
           <Menu.Item
-            leadingIcon="tag-outline"
+            leadingIcon="label-multiple-outline"
             title="카테고리 관리"
             onPress={() => { setMenuVisible(false); navigation.navigate('CategoryRoot' as never); }}
           />
           <Menu.Item
-            leadingIcon="repeat"
+            leadingIcon="autorenew"
             title="루틴 관리"
             onPress={() => { setMenuVisible(false); navigation.navigate('RoutineRoot' as never); }}
           />
@@ -114,7 +114,6 @@ export default function TodoScreen() {
 
       {showFab && (
         <FAB
-          size="small"
           icon="plus"
           style={[styles.fab, !isPremium && styles.fabWithAd]}
           onPress={() => navigation.navigate('TodoForm')}
