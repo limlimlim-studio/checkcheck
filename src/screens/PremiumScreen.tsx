@@ -7,8 +7,9 @@ import { Colors } from '../theme';
 import { savePremiumStatus } from '../hooks/usePremiumStatus';
 import { usePremiumStore } from '../stores/premiumStore';
 
-// RevenueCat 대시보드에서 발급받은 iOS API 키로 교체하세요
-export const REVENUECAT_API_KEY_IOS = 'test_cDiAAHedAhYcuFQPHeyoNUoxfTD';
+export const REVENUECAT_API_KEY_IOS = __DEV__
+  ? 'test_cDiAAHedAhYcuFQPHeyoNUoxfTD'
+  : 'appl_RwqgIFyFCBHLyqmJSIeaLFhfDWg';
 // RevenueCat 대시보드에서 설정한 Entitlement ID
 const ENTITLEMENT_ID = 'premium';
 

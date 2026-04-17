@@ -6,12 +6,12 @@
  *   eas build / 프로덕션 빌드에서는 false → 이 파일 전체가 실행되지 않음.
  *
  * ✅ 1회 실행:
- *   app_settings 테이블의 'seed_v1' 키로 중복 실행 방지.
+ *   app_settings 테이블의 SEED_KEY로 중복 실행 방지.
  *
  * 🔄 재생성 방법 (앱 재시작 필요):
  *   Expo DevTools 또는 앱 내 DB 쿼리 실행:
  *
- *     DELETE FROM app_settings WHERE key = 'seed_v8';
+ *     DELETE FROM app_settings WHERE key = 'seed_v9';
  *
  *   위 한 줄만 실행하면 다음 앱 시작 시 seed 데이터가 다시 생성됨.
  *   (기존 seed 완료 기록도 함께 초기화하려면 앱 삭제 후 재설치)
@@ -19,25 +19,12 @@
 
 import { eq } from 'drizzle-orm';
 import { db } from './index';
-import { categories, todos, todoCompletions, appSettings } from './schema';
+import { categories, todos, todoCompletions, routines, routineCompletions, appSettings } from './schema';
 
-const SEED_KEY = 'seed_v8';
+const SEED_KEY = 'seed_v9';
 
-// 카테고리별 하루 완료 확률 (0~1) — 다양한 패턴 연출
-const CATEGORY_FREQUENCY: Record<string, number> = {
-  default: 0.5,
-  업무: 0.8,
-  개인: 0.65,
-  운동: 0.7,
-  학습: 0.6,
-  쇼핑: 0.3,
-};
-
-// 하루 최대 완료 수 (1~max 랜덤)
-const MAX_PER_DAY = 4;
-
-// 생성 기간 (일)
-const SEED_DAYS = 730; // 2년
+// 생성 기간
+const SEED_DAYS = 730; // 2년 (기록 탭 잔디용)
 
 function dateToString(date: Date): string {
   const mm = String(date.getMonth() + 1).padStart(2, '0');
@@ -48,7 +35,6 @@ function dateToString(date: Date): string {
 export async function runDevSeed() {
   if (!__DEV__) return;
 
-  // 이미 실행됐으면 스킵
   const flag = db.select().from(appSettings).where(eq(appSettings.key, SEED_KEY)).get();
   if (flag) return;
 
@@ -58,13 +44,201 @@ export async function runDevSeed() {
   const now = Date.now();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const todayTs = today.getTime();
 
-  // 카테고리별 시드 todo 1개씩 생성 (잔디용)
+  const catMap: Record<string, number> = {};
+  for (const c of allCategories) catMap[c.name] = c.id;
+
+  // ─────────────────────────────────────────
+  // 1. 루틴 생성
+  // ─────────────────────────────────────────
+  const ROUTINE_DATA = [
+    { categoryName: '운동', title: '아침에 한강 코스 5km 뛰기', description: '기상 직후 30분, 페이스 5:30 목표', repeatType: 'daily', repeatValue: null, urgency: 1, importance: 2 },
+    { categoryName: '운동', title: '자기 전에 스트레칭하기', description: '전신 스트레칭 10분, 유튜브 루틴 따라하기', repeatType: 'daily', repeatValue: null, urgency: 0, importance: 1 },
+    { categoryName: '학습', title: '영어 단어 30개 외우기', description: '어제 것 복습 20개 + 신규 10개', repeatType: 'daily', repeatValue: null, urgency: 0, importance: 2 },
+    { categoryName: '학습', title: '프로그래머스 문제 1개 풀기', description: 'Level 2 이상, 풀이 후 다른 사람 코드 참고', repeatType: 'weekly', repeatValue: '1,2,3,4,5', urgency: 1, importance: 2 },
+    { categoryName: '개인', title: '자기 전에 일기 쓰기', description: '오늘 감사한 것 3가지 + 내일 목표 한 줄', repeatType: 'daily', repeatValue: null, urgency: 0, importance: 1 },
+    { categoryName: '업무', title: '팀 주간 회의 참석하기', description: '매주 월요일 오전 10시, 이슈 및 우선순위 공유', repeatType: 'weekly', repeatValue: '1', urgency: 2, importance: 3 },
+    { categoryName: '업무', title: '오늘 배운 것 노션에 정리하기', description: 'TIL 작성 후 팀 채널에 공유', repeatType: 'weekly', repeatValue: '1,2,3,4,5', urgency: 0, importance: 1 },
+    { categoryName: '개인', title: '주말에 방 청소하기', description: '청소기 돌리고 물걸레까지, 화장실 포함', repeatType: 'weekly', repeatValue: '6', urgency: 0, importance: 1 },
+  ];
+
+  const insertedRoutineIds: { id: number; categoryName: string; repeatType: string; repeatValue: string | null }[] = [];
+
+  for (let i = 0; i < ROUTINE_DATA.length; i++) {
+    const r = ROUTINE_DATA[i];
+    const categoryId = catMap[r.categoryName];
+    if (!categoryId) continue;
+    const result = db.insert(routines).values({
+      categoryId,
+      title: r.title,
+      description: r.description,
+      repeatType: r.repeatType as 'daily' | 'weekly' | 'monthly',
+      repeatValue: r.repeatValue,
+      urgency: r.urgency,
+      importance: r.importance,
+      sortOrder: i,
+      isActive: 1,
+      createdAt: now,
+      updatedAt: now,
+    }).returning({ id: routines.id }).get();
+    if (result) {
+      insertedRoutineIds.push({ id: result.id, categoryName: r.categoryName, repeatType: r.repeatType, repeatValue: r.repeatValue });
+    }
+  }
+
+  // ─────────────────────────────────────────
+  // 2. 루틴 완료 기록 생성 (잔디용)
+  // ─────────────────────────────────────────
+  const ROUTINE_FREQ: Record<string, number> = {
+    운동: 0.75,
+    학습: 0.65,
+    개인: 0.7,
+    업무: 0.85,
+  };
+
+  const routineCompletionValues: { routineId: number; completedDate: string }[] = [];
+
+  for (let i = SEED_DAYS - 1; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    const dateStr = dateToString(date);
+    const dow = date.getDay(); // 0=일, 1=월 ...
+
+    for (const r of insertedRoutineIds) {
+      // 요일 체크
+      if (r.repeatType === 'weekly' && r.repeatValue) {
+        const allowedDays = r.repeatValue.split(',').map(Number);
+        if (!allowedDays.includes(dow)) continue;
+      }
+      const freq = ROUTINE_FREQ[r.categoryName] ?? 0.6;
+      if (Math.random() > freq) continue;
+      routineCompletionValues.push({ routineId: r.id, completedDate: dateStr });
+    }
+  }
+
+  const BATCH_RC = 200;
+  for (let i = 0; i < routineCompletionValues.length; i += BATCH_RC) {
+    db.insert(routineCompletions).values(routineCompletionValues.slice(i, i + BATCH_RC)).run();
+  }
+
+  // ─────────────────────────────────────────
+  // 3. 오늘 할 일 생성
+  // ─────────────────────────────────────────
+  const TODAY_TODOS = [
+    { categoryName: '업무', title: '3분기 기능 기획서 초안 잡기', description: '와이어프레임 3장 + 유저 플로우 정리, 내일 팀장님께 공유 예정', urgency: 3, importance: 3 },
+    { categoryName: '업무', title: 'PR #58 코드 리뷰하기', description: '성능 관련 코멘트 위주로, 병목 구간 확인 필요', urgency: 2, importance: 2 },
+    { categoryName: '학습', title: '리액트 네이티브 애니메이션 강의 듣기', description: '인프런 강의 챕터 5 — Reanimated 기초 2강', urgency: 0, importance: 2 },
+    { categoryName: '개인', title: '치과에 전화해서 예약 잡기', description: '스케일링 6개월 지남, 오후 2시 이후 가능한 날로', urgency: 1, importance: 1 },
+    { categoryName: '쇼핑', title: '이번 주 장보기', description: '닭가슴살, 달걀 2판, 브로콜리, 바나나, 두부', urgency: 0, importance: 1 },
+  ];
+
+  for (let i = 0; i < TODAY_TODOS.length; i++) {
+    const t = TODAY_TODOS[i];
+    const categoryId = catMap[t.categoryName];
+    if (!categoryId) continue;
+    db.insert(todos).values({
+      categoryId,
+      title: t.title,
+      description: t.description,
+      dueDate: todayTs,
+      urgency: t.urgency,
+      importance: t.importance,
+      sortOrder: i,
+      isCompleted: 0,
+      createdAt: now,
+      updatedAt: now,
+    }).run();
+  }
+
+  // ─────────────────────────────────────────
+  // 4. 예정된 할 일 생성 (할 일 탭)
+  // ─────────────────────────────────────────
+  const UPCOMING_TODOS = [
+    { categoryName: '업무', title: '2분기 실적 보고서 제출하기', description: '경영진 보고용, 주요 KPI 달성률 시각화 포함해서 작성', daysFromNow: 2, urgency: 3, importance: 3 },
+    { categoryName: '업무', title: '클라이언트 킥오프 미팅 준비하기', description: '신규 프로젝트 요구사항 정리, 질문 목록 미리 뽑아두기', daysFromNow: 3, urgency: 2, importance: 3 },
+    { categoryName: '학습', title: 'AWS SAA 시험 접수하기', description: 'Solutions Architect Associate, 다음 달 안으로 날짜 잡기', daysFromNow: 3, urgency: 2, importance: 2 },
+    { categoryName: '개인', title: '엄마 생신 선물 주문하기', description: '온라인 주문이면 배송 3일 걸리니까 오늘 내로, 핸드크림 세트 고려 중', daysFromNow: 5, urgency: 2, importance: 3 },
+    { categoryName: '운동', title: '새 러닝화 사러 가기', description: '발볼 넓은 거로, 나이키 인빈서블 사이즈 270 피팅 먼저', daysFromNow: 5, urgency: 0, importance: 1 },
+    { categoryName: '업무', title: '다음 주 팀 워크숍 자료 만들기', description: '아이스브레이킹 게임 2종 + 상반기 회고 발표 자료', daysFromNow: 7, urgency: 1, importance: 2 },
+    { categoryName: '학습', title: '원자 습관 10장까지 읽기', description: '핵심 내용 노션에 정리해두고 팀원한테 공유해보기', daysFromNow: 7, urgency: 0, importance: 2 },
+    { categoryName: '개인', title: '자동차 보험 갱신하기', description: '만기일 이번 달 말, 다이렉트 3사 비교 견적 받아보기', daysFromNow: 14, urgency: 1, importance: 2 },
+    { categoryName: '쇼핑', title: '봄 옷 사러 가기', description: '린넨 셔츠 2벌이랑 치노 팬츠 1벌, 유니클로랑 무인양품 둘 다 들르기', daysFromNow: 10, urgency: 0, importance: 1 },
+  ];
+
+  for (let i = 0; i < UPCOMING_TODOS.length; i++) {
+    const t = UPCOMING_TODOS[i];
+    const categoryId = catMap[t.categoryName];
+    if (!categoryId) continue;
+    const dueDate = new Date(today);
+    dueDate.setDate(dueDate.getDate() + t.daysFromNow);
+    dueDate.setHours(0, 0, 0, 0);
+    db.insert(todos).values({
+      categoryId,
+      title: t.title,
+      description: t.description,
+      dueDate: dueDate.getTime(),
+      urgency: t.urgency,
+      importance: t.importance,
+      sortOrder: i,
+      isCompleted: 0,
+      createdAt: now,
+      updatedAt: now,
+    }).run();
+  }
+
+  // ─────────────────────────────────────────
+  // 5. 미완료 할 일 생성
+  // ─────────────────────────────────────────
+  const OVERDUE_TODOS = [
+    { categoryName: '업무', title: '계약서 검토하고 법무팀에 전달하기', description: '서명 전 조항 3개 확인 필요, 계속 미루면 안 됨', daysAgo: 1, urgency: 3, importance: 3 },
+    { categoryName: '개인', title: '종합소득세 신고하기', description: '홈택스에서 직접 신고, 작년이랑 비슷하게 하면 될 듯', daysAgo: 2, urgency: 3, importance: 3 },
+    { categoryName: '학습', title: '인프런 수료증 발급받기', description: '완강 후 수료증 PDF 저장하고 링크드인에 올리기', daysAgo: 3, urgency: 1, importance: 1 },
+    { categoryName: '운동', title: 'PT 트레이너한테 연락해서 일정 잡기', description: '3주째 못 가고 있음, 이번 주 안에 꼭 다시 시작하기', daysAgo: 5, urgency: 1, importance: 2 },
+    { categoryName: '개인', title: '보험 증권 한 곳에 정리해두기', description: '만기 도래 상품 3건 먼저 확인, 필요 없는 거 해지도 검토', daysAgo: 7, urgency: 2, importance: 2 },
+    { categoryName: '쇼핑', title: '노트북 거치대 주문하기', description: '목 통증 때문에 오래됨, 높이 조절 되는 거로 쿠팡에서 찾아보기', daysAgo: 7, urgency: 0, importance: 1 },
+    { categoryName: '업무', title: '깃허브 포트폴리오 업데이트하기', description: '최근 프로젝트 3건 README 정리해서 추가, 사이드 프로젝트도 포함', daysAgo: 14, urgency: 1, importance: 2 },
+  ];
+
+  for (let i = 0; i < OVERDUE_TODOS.length; i++) {
+    const t = OVERDUE_TODOS[i];
+    const categoryId = catMap[t.categoryName];
+    if (!categoryId) continue;
+    const dueDate = new Date(today);
+    dueDate.setDate(dueDate.getDate() - t.daysAgo);
+    dueDate.setHours(0, 0, 0, 0);
+    db.insert(todos).values({
+      categoryId,
+      title: t.title,
+      description: t.description,
+      dueDate: dueDate.getTime(),
+      urgency: t.urgency,
+      importance: t.importance,
+      sortOrder: i,
+      isCompleted: 0,
+      createdAt: now,
+      updatedAt: now,
+    }).run();
+  }
+
+  // ─────────────────────────────────────────
+  // 6. 완료 기록 생성 (기록 탭 잔디용)
+  // ─────────────────────────────────────────
+  const COMPLETED_TITLES: Record<string, string[]> = {
+    업무: ['기획서 작성', '코드 리뷰', '팀 미팅', '보고서 제출', '이메일 정리', '배포 작업'],
+    개인: ['독서 30분', '일기 쓰기', '방 청소', '친구 연락', '요리하기', '명상 10분'],
+    운동: ['러닝 5km', '헬스장', '스트레칭', '자전거 타기', '수영', '홈트레이닝'],
+    학습: ['알고리즘 풀기', '영어 단어 암기', '강의 수강', '독서', 'TIL 작성', '사이드 프로젝트'],
+    쇼핑: ['장보기', '생필품 구매', '온라인 주문'],
+    미분류: ['메모 정리', '사진 백업', '앱 업데이트'],
+  };
+
+  // 잔디용 시드 todo (카테고리별 1개)
   const seedTodoIds: Record<number, number> = {};
   for (const cat of allCategories) {
     const result = db.insert(todos).values({
       categoryId: cat.id,
-      title: `[seed] ${cat.name} 활동`,
+      title: `${cat.name} 활동`,
       sortOrder: -9999,
       isCompleted: 1,
       completedAt: now,
@@ -74,104 +248,10 @@ export async function runDevSeed() {
     if (result) seedTodoIds[cat.id] = result.id;
   }
 
-  // 완료 탭 확인용 — 최근 400일에 걸쳐 다양한 날짜의 완료 todo 생성 (1/6/12개월 필터 테스트)
-  const COMPLETED_TODO_TITLES: Record<string, string[]> = {
-    업무: ['기획서 작성', '팀 미팅 참석', '코드 리뷰', '보고서 제출', '이메일 정리', '주간 회의'],
-    개인: ['독서 30분', '일기 쓰기', '방 청소', '친구 연락', '영화 보기', '요리하기'],
-    운동: ['러닝 5km', '헬스장', '스트레칭', '자전거 타기', '수영', '요가'],
-    학습: ['알고리즘 풀기', '영어 단어 암기', '강의 수강', '책 읽기', 'TIL 작성', '사이드 프로젝트'],
-    쇼핑: ['장보기', '생필품 구매', '온라인 주문'],
-    미분류: ['메모 정리', '사진 백업', '앱 업데이트'],
+  const CATEGORY_FREQ: Record<string, number> = {
+    업무: 0.8, 개인: 0.65, 운동: 0.7, 학습: 0.6, 쇼핑: 0.3, 미분류: 0.5,
   };
 
-  const COMPLETED_TODO_DESCRIPTIONS: Record<string, string[]> = {
-    업무: [
-      '3분기 목표 대비 달성률 정리, 주요 지표 시각화 포함',
-      '팀원 5명 참석, 다음 스프린트 우선순위 결정',
-      'PR #42 리뷰 완료, 성능 관련 코멘트 2건 남김',
-      '경영진 보고용 주간 실적 요약 작성 및 제출',
-      '받은 편지함 50건 처리, 중요 건 5건 별도 분류',
-      '팀 전체 현황 공유, 블로커 이슈 2건 논의',
-    ],
-    개인: [
-      '원자 습관 3장까지 완독, 핵심 내용 메모',
-      '오늘 있었던 일 3가지 기록, 감사한 점 작성',
-      '거실·주방 청소 완료, 분리수거 처리',
-      '오랜만에 통화, 다음 달 만남 약속',
-      '넷플릭스로 감상, 리뷰 메모 남김',
-      '파스타 직접 만들기, 레시피 저장해둠',
-    ],
-    운동: [
-      '한강 코스 완주, 페이스 5:30/km 유지',
-      '하체 위주 루틴, 스쿼트 100개 달성',
-      '기상 직후 15분 전신 스트레칭',
-      '공원 코스 12km, 날씨 맑아서 쾌적했음',
-      '수영장 25m × 20랩 완료',
-      '요가 매트 꺼내서 40분 플로우 진행',
-    ],
-    학습: [
-      '프로그래머스 Level 2 문제 2개 풀이, 시간복잡도 분석',
-      '단어 50개 복습, 틀린 것 15개 재암기',
-      '인프런 강의 2강 수강, 실습 코드 따라치기',
-      '이번 주 읽은 챕터 요약 정리 완료',
-      '오늘 배운 것 정리해서 노션에 업로드',
-      '기능 구현 3시간, 커밋 메시지 작성까지 완료',
-    ],
-    쇼핑: [
-      '주간 식재료 구매, 채소·단백질 위주로 담음',
-      '화장지, 세제, 샴푸 등 재고 보충',
-      '쿠팡에서 주문 완료, 내일 도착 예정',
-    ],
-    미분류: [
-      '노션 받은 받침함 정리, 불필요한 페이지 삭제',
-      '갤러리 정리 및 구글 포토 백업 완료',
-      'iOS 17.4 업데이트 설치 완료',
-    ],
-  };
-
-  const completedTodoValues: {
-    categoryId: number; title: string; description: string | null;
-    urgency: number; importance: number; sortOrder: number;
-    isCompleted: number; completedAt: number; createdAt: number; updatedAt: number;
-  }[] = [];
-
-  for (let daysAgo = 0; daysAgo <= 400; daysAgo++) {
-    const date = new Date(today);
-    date.setDate(date.getDate() - daysAgo);
-    const ts = date.getTime() + 9 * 60 * 60 * 1000; // 오전 9시 기준
-
-    for (const cat of allCategories) {
-      const titles = COMPLETED_TODO_TITLES[cat.name] ?? COMPLETED_TODO_TITLES['미분류'];
-      const descriptions = COMPLETED_TODO_DESCRIPTIONS[cat.name] ?? COMPLETED_TODO_DESCRIPTIONS['미분류'];
-      // 날짜마다 0~3개 랜덤 생성
-      const count = Math.floor(Math.random() * 4);
-      const shuffled = [...titles.keys()].sort(() => Math.random() - 0.5).slice(0, count);
-      for (const idx of shuffled) {
-        const offset = Math.floor(Math.random() * 8 * 60 * 60 * 1000); // 최대 8시간 내 랜덤
-        // 절반 확률로 설명 포함
-        const description = Math.random() > 0.5 ? descriptions[idx % descriptions.length] : null;
-        completedTodoValues.push({
-          categoryId: cat.id,
-          title: titles[idx],
-          description,
-          urgency: Math.random() < 0.4 ? Math.ceil(Math.random() * 3) : 0,
-          importance: Math.random() < 0.4 ? Math.ceil(Math.random() * 3) : 0,
-          sortOrder: -9998,
-          isCompleted: 1,
-          completedAt: ts + offset,
-          createdAt: ts,
-          updatedAt: ts + offset,
-        });
-      }
-    }
-  }
-
-  const BATCH_TODO = 50;
-  for (let i = 0; i < completedTodoValues.length; i += BATCH_TODO) {
-    db.insert(todos).values(completedTodoValues.slice(i, i + BATCH_TODO)).run();
-  }
-
-  // 지난 2년 completions 생성 (잔디용)
   const completionValues: { todoId: number; completedDate: string }[] = [];
 
   for (let i = SEED_DAYS - 1; i >= 0; i--) {
@@ -182,58 +262,22 @@ export async function runDevSeed() {
     for (const cat of allCategories) {
       const todoId = seedTodoIds[cat.id];
       if (!todoId) continue;
-
-      const freq = CATEGORY_FREQUENCY[cat.name] ?? CATEGORY_FREQUENCY.default;
+      const freq = CATEGORY_FREQ[cat.name] ?? 0.5;
       if (Math.random() > freq) continue;
-
-      const count = Math.floor(Math.random() * MAX_PER_DAY) + 1;
+      const count = Math.floor(Math.random() * 3) + 1;
       for (let c = 0; c < count; c++) {
         completionValues.push({ todoId, completedDate: dateStr });
       }
     }
   }
 
-  // 배치 삽입
   const BATCH = 200;
   for (let i = 0; i < completionValues.length; i += BATCH) {
     db.insert(todoCompletions).values(completionValues.slice(i, i + BATCH)).run();
   }
 
-  // 미완료 탭 확인용 — 기한이 지난 미완료 할 일 생성
-  const OVERDUE_TODO_TITLES: Record<string, string[]> = {
-    업무: ['분기 보고서 작성', '클라이언트 미팅 준비', '계약서 검토'],
-    개인: ['세금 신고', '보험 갱신', '치과 예약'],
-    운동: ['PT 예약', '러닝화 구매'],
-    학습: ['온라인 강의 완료', '자격증 신청'],
-    쇼핑: ['냉장고 정리', '청소 용품 구매'],
-    미분류: ['차 점검 예약', '공과금 납부'],
-  };
-
-  const overdueDaysAgo = [1, 3, 5, 7, 14, 21];
-  for (const daysAgo of overdueDaysAgo) {
-    const dueDate = new Date(today);
-    dueDate.setDate(dueDate.getDate() - daysAgo);
-    dueDate.setHours(0, 0, 0, 0);
-
-    for (const cat of allCategories) {
-      const titles = OVERDUE_TODO_TITLES[cat.name] ?? OVERDUE_TODO_TITLES['미분류'];
-      const title = titles[daysAgo % titles.length];
-      db.insert(todos).values({
-        categoryId: cat.id,
-        title: `[미완료] ${title}`,
-        dueDate: dueDate.getTime(),
-        urgency: Math.floor(Math.random() * 3),
-        importance: Math.floor(Math.random() * 3),
-        sortOrder: -9997,
-        isCompleted: 0,
-        createdAt: now,
-        updatedAt: now,
-      }).run();
-    }
-  }
-
   // 완료 플래그 저장
   db.insert(appSettings).values({ key: SEED_KEY, value: '1' }).run();
 
-  console.log(`[seed] todo ${completedTodoValues.length}개, completion ${completionValues.length}개, 미완료 ${overdueDaysAgo.length * allCategories.length}개 생성 완료`);
+  console.log(`[seed v9] 루틴 ${ROUTINE_DATA.length}개, 오늘 할 일 ${TODAY_TODOS.length}개, 예정 ${UPCOMING_TODOS.length}개, 미완료 ${OVERDUE_TODOS.length}개, 완료기록 ${completionValues.length}개 생성 완료`);
 }
