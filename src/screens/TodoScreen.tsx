@@ -73,6 +73,7 @@ export default function TodoScreen() {
     <View style={styles.container}>
       <Appbar.Header style={styles.header}>
         <Appbar.Content title="CheckCheck" titleStyle={{ fontWeight: '700' }} />
+        <Appbar.Action icon="magnify" onPress={() => navigation.navigate('Search')} style={{ marginRight: -8 }} />
         <Menu
           visible={menuVisible}
           onDismiss={() => setMenuVisible(false)}
