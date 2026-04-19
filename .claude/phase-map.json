@@ -7,14 +7,14 @@
       "title": "할 일 시간 설정",
       "issueNumber": 116,
       "branch": "feature/issue-115/due-time",
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "number": 2,
       "title": "알림",
       "issueNumber": 117,
       "branch": "feature/issue-115/notifications",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "number": 3,

@@ -19,6 +19,7 @@ export const todos = sqliteTable('todos', {
   description: text('description'),
   dueDate: int('due_date'),
   dueTime: int('due_time'), // minutes from midnight (0-1439), null = no time set
+  notificationOffsets: text('notification_offsets'), // comma-separated offset minutes e.g. "0,10,30"
   urgency: int('urgency').default(0),
   importance: int('importance').default(0),
   sortOrder: int('sort_order').notNull().default(0),
@@ -53,6 +54,7 @@ export const routines = sqliteTable('routines', {
   repeatType: text('repeat_type').notNull(), // 'daily' | 'weekly' | 'monthly'
   repeatValue: text('repeat_value'),         // weekly: '1,3,5' (0=일), monthly: '15' (날짜)
   alarmTime: int('alarm_time'), // minutes from midnight (0-1439), null = no alarm
+  notificationOffsets: text('notification_offsets'), // comma-separated offset minutes e.g. "0,10,30"
   urgency: int('urgency').default(0),
   importance: int('importance').default(0),
   sortOrder: int('sort_order').notNull().default(0),

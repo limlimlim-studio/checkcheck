@@ -11,6 +11,7 @@ import MobileAds from 'react-native-google-mobile-ads';
 import { initDb } from './src/db';
 import { loadPremiumStatus } from './src/hooks/usePremiumStatus';
 import { configurePurchases } from './src/screens/PremiumScreen';
+import { requestNotificationPermission } from './src/utils/notifications';
 import RootNavigator from './src/navigation/RootNavigator';
 import { AppTheme, NavTheme } from './src/theme';
 
@@ -38,6 +39,7 @@ export default function App() {
     MobileAds().initialize()
       .then(() => initDb())
       .then(() => loadPremiumStatus())
+      .then(() => requestNotificationPermission())
       .then(async () => {
         // 최소 유지 시간 보장 후 앱 렌더링 → 스플래시 숨김
         const elapsed = Date.now() - start;

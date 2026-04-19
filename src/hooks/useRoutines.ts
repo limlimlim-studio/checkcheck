@@ -3,6 +3,7 @@ import { and, asc, eq } from 'drizzle-orm';
 import dayjs from 'dayjs';
 import { db } from '../db';
 import { routines, routineCompletions } from '../db/schema';
+import { scheduleRoutineNotifications, cancelRoutineNotifications, offsetsToString } from '../utils/notifications';
 
 export const useRoutines = () =>
   useQuery({
@@ -24,6 +25,7 @@ export const useCreateRoutine = () => {
       repeatType,
       repeatValue,
       alarmTime,
+      notificationOffsets,
       urgency,
       importance,
     }: {
@@ -33,25 +35,31 @@ export const useCreateRoutine = () => {
       repeatType: string;
       repeatValue?: string;
       alarmTime?: number | null;
+      notificationOffsets?: number[];
       urgency?: number;
       importance?: number;
     }) => {
       const all = db.select().from(routines).all();
       const maxOrder = all.reduce((max, r) => Math.max(max, r.sortOrder), 0);
       const now = Date.now();
-      await db.insert(routines).values({
+      const offsets = notificationOffsets ?? [];
+      const result = await db.insert(routines).values({
         categoryId,
         title,
         description: description ?? null,
         repeatType,
         repeatValue: repeatValue ?? null,
         alarmTime: alarmTime ?? null,
+        notificationOffsets: offsets.length > 0 ? offsetsToString(offsets) : null,
         urgency: urgency ?? 0,
         importance: importance ?? 0,
         sortOrder: maxOrder + 1,
         createdAt: now,
         updatedAt: now,
-      }).run();
+      }).returning({ id: routines.id }).get();
+      if (result && alarmTime != null && offsets.length > 0) {
+        scheduleRoutineNotifications({ id: result.id, title, alarmTime, notificationOffsets: offsets }).catch(() => {});
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['routines'] });
@@ -71,6 +79,7 @@ export const useUpdateRoutine = () => {
       repeatType,
       repeatValue,
       alarmTime,
+      notificationOffsets,
       urgency,
       importance,
     }: {
@@ -81,9 +90,11 @@ export const useUpdateRoutine = () => {
       repeatType: string;
       repeatValue?: string;
       alarmTime?: number | null;
+      notificationOffsets?: number[];
       urgency?: number;
       importance?: number;
     }) => {
+      const offsets = notificationOffsets ?? [];
       await db.update(routines).set({
         categoryId,
         title,
@@ -91,10 +102,15 @@ export const useUpdateRoutine = () => {
         repeatType,
         repeatValue: repeatValue ?? null,
         alarmTime: alarmTime ?? null,
+        notificationOffsets: offsets.length > 0 ? offsetsToString(offsets) : null,
         urgency: urgency ?? 0,
         importance: importance ?? 0,
         updatedAt: Date.now(),
       }).where(eq(routines.id, id)).run();
+      await cancelRoutineNotifications(id);
+      if (alarmTime != null && offsets.length > 0) {
+        scheduleRoutineNotifications({ id, title, alarmTime, notificationOffsets: offsets }).catch(() => {});
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['routines'] });
@@ -111,6 +127,7 @@ export const useDeleteRoutine = () => {
         isActive: 0,
         updatedAt: Date.now(),
       }).where(eq(routines.id, id)).run();
+      cancelRoutineNotifications(id).catch(() => {});
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['routines'] });
