@@ -14,14 +14,14 @@
       "title": "알림",
       "issueNumber": 117,
       "branch": "feature/issue-115/notifications",
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "number": 3,
       "title": "정렬",
       "issueNumber": 118,
       "branch": "feature/issue-115/sort",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "number": 4,
