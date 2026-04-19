@@ -156,7 +156,7 @@ export default function TodoFormScreen() {
           </View>
         )}
 
-        <Text variant="labelLarge" style={styles.label}>시간 (선택)</Text>
+        <Text variant="labelLarge" style={styles.label}>시간</Text>
         <View style={styles.timeRow}>
           <TouchableOpacity
             style={[styles.dateButton, styles.timeButton]}
@@ -210,14 +210,13 @@ export default function TodoFormScreen() {
               onPress={() => setCategoryId(cat.id)}
               style={[
                 styles.categoryChip,
-                { borderColor: cat.color },
-                categoryId === cat.id && { backgroundColor: cat.color },
+                { backgroundColor: cat.color + '28' },
+                categoryId === cat.id
+                  ? { borderColor: cat.color }
+                  : { borderColor: 'transparent' },
               ]}
             >
-              <Text style={[
-                styles.categoryChipText,
-                categoryId === cat.id && { color: '#fff' },
-              ]}>
+              <Text style={[styles.categoryChipText, { color: cat.color }]}>
                 {cat.name}
               </Text>
             </TouchableOpacity>
@@ -303,11 +302,11 @@ const styles = StyleSheet.create({
   categoryScroll: { marginBottom: 4 },
   categoryChip: {
     borderWidth: 1.5,
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     marginRight: 8,
   },
-  categoryChipText: { fontSize: 13 },
+  categoryChipText: { fontSize: 12, fontWeight: '600' },
   segment: { marginBottom: 16 },
 });

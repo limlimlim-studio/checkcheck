@@ -23,6 +23,7 @@ export const useCreateRoutine = () => {
       description,
       repeatType,
       repeatValue,
+      alarmTime,
       urgency,
       importance,
     }: {
@@ -31,6 +32,7 @@ export const useCreateRoutine = () => {
       description?: string;
       repeatType: string;
       repeatValue?: string;
+      alarmTime?: number | null;
       urgency?: number;
       importance?: number;
     }) => {
@@ -43,6 +45,7 @@ export const useCreateRoutine = () => {
         description: description ?? null,
         repeatType,
         repeatValue: repeatValue ?? null,
+        alarmTime: alarmTime ?? null,
         urgency: urgency ?? 0,
         importance: importance ?? 0,
         sortOrder: maxOrder + 1,
@@ -67,6 +70,7 @@ export const useUpdateRoutine = () => {
       description,
       repeatType,
       repeatValue,
+      alarmTime,
       urgency,
       importance,
     }: {
@@ -76,6 +80,7 @@ export const useUpdateRoutine = () => {
       description?: string;
       repeatType: string;
       repeatValue?: string;
+      alarmTime?: number | null;
       urgency?: number;
       importance?: number;
     }) => {
@@ -85,6 +90,7 @@ export const useUpdateRoutine = () => {
         description: description ?? null,
         repeatType,
         repeatValue: repeatValue ?? null,
+        alarmTime: alarmTime ?? null,
         urgency: urgency ?? 0,
         importance: importance ?? 0,
         updatedAt: Date.now(),

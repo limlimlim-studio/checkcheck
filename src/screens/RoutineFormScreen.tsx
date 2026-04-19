@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { Appbar, Text, TextInput, Button, Dialog, Portal, SegmentedButtons } from 'react-native-paper';
+import { Appbar, Text, TextInput, Button, IconButton, Dialog, Portal, SegmentedButtons, Divider } from 'react-native-paper';
 import { Colors } from '../theme';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCreateRoutine, useUpdateRoutine, useDeleteRoutine } from '../hooks/useRoutines';
@@ -39,6 +40,8 @@ export default function RoutineFormScreen() {
   const [repeatType, setRepeatType] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [selectedDays, setSelectedDays] = useState<Set<string>>(new Set());
   const [selectedMonthDays, setSelectedMonthDays] = useState<Set<string>>(new Set());
+  const [alarmTime, setAlarmTime] = useState<Date | null>(null);
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const [urgency, setUrgency] = useState('0');
   const [importance, setImportance] = useState('0');
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
@@ -54,6 +57,13 @@ export default function RoutineFormScreen() {
       }
       if (routine.repeatType === 'monthly' && routine.repeatValue) {
         setSelectedMonthDays(new Set(routine.repeatValue.split(',')));
+      }
+      if (routine.alarmTime != null) {
+        const t = new Date();
+        t.setHours(Math.floor(routine.alarmTime / 60), routine.alarmTime % 60, 0, 0);
+        setAlarmTime(t);
+      } else {
+        setAlarmTime(null);
       }
       setUrgency(String(routine.urgency ?? 0));
       setImportance(String(routine.importance ?? 0));
@@ -103,6 +113,7 @@ export default function RoutineFormScreen() {
       description: description.trim() || undefined,
       repeatType,
       repeatValue: getRepeatValue(),
+      alarmTime: alarmTime ? alarmTime.getHours() * 60 + alarmTime.getMinutes() : null,
       urgency: Number(urgency),
       importance: Number(importance),
     };
@@ -156,20 +167,73 @@ export default function RoutineFormScreen() {
         />
 
         <Text variant="labelLarge" style={styles.label}>카테고리 *</Text>
-        <View style={styles.chipRow}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
           {categories.map((cat) => (
             <TouchableOpacity
               key={cat.id}
-              style={[styles.chip, categoryId === cat.id && { borderColor: cat.color, borderWidth: 2 }]}
               onPress={() => setCategoryId(cat.id)}
+              style={[
+                styles.categoryChip,
+                { backgroundColor: cat.color + '28' },
+                categoryId === cat.id
+                  ? { borderColor: cat.color }
+                  : { borderColor: 'transparent' },
+              ]}
             >
-              <View style={[styles.chipDot, { backgroundColor: cat.color }]} />
-              <Text variant="labelMedium" style={categoryId === cat.id ? { color: cat.color } : { color: Colors.textSecondary }}>
+              <Text style={[styles.categoryChipText, { color: cat.color }]}>
                 {cat.name}
               </Text>
             </TouchableOpacity>
           ))}
+        </ScrollView>
+
+        <Divider style={styles.divider} />
+
+        <Text variant="labelLarge" style={styles.label}>시간</Text>
+        <View style={styles.timeRow}>
+          <TouchableOpacity
+            style={[styles.dateButton, styles.timeButton]}
+            onPress={() => {
+              if (!alarmTime) {
+                const d = new Date();
+                d.setHours(9, 0, 0, 0);
+                setAlarmTime(d);
+              }
+              setShowTimePicker(true);
+            }}
+          >
+            <Text style={alarmTime ? styles.dateText : styles.datePlaceholder}>
+              {alarmTime
+                ? alarmTime.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+                : '설정 안 함'}
+            </Text>
+          </TouchableOpacity>
+          {alarmTime && (
+            <IconButton icon="close-circle" size={20} onPress={() => setAlarmTime(null)} />
+          )}
         </View>
+
+        {showTimePicker && (
+          <DateTimePicker
+            value={alarmTime ?? new Date(new Date().setHours(9, 0, 0, 0))}
+            mode="time"
+            display="spinner"
+            locale="ko"
+            textColor="#F2F2F7"
+            onChange={(_, date) => {
+              if (date) setAlarmTime(date);
+            }}
+          />
+        )}
+        {showTimePicker && (
+          <View style={styles.confirmRow}>
+            <Button mode="contained" onPress={() => setShowTimePicker(false)}>
+              확인
+            </Button>
+          </View>
+        )}
+
+        <Divider style={styles.divider} />
 
         <Text variant="labelLarge" style={styles.label}>반복 주기 *</Text>
         <SegmentedButtons
@@ -257,7 +321,7 @@ export default function RoutineFormScreen() {
         {isEdit && (
           <Button
             mode="outlined"
-            textColor="#B03A2E"
+            textColor={Colors.dangerDark}
             icon="delete-outline"
             onPress={() => setDeleteDialogVisible(true)}
             style={styles.deleteButton}
@@ -278,7 +342,7 @@ export default function RoutineFormScreen() {
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={() => setDeleteDialogVisible(false)}>취소</Button>
-            <Button textColor="#EA4335" onPress={handleDelete}>삭제</Button>
+            <Button textColor={Colors.danger} onPress={handleDelete}>삭제</Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
@@ -293,21 +357,35 @@ const styles = StyleSheet.create({
   descriptionInput: { minHeight: 80 },
   label: { marginBottom: 8, marginTop: 4 },
   subLabel: { marginBottom: 8, marginTop: 8, color: Colors.textSecondary },
+  divider: { marginVertical: 16 },
   segmented: { marginBottom: 16 },
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
-  dayGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
-  chip: {
+  categoryScroll: { marginBottom: 4 },
+  categoryChip: {
+    borderWidth: 1.5,
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginRight: 8,
+  },
+  categoryChipText: { fontSize: 12, fontWeight: '600' },
+  timeRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
+  timeButton: { flex: 1, marginBottom: 0 },
+  dateButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    backgroundColor: Colors.surfaceVariant,
-    borderWidth: 2,
-    borderColor: 'transparent',
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    marginBottom: 12,
+    backgroundColor: Colors.surface,
   },
-  chipDot: { width: 8, height: 8, borderRadius: 4 },
+  dateText: { fontSize: 15, color: Colors.text },
+  datePlaceholder: { color: Colors.textMuted },
+  confirmRow: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginBottom: 8 },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
+  dayGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
   dayChip: {
     width: 36,
     height: 36,
