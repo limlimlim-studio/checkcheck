@@ -21,14 +21,14 @@
       "title": "정렬",
       "issueNumber": 118,
       "branch": "feature/issue-115/sort",
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "number": 4,
       "title": "사용자 가이드",
       "issueNumber": 119,
       "branch": "feature/issue-115/onboarding",
-      "status": "pending"
+      "status": "in_progress"
     }
   ]
 }
