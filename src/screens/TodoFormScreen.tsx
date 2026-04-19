@@ -156,7 +156,7 @@ export default function TodoFormScreen() {
           </View>
         )}
 
-        <Text variant="labelLarge" style={styles.label}>시간 (선택)</Text>
+        <Text variant="labelLarge" style={styles.label}>시간</Text>
         <View style={styles.timeRow}>
           <TouchableOpacity
             style={[styles.dateButton, styles.timeButton]}

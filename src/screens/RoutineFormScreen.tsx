@@ -189,7 +189,7 @@ export default function RoutineFormScreen() {
 
         <Divider style={styles.divider} />
 
-        <Text variant="labelLarge" style={styles.label}>알람 시간 (선택)</Text>
+        <Text variant="labelLarge" style={styles.label}>시간</Text>
         <View style={styles.timeRow}>
           <TouchableOpacity
             style={[styles.dateButton, styles.timeButton]}
