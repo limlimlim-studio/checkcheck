@@ -18,6 +18,7 @@ export const todos = sqliteTable('todos', {
   title: text('title').notNull(),
   description: text('description'),
   dueDate: int('due_date'),
+  dueTime: int('due_time'), // minutes from midnight (0-1439), null = no time set
   urgency: int('urgency').default(0),
   importance: int('importance').default(0),
   sortOrder: int('sort_order').notNull().default(0),

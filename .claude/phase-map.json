@@ -1,20 +1,34 @@
 {
   "planFile": "shimmying-snuggling-cat.md",
-  "mainIssueNumber": 104,
+  "mainIssueNumber": 115,
   "phases": [
     {
       "number": 1,
-      "title": "훅 4종 구현",
-      "issueNumber": 105,
-      "branch": "refactor/issue-104/extract-hooks",
-      "status": "done"
+      "title": "할 일 시간 설정",
+      "issueNumber": 116,
+      "branch": "feature/issue-115/due-time",
+      "status": "in_progress"
     },
     {
       "number": 2,
-      "title": "TodoItem 리팩토링 + 탭 컴포넌트 훅 적용",
-      "issueNumber": 106,
-      "branch": "refactor/issue-104/refactor-todo-item",
-      "status": "in_progress"
+      "title": "알림",
+      "issueNumber": 117,
+      "branch": "feature/issue-115/notifications",
+      "status": "pending"
+    },
+    {
+      "number": 3,
+      "title": "정렬",
+      "issueNumber": 118,
+      "branch": "feature/issue-115/sort",
+      "status": "pending"
+    },
+    {
+      "number": 4,
+      "title": "사용자 가이드",
+      "issueNumber": 119,
+      "branch": "feature/issue-115/onboarding",
+      "status": "pending"
     }
   ]
 }

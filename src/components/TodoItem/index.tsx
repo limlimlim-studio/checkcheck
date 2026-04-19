@@ -9,6 +9,7 @@ type Todo = {
   title: string;
   description?: string | null;
   dueDate?: number | null;
+  dueTime?: number | null;
   urgency?: number | null;
   importance?: number | null;
   isCompleted: number;
@@ -88,6 +89,7 @@ export default function TodoItem({
         )}
         <TodoItemMeta
           category={category}
+          dueTime={todo.dueTime}
           urgency={todo.urgency}
           importance={todo.importance}
         />
