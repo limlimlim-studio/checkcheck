@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { Appbar, Text, TextInput, Button, IconButton, SegmentedButtons, Divider, Dialog, Portal } from 'react-native-paper';
+import { Appbar, Text, TextInput, Button, IconButton, SegmentedButtons, Divider, Dialog, Portal, Checkbox } from 'react-native-paper';
 import { Colors } from '../theme';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -9,6 +9,7 @@ import { useCategories } from '../hooks/useCategories';
 import { useCreateTodo, useUpdateTodo, useDeleteTodo } from '../hooks/useTodos';
 import { TodoStackParamList } from '../navigation/TodoStack';
 import { LEVEL_OPTIONS } from '../constants/todo';
+import { OFFSET_OPTIONS, offsetsFromString, offsetLabel } from '../utils/notifications';
 
 type Nav = NativeStackNavigationProp<TodoStackParamList, 'TodoForm'>;
 type Route = RouteProp<TodoStackParamList, 'TodoForm'>;
@@ -33,9 +34,12 @@ export default function TodoFormScreen() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState<Date>(getTodayMidnight);
-  const [dueTime, setDueTime] = useState<Date | null>(null); // null = 시간 없음
+  const [dueTime, setDueTime] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [notificationOffsets, setNotificationOffsets] = useState<number[]>([]);
+  const [showNotifDialog, setShowNotifDialog] = useState(false);
+  const [pendingOffsets, setPendingOffsets] = useState<number[]>([]);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
 
   const [urgency, setUrgency] = useState('0');
@@ -54,6 +58,7 @@ export default function TodoFormScreen() {
     } else {
       setDueTime(null);
     }
+    setNotificationOffsets(offsetsFromString((todo as any)?.notificationOffsets));
     setUrgency(String(todo?.urgency ?? 0));
     setImportance(String(todo?.importance ?? 0));
     setCategoryId(todo?.categoryId ?? (categories[0]?.id ?? null));
@@ -66,6 +71,7 @@ export default function TodoFormScreen() {
       description: description.trim() || undefined,
       dueDate: new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()).getTime(),
       dueTime: dueTime ? dueTime.getHours() * 60 + dueTime.getMinutes() : null,
+      notificationOffsets: dueTime ? notificationOffsets : [],
       urgency: Number(urgency),
       importance: Number(importance),
       categoryId,
@@ -200,6 +206,32 @@ export default function TodoFormScreen() {
           </View>
         )}
 
+        {dueTime && (
+          <View style={styles.notifRow}>
+            <Button
+              mode="outlined"
+              icon="bell-outline"
+              compact
+              onPress={() => {
+                setPendingOffsets([...notificationOffsets]);
+                setShowNotifDialog(true);
+              }}
+              style={styles.notifBtn}
+            >
+              알림 설정
+            </Button>
+            {notificationOffsets.length > 0 && (
+              <View style={styles.notifTagRow}>
+                {notificationOffsets.map((o) => (
+                  <View key={o} style={styles.notifTag}>
+                    <Text style={styles.notifTagText}>{offsetLabel(o)}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
+
         <Divider style={styles.divider} />
 
         <Text variant="labelLarge" style={styles.label}>카테고리</Text>
@@ -267,6 +299,41 @@ export default function TodoFormScreen() {
           </Dialog.Actions>
         </Dialog>
       </Portal>
+
+      {showNotifDialog && (
+        <Portal>
+          <Dialog visible onDismiss={() => setShowNotifDialog(false)}>
+            <Dialog.Title>알림 설정</Dialog.Title>
+            <Dialog.Content>
+              {OFFSET_OPTIONS.map((opt) => (
+                <TouchableOpacity
+                  key={opt.value}
+                  style={styles.checkRow}
+                  onPress={() => {
+                    setPendingOffsets((prev) =>
+                      prev.includes(opt.value)
+                        ? prev.filter((v) => v !== opt.value)
+                        : [...prev, opt.value],
+                    );
+                  }}
+                >
+                  <Checkbox.Android
+                    status={pendingOffsets.includes(opt.value) ? 'checked' : 'unchecked'}
+                    color={Colors.primary}
+                  />
+                  <Text variant="bodyMedium">{opt.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button onPress={() => setShowNotifDialog(false)}>취소</Button>
+              <Button onPress={() => { setNotificationOffsets(pendingOffsets); setShowNotifDialog(false); }}>
+                확인
+              </Button>
+            </Dialog.Actions>
+          </Dialog>
+        </Portal>
+      )}
     </View>
   );
 }
@@ -309,4 +376,15 @@ const styles = StyleSheet.create({
   },
   categoryChipText: { fontSize: 12, fontWeight: '600' },
   segment: { marginBottom: 16 },
+  notifRow: { marginBottom: 12 },
+  notifBtn: { alignSelf: 'flex-start' },
+  notifTagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
+  notifTag: {
+    backgroundColor: Colors.primary + '22',
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  notifTagText: { fontSize: 12, color: Colors.primary },
+  checkRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6 },
 });

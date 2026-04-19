@@ -54,6 +54,8 @@ export const initDb = async () => {
     sqlite.execSync('ALTER TABLE todos ADD COLUMN deleted_at INTEGER;');
   if (!todoColumns.includes('due_time'))
     sqlite.execSync('ALTER TABLE todos ADD COLUMN due_time INTEGER;');
+  if (!todoColumns.includes('notification_offsets'))
+    sqlite.execSync('ALTER TABLE todos ADD COLUMN notification_offsets TEXT;');
 
   sqlite.execSync(`
     CREATE TABLE IF NOT EXISTS app_settings (
@@ -90,6 +92,8 @@ export const initDb = async () => {
   const routineColumns = (sqlite.getAllSync('PRAGMA table_info(routines)') as { name: string }[]).map(c => c.name);
   if (!routineColumns.includes('alarm_time'))
     sqlite.execSync('ALTER TABLE routines ADD COLUMN alarm_time INTEGER;');
+  if (!routineColumns.includes('notification_offsets'))
+    sqlite.execSync('ALTER TABLE routines ADD COLUMN notification_offsets TEXT;');
 
   sqlite.execSync(`
     CREATE TABLE IF NOT EXISTS routine_completions (

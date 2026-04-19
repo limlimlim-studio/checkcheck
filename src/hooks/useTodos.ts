@@ -3,6 +3,7 @@ import { and, asc, desc, eq, gte, isNull, lt, or } from 'drizzle-orm';
 import dayjs from 'dayjs';
 import { db } from '../db';
 import { todos, todoCompletions } from '../db/schema';
+import { scheduleTodoNotifications, cancelTodoNotifications, offsetsToString } from '../utils/notifications';
 
 export const useTodos = (isCompleted: 0 | 1) =>
   useQuery({
@@ -207,6 +208,7 @@ export const useCreateTodo = () => {
       description,
       dueDate,
       dueTime,
+      notificationOffsets,
       urgency,
       importance,
     }: {
@@ -215,6 +217,7 @@ export const useCreateTodo = () => {
       description?: string;
       dueDate?: number;
       dueTime?: number | null;
+      notificationOffsets?: number[];
       urgency?: number;
       importance?: number;
     }) => {
@@ -223,18 +226,23 @@ export const useCreateTodo = () => {
         .all();
       const minOrder = all.reduce((min, t) => Math.min(min, t.sortOrder), 0);
       const now = Date.now();
-      await db.insert(todos).values({
+      const offsets = notificationOffsets ?? [];
+      const result = await db.insert(todos).values({
         categoryId,
         title,
         description: description ?? null,
         dueDate: dueDate ?? null,
         dueTime: dueTime ?? null,
+        notificationOffsets: offsets.length > 0 ? offsetsToString(offsets) : null,
         urgency: urgency ?? 0,
         importance: importance ?? 0,
         sortOrder: minOrder - 1,
         createdAt: now,
         updatedAt: now,
-      }).run();
+      }).returning({ id: todos.id }).get();
+      if (result && dueDate != null && dueTime != null && offsets.length > 0) {
+        scheduleTodoNotifications({ id: result.id, title, dueDate, dueTime, notificationOffsets: offsets }).catch(() => {});
+      }
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos'] }),
   });
@@ -250,6 +258,7 @@ export const useUpdateTodo = () => {
       description,
       dueDate,
       dueTime,
+      notificationOffsets,
       urgency,
       importance,
     }: {
@@ -259,19 +268,26 @@ export const useUpdateTodo = () => {
       description?: string;
       dueDate?: number;
       dueTime?: number | null;
+      notificationOffsets?: number[];
       urgency?: number;
       importance?: number;
     }) => {
+      const offsets = notificationOffsets ?? [];
       await db.update(todos).set({
         categoryId,
         title,
         description: description ?? null,
         dueDate: dueDate ?? null,
         dueTime: dueTime ?? null,
+        notificationOffsets: offsets.length > 0 ? offsetsToString(offsets) : null,
         urgency: urgency ?? 0,
         importance: importance ?? 0,
         updatedAt: Date.now(),
       }).where(eq(todos.id, id)).run();
+      await cancelTodoNotifications(id);
+      if (dueDate != null && dueTime != null && offsets.length > 0) {
+        scheduleTodoNotifications({ id, title, dueDate, dueTime, notificationOffsets: offsets }).catch(() => {});
+      }
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos'] }),
   });
@@ -288,6 +304,9 @@ export const useToggleTodo = () => {
         completedAt: newCompleted === 1 ? now : null,
         updatedAt: now,
       }).where(eq(todos.id, id)).run();
+      if (newCompleted === 1) {
+        cancelTodoNotifications(id).catch(() => {});
+      }
 
       const today = new Date().toISOString().split('T')[0];
       if (newCompleted === 1) {
@@ -315,6 +334,7 @@ export const useDeleteTodo = () => {
         deletedAt: Date.now(),
         updatedAt: Date.now(),
       }).where(eq(todos.id, id)).run();
+      cancelTodoNotifications(id).catch(() => {});
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos'] }),
   });

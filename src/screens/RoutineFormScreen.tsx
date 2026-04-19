@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { Appbar, Text, TextInput, Button, IconButton, Dialog, Portal, SegmentedButtons, Divider } from 'react-native-paper';
+import { Appbar, Text, TextInput, Button, IconButton, Dialog, Portal, SegmentedButtons, Divider, Checkbox } from 'react-native-paper';
 import { Colors } from '../theme';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -9,6 +9,7 @@ import { useCreateRoutine, useUpdateRoutine, useDeleteRoutine } from '../hooks/u
 import { useCategories } from '../hooks/useCategories';
 import { RoutineStackParamList } from '../navigation/RoutineStack';
 import { LEVEL_OPTIONS } from '../constants/todo';
+import { OFFSET_OPTIONS, offsetsFromString, offsetLabel } from '../utils/notifications';
 
 type Nav = NativeStackNavigationProp<RoutineStackParamList, 'RoutineForm'>;
 type Route = RouteProp<RoutineStackParamList, 'RoutineForm'>;
@@ -42,6 +43,9 @@ export default function RoutineFormScreen() {
   const [selectedMonthDays, setSelectedMonthDays] = useState<Set<string>>(new Set());
   const [alarmTime, setAlarmTime] = useState<Date | null>(null);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [notificationOffsets, setNotificationOffsets] = useState<number[]>([]);
+  const [showNotifDialog, setShowNotifDialog] = useState(false);
+  const [pendingOffsets, setPendingOffsets] = useState<number[]>([]);
   const [urgency, setUrgency] = useState('0');
   const [importance, setImportance] = useState('0');
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
@@ -65,6 +69,7 @@ export default function RoutineFormScreen() {
       } else {
         setAlarmTime(null);
       }
+      setNotificationOffsets(offsetsFromString((routine as any)?.notificationOffsets));
       setUrgency(String(routine.urgency ?? 0));
       setImportance(String(routine.importance ?? 0));
     } else {
@@ -114,6 +119,7 @@ export default function RoutineFormScreen() {
       repeatType,
       repeatValue: getRepeatValue(),
       alarmTime: alarmTime ? alarmTime.getHours() * 60 + alarmTime.getMinutes() : null,
+      notificationOffsets: alarmTime ? notificationOffsets : [],
       urgency: Number(urgency),
       importance: Number(importance),
     };
@@ -233,6 +239,32 @@ export default function RoutineFormScreen() {
           </View>
         )}
 
+        {alarmTime && (
+          <View style={styles.notifRow}>
+            <Button
+              mode="outlined"
+              icon="bell-outline"
+              compact
+              onPress={() => {
+                setPendingOffsets([...notificationOffsets]);
+                setShowNotifDialog(true);
+              }}
+              style={styles.notifBtn}
+            >
+              알림 설정
+            </Button>
+            {notificationOffsets.length > 0 && (
+              <View style={styles.notifTagRow}>
+                {notificationOffsets.map((o) => (
+                  <View key={o} style={styles.notifTag}>
+                    <Text style={styles.notifTagText}>{offsetLabel(o)}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
+
         <Divider style={styles.divider} />
 
         <Text variant="labelLarge" style={styles.label}>반복 주기 *</Text>
@@ -346,6 +378,41 @@ export default function RoutineFormScreen() {
           </Dialog.Actions>
         </Dialog>
       </Portal>
+
+      {showNotifDialog && (
+        <Portal>
+          <Dialog visible onDismiss={() => setShowNotifDialog(false)}>
+            <Dialog.Title>알림 설정</Dialog.Title>
+            <Dialog.Content>
+              {OFFSET_OPTIONS.map((opt) => (
+                <TouchableOpacity
+                  key={opt.value}
+                  style={styles.checkRow}
+                  onPress={() => {
+                    setPendingOffsets((prev) =>
+                      prev.includes(opt.value)
+                        ? prev.filter((v) => v !== opt.value)
+                        : [...prev, opt.value],
+                    );
+                  }}
+                >
+                  <Checkbox.Android
+                    status={pendingOffsets.includes(opt.value) ? 'checked' : 'unchecked'}
+                    color={Colors.primary}
+                  />
+                  <Text variant="bodyMedium">{opt.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button onPress={() => setShowNotifDialog(false)}>취소</Button>
+              <Button onPress={() => { setNotificationOffsets(pendingOffsets); setShowNotifDialog(false); }}>
+                확인
+              </Button>
+            </Dialog.Actions>
+          </Dialog>
+        </Portal>
+      )}
     </View>
   );
 }
@@ -409,4 +476,15 @@ const styles = StyleSheet.create({
   actionButtonLabel: { fontSize: 14 },
   deleteButton: { marginTop: 8 },
   bold: { fontWeight: 'bold' },
+  notifRow: { marginBottom: 12 },
+  notifBtn: { alignSelf: 'flex-start' },
+  notifTagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
+  notifTag: {
+    backgroundColor: Colors.primary + '22',
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  notifTagText: { fontSize: 12, color: Colors.primary },
+  checkRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6 },
 });

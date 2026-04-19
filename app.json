@@ -33,6 +33,13 @@
     },
     "plugins": [
       "expo-sqlite",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#1E2030"
+        }
+      ],
       "@react-native-community/datetimepicker",
       [
         "react-native-google-mobile-ads",
