@@ -1,7 +1,7 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, Checkbox } from 'react-native-paper';
 import { Colors } from '../theme';
-import { LEVEL_LABELS } from '../constants/todo';
+import TodoItemMeta from './TodoItem/TodoItemMeta';
 
 type Category = {
   id: number;
@@ -14,18 +14,13 @@ type Props = {
   title: string;
   urgency?: number | null;
   importance?: number | null;
+  alarmTime?: number | null;
   category?: Category;
   isCompletedToday: boolean;
   onToggle: () => void;
 };
 
-const URGENCY_COLOR = Colors.urgency;
-const IMPORTANCE_COLOR = Colors.importance;
-
-export default function RoutineItem({ routineId: _, title, urgency, importance, category, isCompletedToday, onToggle }: Props) {
-  const urgencyLevel = urgency ?? 0;
-  const importanceLevel = importance ?? 0;
-
+export default function RoutineItem({ routineId: _, title, urgency, importance, alarmTime, category, isCompletedToday, onToggle }: Props) {
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={onToggle} activeOpacity={0.6} style={styles.checkboxArea}>
@@ -42,30 +37,16 @@ export default function RoutineItem({ routineId: _, title, urgency, importance, 
         >
           {title}
         </Text>
-        <View style={styles.meta}>
-          {category && (
-            <View style={[styles.categoryDot, { backgroundColor: category.color }]} />
-          )}
-          {category && (
-            <Text variant="labelSmall" style={[styles.metaText, { color: category.color }]}>
-              {category.name}
-            </Text>
-          )}
-          <Text variant="labelSmall" style={[styles.metaText, styles.routineTag]}>루틴</Text>
-          {urgencyLevel > 0 && (
-            <View style={[styles.badge, { backgroundColor: URGENCY_COLOR + '33' }]}>
-              <Text style={[styles.badgeText, { color: URGENCY_COLOR }]}>
-                긴급 {LEVEL_LABELS[urgencyLevel]}
-              </Text>
-            </View>
-          )}
-          {importanceLevel > 0 && (
-            <View style={[styles.badge, { backgroundColor: IMPORTANCE_COLOR + '33' }]}>
-              <Text style={[styles.badgeText, { color: IMPORTANCE_COLOR }]}>
-                중요 {LEVEL_LABELS[importanceLevel]}
-              </Text>
-            </View>
-          )}
+        <View style={styles.metaRow}>
+          <View style={styles.routineTag}>
+            <Text style={styles.routineTagText}>루틴</Text>
+          </View>
+          <TodoItemMeta
+            category={category}
+            dueTime={alarmTime}
+            urgency={urgency}
+            importance={importance}
+          />
         </View>
       </View>
     </View>
@@ -84,10 +65,12 @@ const styles = StyleSheet.create({
   content: { flex: 1, marginLeft: 4, paddingVertical: 4 },
   titleText: { flexShrink: 1 },
   completed: { textDecorationLine: 'line-through', color: Colors.textMuted },
-  meta: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' },
-  categoryDot: { width: 8, height: 8, borderRadius: 4 },
-  metaText: { color: Colors.textSecondary },
-  routineTag: { color: Colors.primary },
-  badge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
-  badgeText: { fontSize: 10, fontWeight: '600' },
+  metaRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', marginTop: 4, gap: 6 },
+  routineTag: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    backgroundColor: Colors.primary + '22',
+  },
+  routineTagText: { fontSize: 10, fontWeight: '600', color: Colors.primary },
 });

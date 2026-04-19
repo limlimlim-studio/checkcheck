@@ -8,7 +8,7 @@ import { useMemo } from 'react';
 import { useRoutines, useReorderRoutines } from '../hooks/useRoutines';
 import { useCategories } from '../hooks/useCategories';
 import { RoutineStackParamList } from '../navigation/RoutineStack';
-import { LEVEL_LABELS } from '../constants/todo';
+import TodoItemMeta from '../components/TodoItem/TodoItemMeta';
 
 type Nav = NativeStackNavigationProp<RoutineStackParamList, 'RoutineManagement'>;
 
@@ -19,18 +19,13 @@ type Routine = {
   description?: string | null;
   repeatType: string;
   repeatValue?: string | null;
+  alarmTime?: number | null;
   urgency: number | null;
   importance: number | null;
   sortOrder: number;
   isActive: number;
   createdAt: number;
   updatedAt: number;
-};
-
-const REPEAT_LABELS: Record<string, string> = {
-  daily: '매일',
-  weekly: '매주',
-  monthly: '매월',
 };
 
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
@@ -47,11 +42,8 @@ function repeatDescription(routine: Routine): string {
       .join(', ');
     return `매월 ${days}`;
   }
-  return REPEAT_LABELS[routine.repeatType] ?? routine.repeatType;
+  return routine.repeatType;
 }
-
-const URGENCY_COLOR = Colors.urgency;
-const IMPORTANCE_COLOR = Colors.importance;
 
 export default function RoutineManagementScreen() {
   const navigation = useNavigation<Nav>();
@@ -66,8 +58,6 @@ export default function RoutineManagementScreen() {
 
   const renderItem = ({ item, drag, isActive }: RenderItemParams<Routine>) => {
     const category = categoryMap.get(item.categoryId);
-    const urgencyLevel = item.urgency ?? 0;
-    const importanceLevel = item.importance ?? 0;
 
     return (
       <ScaleDecorator>
@@ -79,30 +69,16 @@ export default function RoutineManagementScreen() {
         >
           <View style={styles.itemText}>
             <Text variant="bodyLarge">{item.title}</Text>
-            <View style={styles.meta}>
-              {category && (
-                <View style={[styles.categoryDot, { backgroundColor: category.color }]} />
-              )}
-              {category && (
-                <Text variant="labelSmall" style={[styles.metaText, { color: category.color }]}>
-                  {category.name}
-                </Text>
-              )}
-              <Text variant="labelSmall" style={styles.metaText}>{repeatDescription(item)}</Text>
-              {urgencyLevel > 0 && (
-                <View style={[styles.badge, { backgroundColor: URGENCY_COLOR + '33' }]}>
-                  <Text style={[styles.badgeText, { color: URGENCY_COLOR }]}>
-                    긴급 {LEVEL_LABELS[urgencyLevel]}
-                  </Text>
-                </View>
-              )}
-              {importanceLevel > 0 && (
-                <View style={[styles.badge, { backgroundColor: IMPORTANCE_COLOR + '33' }]}>
-                  <Text style={[styles.badgeText, { color: IMPORTANCE_COLOR }]}>
-                    중요 {LEVEL_LABELS[importanceLevel]}
-                  </Text>
-                </View>
-              )}
+            <View style={styles.metaRow}>
+              <View style={styles.repeatTag}>
+                <Text style={styles.repeatTagText}>{repeatDescription(item)}</Text>
+              </View>
+              <TodoItemMeta
+                category={category}
+                dueTime={item.alarmTime}
+                urgency={item.urgency}
+                importance={item.importance}
+              />
             </View>
           </View>
           <Text style={styles.dragHandle}>☰</Text>
@@ -152,11 +128,14 @@ const styles = StyleSheet.create({
   },
   itemDragging: { backgroundColor: Colors.surfaceVariant, elevation: 4 },
   itemText: { flex: 1 },
-  meta: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' },
-  categoryDot: { width: 8, height: 8, borderRadius: 4 },
-  metaText: { color: Colors.textSecondary },
-  badge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
-  badgeText: { fontSize: 10, fontWeight: '600' },
+  metaRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', marginTop: 4, gap: 6 },
+  repeatTag: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    backgroundColor: Colors.surfaceVariant,
+  },
+  repeatTagText: { fontSize: 10, fontWeight: '600', color: Colors.textSecondary },
   dragHandle: { color: Colors.textMuted, fontSize: 18 },
   fab: { position: 'absolute', right: 16, bottom: 48 },
   empty: { textAlign: 'center', marginTop: 60, color: Colors.textMuted },

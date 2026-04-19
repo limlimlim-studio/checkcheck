@@ -95,6 +95,7 @@ export default function TodoTabToday() {
                       title={routine.title}
                       urgency={routine.urgency}
                       importance={routine.importance}
+                      alarmTime={routine.alarmTime}
                       category={categoryMap.get(routine.categoryId)}
                       isCompletedToday={routine.isCompletedToday}
                       onToggle={() => toggleRoutine({ routineId: routine.id, date: today })}

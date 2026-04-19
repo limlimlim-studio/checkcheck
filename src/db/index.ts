@@ -87,6 +87,10 @@ export const initDb = async () => {
     );
   `);
 
+  const routineColumns = (sqlite.getAllSync('PRAGMA table_info(routines)') as { name: string }[]).map(c => c.name);
+  if (!routineColumns.includes('alarm_time'))
+    sqlite.execSync('ALTER TABLE routines ADD COLUMN alarm_time INTEGER;');
+
   sqlite.execSync(`
     CREATE TABLE IF NOT EXISTS routine_completions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
