@@ -1,5 +1,6 @@
 import { openDatabaseSync } from 'expo-sqlite';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
+import { eq } from 'drizzle-orm';
 import * as schema from './schema';
 
 type Db = ReturnType<typeof drizzle<typeof schema>>;
@@ -126,3 +127,16 @@ export const initDb = async () => {
     runDevSeed();
   }
 };
+
+export function getOnboardingCompleted(): boolean {
+  const row = db.select().from(schema.appSettings)
+    .where(eq(schema.appSettings.key, 'onboarding_completed')).get();
+  return !!row;
+}
+
+export function setOnboardingCompleted(): void {
+  db.insert(schema.appSettings)
+    .values({ key: 'onboarding_completed', value: '1' })
+    .onConflictDoNothing()
+    .run();
+}
