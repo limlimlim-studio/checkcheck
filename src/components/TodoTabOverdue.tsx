@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
-import { View, StyleSheet, FlatList } from 'react-native';
-import { Text, Divider, Button, FAB, Dialog, Portal, Snackbar } from 'react-native-paper';
+import { View, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { Text, Divider, Button, FAB, Dialog, Portal, Snackbar, Menu } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Colors } from '../theme';
@@ -13,19 +13,32 @@ import DateSeparator from './DateSeparator';
 import { TodoStackParamList } from '../navigation/TodoStack';
 import { Todo } from '../types';
 import { toDateKey, formatDueDateLabel } from '../utils/date';
+import { SortKey, sortTodos } from '../utils/sort';
 
 type Nav = NativeStackNavigationProp<TodoStackParamList, 'TodoList'>;
+
+const OVERDUE_SORT_OPTIONS: { key: SortKey; label: string }[] = [
+  { key: 'deadline', label: '기한순' },
+  { key: 'urgency', label: '긴급도순' },
+  { key: 'importance', label: '중요도순' },
+];
 
 type ListItem =
   | { type: 'header'; key: string; label: string }
   | { type: 'todo'; key: string; todo: Todo };
 
-function buildGroupedList(todos: Todo[]): ListItem[] {
+function buildGroupedList(todos: Todo[], sortKey: SortKey): ListItem[] {
+  if (sortKey === 'urgency' || sortKey === 'importance') {
+    const sorted = sortTodos(todos, sortKey);
+    return sorted.map((todo) => ({ type: 'todo', key: `todo-${todo.id}`, todo }));
+  }
+
+  // 기한순: 오래된 미완료 먼저
   const sorted = [...todos].sort((a, b) => {
     if (a.dueDate === null && b.dueDate === null) return a.sortOrder - b.sortOrder;
     if (a.dueDate === null) return 1;
     if (b.dueDate === null) return -1;
-    return b.dueDate - a.dueDate || a.sortOrder - b.sortOrder;
+    return a.dueDate - b.dueDate || a.sortOrder - b.sortOrder;
   });
 
   const result: ListItem[] = [];
@@ -52,12 +65,14 @@ export default function TodoTabOverdue() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [sortKey, setSortKey] = useState<SortKey>('deadline');
+  const [sortMenuVisible, setSortMenuVisible] = useState(false);
 
   const categoryMap = useCategoryMap(categories);
   const { isSelecting, selectedIds, startSelecting, clearSelection, toggleSelection } =
     useSelectable(todos as Todo[]);
 
-  const listItems = useMemo(() => buildGroupedList(todos as Todo[]), [todos]);
+  const listItems = useMemo(() => buildGroupedList(todos as Todo[], sortKey), [todos, sortKey]);
 
   const handleMoveToToday = () => {
     if (selectedIds.size === 0) return;
@@ -100,8 +115,32 @@ export default function TodoTabOverdue() {
     );
   };
 
+  const currentLabel = OVERDUE_SORT_OPTIONS.find((o) => o.key === sortKey)?.label ?? '기한순';
+
   return (
     <View style={styles.container}>
+      {!isSelecting && (
+        <View style={styles.sortRow}>
+          <Menu
+            visible={sortMenuVisible}
+            onDismiss={() => setSortMenuVisible(false)}
+            anchor={
+              <TouchableOpacity style={styles.sortAnchor} onPress={() => setSortMenuVisible(true)}>
+                <Text variant="labelSmall" style={styles.sortText}>{currentLabel} ▾</Text>
+              </TouchableOpacity>
+            }
+          >
+            {OVERDUE_SORT_OPTIONS.map((opt) => (
+              <Menu.Item
+                key={opt.key}
+                title={opt.label}
+                onPress={() => { setSortKey(opt.key); setSortMenuVisible(false); }}
+                trailingIcon={sortKey === opt.key ? 'check' : undefined}
+              />
+            ))}
+          </Menu>
+        </View>
+      )}
       <FlatList
         data={listItems}
         keyExtractor={(item) => item.key}
@@ -169,6 +208,20 @@ export default function TodoTabOverdue() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  sortRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: Colors.border,
+    backgroundColor: Colors.background,
+  },
+  sortAnchor: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  sortText: { color: Colors.textSecondary },
   list: { flex: 1, backgroundColor: Colors.background },
   empty: { textAlign: 'center', marginTop: 60, color: Colors.textMuted },
   snackbar: { marginBottom: 80 },
