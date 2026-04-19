@@ -206,6 +206,7 @@ export const useCreateTodo = () => {
       title,
       description,
       dueDate,
+      dueTime,
       urgency,
       importance,
     }: {
@@ -213,6 +214,7 @@ export const useCreateTodo = () => {
       title: string;
       description?: string;
       dueDate?: number;
+      dueTime?: number | null;
       urgency?: number;
       importance?: number;
     }) => {
@@ -226,6 +228,7 @@ export const useCreateTodo = () => {
         title,
         description: description ?? null,
         dueDate: dueDate ?? null,
+        dueTime: dueTime ?? null,
         urgency: urgency ?? 0,
         importance: importance ?? 0,
         sortOrder: minOrder - 1,
@@ -246,6 +249,7 @@ export const useUpdateTodo = () => {
       title,
       description,
       dueDate,
+      dueTime,
       urgency,
       importance,
     }: {
@@ -254,6 +258,7 @@ export const useUpdateTodo = () => {
       title: string;
       description?: string;
       dueDate?: number;
+      dueTime?: number | null;
       urgency?: number;
       importance?: number;
     }) => {
@@ -262,6 +267,7 @@ export const useUpdateTodo = () => {
         title,
         description: description ?? null,
         dueDate: dueDate ?? null,
+        dueTime: dueTime ?? null,
         urgency: urgency ?? 0,
         importance: importance ?? 0,
         updatedAt: Date.now(),

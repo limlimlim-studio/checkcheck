@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { Appbar, Text, TextInput, Button, SegmentedButtons, Divider, Dialog, Portal } from 'react-native-paper';
+import { Appbar, Text, TextInput, Button, IconButton, SegmentedButtons, Divider, Dialog, Portal } from 'react-native-paper';
 import { Colors } from '../theme';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -33,7 +33,9 @@ export default function TodoFormScreen() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState<Date>(getTodayMidnight);
+  const [dueTime, setDueTime] = useState<Date | null>(null); // null = 시간 없음
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
 
   const [urgency, setUrgency] = useState('0');
@@ -45,6 +47,13 @@ export default function TodoFormScreen() {
     setTitle(todo?.title ?? '');
     setDescription(todo?.description ?? '');
     setDueDate(todo?.dueDate ? new Date(todo.dueDate) : getTodayMidnight());
+    if (todo?.dueTime != null) {
+      const t = new Date();
+      t.setHours(Math.floor(todo.dueTime / 60), todo.dueTime % 60, 0, 0);
+      setDueTime(t);
+    } else {
+      setDueTime(null);
+    }
     setUrgency(String(todo?.urgency ?? 0));
     setImportance(String(todo?.importance ?? 0));
     setCategoryId(todo?.categoryId ?? (categories[0]?.id ?? null));
@@ -56,6 +65,7 @@ export default function TodoFormScreen() {
       title: title.trim(),
       description: description.trim() || undefined,
       dueDate: new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate()).getTime(),
+      dueTime: dueTime ? dueTime.getHours() * 60 + dueTime.getMinutes() : null,
       urgency: Number(urgency),
       importance: Number(importance),
       categoryId,
@@ -141,6 +151,50 @@ export default function TodoFormScreen() {
         {showDatePicker && (
           <View style={styles.dateConfirmRow}>
             <Button mode="contained" onPress={() => setShowDatePicker(false)}>
+              확인
+            </Button>
+          </View>
+        )}
+
+        <Text variant="labelLarge" style={styles.label}>시간 (선택)</Text>
+        <View style={styles.timeRow}>
+          <TouchableOpacity
+            style={[styles.dateButton, styles.timeButton]}
+            onPress={() => {
+              if (!dueTime) {
+                const d = new Date();
+                d.setHours(9, 0, 0, 0);
+                setDueTime(d);
+              }
+              setShowTimePicker(true);
+            }}
+          >
+            <Text style={dueTime ? styles.dateText : styles.datePlaceholder}>
+              {dueTime
+                ? dueTime.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+                : '설정 안 함'}
+            </Text>
+          </TouchableOpacity>
+          {dueTime && (
+            <IconButton icon="close-circle" size={20} onPress={() => setDueTime(null)} />
+          )}
+        </View>
+
+        {showTimePicker && (
+          <DateTimePicker
+            value={dueTime ?? new Date(new Date().setHours(9, 0, 0, 0))}
+            mode="time"
+            display="spinner"
+            locale="ko"
+            textColor="#F2F2F7"
+            onChange={(_, date) => {
+              if (date) setDueTime(date);
+            }}
+          />
+        )}
+        {showTimePicker && (
+          <View style={styles.dateConfirmRow}>
+            <Button mode="contained" onPress={() => setShowTimePicker(false)}>
               확인
             </Button>
           </View>
@@ -243,6 +297,8 @@ const styles = StyleSheet.create({
   datePlaceholder: { color: Colors.textMuted },
   dateClear: { fontSize: 14, color: Colors.textSecondary },
   dateConfirmRow: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginBottom: 8 },
+  timeRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
+  timeButton: { flex: 1, marginBottom: 0 },
   divider: { marginVertical: 16 },
   categoryScroll: { marginBottom: 4 },
   categoryChip: {

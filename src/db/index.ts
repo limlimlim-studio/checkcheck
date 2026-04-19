@@ -52,6 +52,8 @@ export const initDb = async () => {
     sqlite.execSync('ALTER TABLE todos ADD COLUMN is_deleted INTEGER NOT NULL DEFAULT 0;');
   if (!todoColumns.includes('deleted_at'))
     sqlite.execSync('ALTER TABLE todos ADD COLUMN deleted_at INTEGER;');
+  if (!todoColumns.includes('due_time'))
+    sqlite.execSync('ALTER TABLE todos ADD COLUMN due_time INTEGER;');
 
   sqlite.execSync(`
     CREATE TABLE IF NOT EXISTS app_settings (

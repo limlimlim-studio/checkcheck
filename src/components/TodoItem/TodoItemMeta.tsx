@@ -16,13 +16,22 @@ type Category = {
   color: string;
 };
 
+function formatDueTime(minutes: number): string {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  const date = new Date();
+  date.setHours(h, m, 0, 0);
+  return date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+}
+
 type Props = {
   category?: Category;
+  dueTime?: number | null;
   urgency?: number | null;
   importance?: number | null;
 };
 
-export default function TodoItemMeta({ category, urgency, importance }: Props) {
+export default function TodoItemMeta({ category, dueTime, urgency, importance }: Props) {
   const urgencyLevel = urgency ?? 0;
   const importanceLevel = importance ?? 0;
 
@@ -32,6 +41,12 @@ export default function TodoItemMeta({ category, urgency, importance }: Props) {
         <View style={[styles.tag, { backgroundColor: category.color + '28' }]}>
           <View style={[styles.tagDot, { backgroundColor: category.color }]} />
           <Text style={[styles.tagText, { color: category.color }]}>{category.name}</Text>
+        </View>
+      )}
+      {dueTime != null && (
+        <View style={[styles.tag, { backgroundColor: Colors.textMuted + '22' }]}>
+          <MaterialCommunityIcons name="clock-outline" size={10} color={Colors.textSecondary} />
+          <Text style={[styles.tagText, { color: Colors.textSecondary }]}>{formatDueTime(dueTime)}</Text>
         </View>
       )}
       {urgencyLevel > 0 && (
