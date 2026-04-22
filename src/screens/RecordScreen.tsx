@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
-import { Appbar, Text, IconButton, TouchableRipple, Menu } from 'react-native-paper';
+import { Appbar, Text, IconButton, TouchableRipple, Menu, Icon } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Colors } from '../theme';
@@ -82,12 +82,9 @@ export default function RecordScreen() {
                     {category.description}
                   </Text>
                 ) : null}
-                <IconButton
-                  icon="chevron-right"
-                  size={16}
-                  iconColor={Colors.textMuted}
-                  style={styles.chevron}
-                />
+                <View style={styles.chevron}>
+                  <Icon source="chevron-right" size={16} color={Colors.textMuted} />
+                </View>
               </View>
             </TouchableRipple>
             <ContributionGrid categoryId={category.id} color={category.color} year={year} />
@@ -125,7 +122,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 4,
   },
-  chevron: { marginLeft: 'auto', margin: 0 },
+  chevron: { marginLeft: 'auto' },
   dot: { width: 10, height: 10, borderRadius: 5 },
   categoryName: { color: Colors.text },
   categoryDesc: { color: Colors.textMuted, flexShrink: 1 },
