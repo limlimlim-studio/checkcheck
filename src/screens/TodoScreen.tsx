@@ -7,7 +7,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Colors } from '../theme';
-import { usePremiumStore } from '../stores/premiumStore';
+import { getAdFreeUntil } from '../db';
 import { runDueDateCheck } from '../hooks/useTodos';
 import { TodoStackParamList } from '../navigation/TodoStack';
 import BannerAdView from '../components/BannerAdView';
@@ -37,7 +37,7 @@ export default function TodoScreen() {
   const layout = useWindowDimensions();
   const [tabIndex, setTabIndex] = useState(0);
   const [menuVisible, setMenuVisible] = useState(false);
-  const isPremium = usePremiumStore((s) => s.isPremium);
+  const isAdFree = getAdFreeUntil() > Date.now();
   const isFocused = useIsFocused();
   const queryClient = useQueryClient();
 
@@ -116,7 +116,7 @@ export default function TodoScreen() {
       {showFab && (
         <FAB
           icon="plus"
-          style={[styles.fab, !isPremium && styles.fabWithAd]}
+          style={[styles.fab, !isAdFree && styles.fabWithAd]}
           onPress={() => navigation.navigate('TodoForm')}
         />
       )}
