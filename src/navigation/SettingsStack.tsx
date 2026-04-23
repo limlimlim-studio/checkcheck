@@ -1,10 +1,8 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import SettingsScreen from '../screens/SettingsScreen';
-import PremiumScreen from '../screens/PremiumScreen';
 
 export type SettingsStackParamList = {
   SettingsHome: undefined;
-  Premium: undefined;
 };
 
 const Stack = createNativeStackNavigator<SettingsStackParamList>();
@@ -13,7 +11,6 @@ export default function SettingsStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
       <Stack.Screen name="SettingsHome" component={SettingsScreen} />
-      <Stack.Screen name="Premium" component={PremiumScreen} />
     </Stack.Navigator>
   );
 }

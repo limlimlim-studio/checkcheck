@@ -128,6 +128,19 @@ export const initDb = async () => {
   }
 };
 
+export function getAdFreeUntil(): number {
+  const row = db.select().from(schema.appSettings)
+    .where(eq(schema.appSettings.key, 'ad_free_until')).get();
+  return row ? parseInt(row.value, 10) : 0;
+}
+
+export function setAdFreeUntil(timestamp: number): void {
+  db.insert(schema.appSettings)
+    .values({ key: 'ad_free_until', value: String(timestamp) })
+    .onConflictDoUpdate({ target: schema.appSettings.key, set: { value: String(timestamp) } })
+    .run();
+}
+
 export function getOnboardingCompleted(): boolean {
   const row = db.select().from(schema.appSettings)
     .where(eq(schema.appSettings.key, 'onboarding_completed')).get();

@@ -1,13 +1,11 @@
 import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
-import { usePremiumStore } from '../stores/premiumStore';
+import { getAdFreeUntil } from '../db';
 
 const PROD_AD_UNIT_ID = 'ca-app-pub-9156090950228888/1226497541';
 const adUnitId = __DEV__ ? TestIds.BANNER : PROD_AD_UNIT_ID;
 
 export default function BannerAdView() {
-  const isPremium = usePremiumStore((s) => s.isPremium);
-
-  if (isPremium) return null;
+  if (getAdFreeUntil() > Date.now()) return null;
 
   return (
     <BannerAd
