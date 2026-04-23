@@ -11,7 +11,7 @@
  * 🔄 재생성 방법 (앱 재시작 필요):
  *   Expo DevTools 또는 앱 내 DB 쿼리 실행:
  *
- *     DELETE FROM app_settings WHERE key = 'seed_v9';
+ *     DELETE FROM app_settings WHERE key = 'seed_v10';
  *
  *   위 한 줄만 실행하면 다음 앱 시작 시 seed 데이터가 다시 생성됨.
  *   (기존 seed 완료 기록도 함께 초기화하려면 앱 삭제 후 재설치)
@@ -21,7 +21,7 @@ import { eq } from 'drizzle-orm';
 import { db } from './index';
 import { categories, todos, todoCompletions, routines, routineCompletions, appSettings } from './schema';
 
-const SEED_KEY = 'seed_v9';
+const SEED_KEY = 'seed_v10';
 
 // 생성 기간
 const SEED_DAYS = 730; // 2년 (기록 탭 잔디용)
@@ -222,51 +222,47 @@ export async function runDevSeed() {
   }
 
   // ─────────────────────────────────────────
-  // 6. 완료 기록 생성 (기록 탭 잔디용)
+  // 6. 완료 할 일 생성 (기록 탭 목록 + 잔디 보조)
+  //    카테고리별 의미 있는 타이틀로 20개씩 과거 날짜에 분산 생성
   // ─────────────────────────────────────────
   const COMPLETED_TITLES: Record<string, string[]> = {
     업무: ['기획서 작성', '코드 리뷰', '팀 미팅', '보고서 제출', '이메일 정리', '배포 작업'],
     개인: ['독서 30분', '일기 쓰기', '방 청소', '친구 연락', '요리하기', '명상 10분'],
-    운동: ['러닝 5km', '헬스장', '스트레칭', '자전거 타기', '수영', '홈트레이닝'],
+    운동: ['러닝 5km', '헬스장 가기', '스트레칭', '자전거 타기', '수영', '홈트레이닝'],
     학습: ['알고리즘 풀기', '영어 단어 암기', '강의 수강', '독서', 'TIL 작성', '사이드 프로젝트'],
     쇼핑: ['장보기', '생필품 구매', '온라인 주문'],
     미분류: ['메모 정리', '사진 백업', '앱 업데이트'],
   };
 
-  // 잔디용 시드 todo (카테고리별 1개)
-  const seedTodoIds: Record<number, number> = {};
-  for (const cat of allCategories) {
-    const result = db.insert(todos).values({
-      categoryId: cat.id,
-      title: `${cat.name} 활동`,
-      sortOrder: -9999,
-      isCompleted: 1,
-      completedAt: now,
-      createdAt: now,
-      updatedAt: now,
-    }).returning({ id: todos.id }).get();
-    if (result) seedTodoIds[cat.id] = result.id;
-  }
-
-  const CATEGORY_FREQ: Record<string, number> = {
-    업무: 0.8, 개인: 0.65, 운동: 0.7, 학습: 0.6, 쇼핑: 0.3, 미분류: 0.5,
-  };
-
+  const SEED_COMPLETED_PER_CAT = 20;
   const completionValues: { todoId: number; completedDate: string }[] = [];
 
-  for (let i = SEED_DAYS - 1; i >= 0; i--) {
-    const date = new Date(today);
-    date.setDate(date.getDate() - i);
-    const dateStr = dateToString(date);
+  for (const cat of allCategories) {
+    const titles = COMPLETED_TITLES[cat.name] ?? ['활동'];
 
-    for (const cat of allCategories) {
-      const todoId = seedTodoIds[cat.id];
-      if (!todoId) continue;
-      const freq = CATEGORY_FREQ[cat.name] ?? 0.5;
-      if (Math.random() > freq) continue;
-      const count = Math.floor(Math.random() * 3) + 1;
-      for (let c = 0; c < count; c++) {
-        completionValues.push({ todoId, completedDate: dateStr });
+    for (let i = 0; i < SEED_COMPLETED_PER_CAT; i++) {
+      // 과거 1년 안에서 랜덤 날짜
+      const daysAgo = Math.floor(Math.random() * Math.min(SEED_DAYS, 365)) + 1;
+      const completedDate = new Date(today);
+      completedDate.setDate(completedDate.getDate() - daysAgo);
+      completedDate.setHours(0, 0, 0, 0);
+      const completedTs = completedDate.getTime();
+      const dateStr = dateToString(completedDate);
+
+      const title = titles[i % titles.length];
+
+      const result = db.insert(todos).values({
+        categoryId: cat.id,
+        title,
+        sortOrder: -9998 - i,
+        isCompleted: 1,
+        completedAt: completedTs,
+        createdAt: completedTs - 86_400_000, // 완료 1일 전 생성
+        updatedAt: completedTs,
+      }).returning({ id: todos.id }).get();
+
+      if (result) {
+        completionValues.push({ todoId: result.id, completedDate: dateStr });
       }
     }
   }
@@ -279,5 +275,5 @@ export async function runDevSeed() {
   // 완료 플래그 저장
   db.insert(appSettings).values({ key: SEED_KEY, value: '1' }).run();
 
-  console.log(`[seed v9] 루틴 ${ROUTINE_DATA.length}개, 오늘 할 일 ${TODAY_TODOS.length}개, 예정 ${UPCOMING_TODOS.length}개, 미완료 ${OVERDUE_TODOS.length}개, 완료기록 ${completionValues.length}개 생성 완료`);
+  console.log(`[seed v10] 루틴 ${ROUTINE_DATA.length}개, 오늘 할 일 ${TODAY_TODOS.length}개, 예정 ${UPCOMING_TODOS.length}개, 미완료 ${OVERDUE_TODOS.length}개, 완료 할 일 ${completionValues.length}개 생성 완료`);
 }
