@@ -1,7 +1,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { and, asc, desc, eq, gte, isNull, lt, or } from 'drizzle-orm';
 import dayjs from 'dayjs';
-import { db } from '../db';
+import { db, getDayStartHour } from '../db';
 import { todos, todoCompletions } from '../db/schema';
 import { scheduleTodoNotifications, cancelTodoNotifications, offsetsToString } from '../utils/notifications';
 
@@ -147,11 +147,18 @@ export const useTodayToggle = () => {
 let _lastDueDateCheckDate = '';
 
 export const runDueDateCheck = async (): Promise<boolean> => {
-  const today = dayjs().format('YYYY-MM-DD');
+  const dayStartHour = getDayStartHour();
+  const now = dayjs();
+  const todayAtStartHour = now.startOf('day').add(dayStartHour, 'hour');
+  const effectiveDayStart = now.isBefore(todayAtStartHour)
+    ? todayAtStartHour.subtract(1, 'day')
+    : todayAtStartHour;
+
+  const today = effectiveDayStart.format('YYYY-MM-DD');
   if (_lastDueDateCheckDate === today) return false;
   _lastDueDateCheckDate = today;
 
-  const todayStart = dayjs().startOf('day').valueOf();
+  const todayStart = effectiveDayStart.valueOf();
   let changed = false;
 
   // 1. 기한이 지난 항목 중 완료 기록 있는 경우

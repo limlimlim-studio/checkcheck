@@ -1,4 +1,6 @@
 import { View, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { useState } from 'react';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Appbar, Text, Divider } from 'react-native-paper';
 import { Colors } from '../theme';
 import { useNavigation } from '@react-navigation/native';
@@ -6,6 +8,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SettingsStackParamList } from '../navigation/SettingsStack';
 import Constants from 'expo-constants';
 import { useAdFree, REQUIRED_AD_COUNT } from '../hooks/useAdFree';
+import { getDayStartHour, setDayStartHour } from '../db';
 
 type NavigationProp = NativeStackNavigationProp<SettingsStackParamList, 'SettingsHome'>;
 
@@ -23,6 +26,20 @@ function formatDate(ts: number): string {
 export default function SettingsScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { isAdFree, adFreeUntil, watchedCount, watchAd, isLoading, resetAdFree } = useAdFree();
+  const [dayStartHour, setDayStartHourState] = useState(() => getDayStartHour());
+  const [showTimePicker, setShowTimePicker] = useState(false);
+
+  const dayStartDate = new Date();
+  dayStartDate.setHours(dayStartHour, 0, 0, 0);
+
+  const handleTimeChange = (_: DateTimePickerEvent, date?: Date) => {
+    setShowTimePicker(false);
+    if (date) {
+      const hour = date.getHours();
+      setDayStartHour(hour);
+      setDayStartHourState(hour);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -90,6 +107,27 @@ export default function SettingsScreen() {
         </>
       )}
 
+      <Text variant="labelSmall" style={styles.sectionLabel}>하루 기준 시간</Text>
+      <View style={styles.section}>
+        <TouchableOpacity style={styles.item} onPress={() => setShowTimePicker(true)}>
+          <View>
+            <Text variant="bodyLarge">하루 시작 시간</Text>
+            <Text variant="bodySmall" style={styles.description}>
+              이 시간 이후부터 새로운 날로 인식해요
+            </Text>
+          </View>
+          <Text style={styles.timeValue}>오전 {String(dayStartHour).padStart(2, '0')}:00</Text>
+        </TouchableOpacity>
+        {showTimePicker && (
+          <DateTimePicker
+            value={dayStartDate}
+            mode="time"
+            display="spinner"
+            onChange={handleTimeChange}
+          />
+        )}
+      </View>
+
       <Text variant="labelSmall" style={styles.sectionLabel}>앱</Text>
       <View style={styles.section}>
         {APP_INFO.map((info, index) => (
@@ -133,6 +171,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   infoValue: { color: Colors.textSecondary },
+  timeValue: { color: Colors.primary, fontWeight: '600', fontSize: 15 },
   rewardedSection: {
     flexDirection: 'row',
     alignItems: 'center',
