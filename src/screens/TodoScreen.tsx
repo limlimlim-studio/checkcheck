@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Colors } from '../theme';
 import { getAdFreeUntil } from '../db';
-import { runDueDateCheck } from '../hooks/useTodos';
+import { runDueDateCheck, useFlushTodayCompleted } from '../hooks/useTodos';
 import { TodoStackParamList } from '../navigation/TodoStack';
 import BannerAdView from '../components/BannerAdView';
 import TodoTabToday from '../components/TodoTabToday';
@@ -38,6 +38,7 @@ export default function TodoScreen() {
   const [tabIndex, setTabIndex] = useState(0);
   const [menuVisible, setMenuVisible] = useState(false);
   const isAdFree = getAdFreeUntil() > Date.now();
+  const { mutate: flushTodayCompleted } = useFlushTodayCompleted();
   const isFocused = useIsFocused();
   const queryClient = useQueryClient();
 
@@ -81,6 +82,13 @@ export default function TodoScreen() {
             <Appbar.Action icon="dots-vertical" onPress={() => setMenuVisible(true)} />
           }
         >
+          {tabIndex === 0 && (
+            <Menu.Item
+              leadingIcon="broom"
+              title="완료 항목 정리"
+              onPress={() => { setMenuVisible(false); flushTodayCompleted(); }}
+            />
+          )}
           <Menu.Item
             leadingIcon="label-multiple-outline"
             title="카테고리 관리"
