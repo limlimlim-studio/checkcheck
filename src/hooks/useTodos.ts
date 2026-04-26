@@ -1,7 +1,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { and, asc, desc, eq, gte, isNull, lt, lte, or } from 'drizzle-orm';
 import dayjs from 'dayjs';
-import { db } from '../db';
+import { db, getDayStartMinutes } from '../db';
 import { todos, todoCompletions } from '../db/schema';
 import { scheduleTodoNotifications, cancelTodoNotifications, offsetsToString } from '../utils/notifications';
 
@@ -146,12 +146,21 @@ export const useTodayToggle = () => {
  *  앱 포그라운드 진입 및 탭 포커스 시 실행, 하루 1회만 실제 처리 */
 let _lastDueDateCheckDate = '';
 
+export const resetDueDateCheckGuard = () => { _lastDueDateCheckDate = ''; };
+
 export const runDueDateCheck = async (): Promise<boolean> => {
-  const today = dayjs().format('YYYY-MM-DD');
+  const dayStartMinutes = getDayStartMinutes();
+  const now = dayjs();
+  const todayAtStart = now.startOf('day').add(dayStartMinutes, 'minute');
+  const effectiveDayStart = now.isBefore(todayAtStart)
+    ? todayAtStart.subtract(1, 'day')
+    : todayAtStart;
+
+  const today = effectiveDayStart.format('YYYY-MM-DD');
   if (_lastDueDateCheckDate === today) return false;
   _lastDueDateCheckDate = today;
 
-  const todayStart = dayjs().startOf('day').valueOf();
+  const todayStart = effectiveDayStart.valueOf();
   let changed = false;
 
   // 1. 기한이 지난 항목 중 완료 기록 있는 경우
