@@ -8,10 +8,12 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import MobileAds from 'react-native-google-mobile-ads';
-import { initDb } from './src/db';
+import { initDb, getDayStartHour } from './src/db';
 import { requestNotificationPermission } from './src/utils/notifications';
 import RootNavigator from './src/navigation/RootNavigator';
 import { AppTheme, NavTheme } from './src/theme';
+import { useDayStartStore } from './src/stores/dayStartStore';
+import { useDayStartTimer } from './src/hooks/useDayStartTimer';
 
 // JS 로드 직후 스플래시를 자동으로 숨기지 않도록 유지
 SplashScreen.preventAutoHideAsync();
@@ -27,6 +29,13 @@ AppState.addEventListener('change', onAppStateChange);
 // 스플래시 최소 유지 시간 (ms)
 const SPLASH_MIN_DURATION = 1500;
 
+// 하루 시작 타이머 — QueryClientProvider 내부에서 마운트
+function AppTimers() {
+  const dayStartHour = useDayStartStore(s => s.dayStartHour);
+  useDayStartTimer(dayStartHour);
+  return null;
+}
+
 export default function App() {
   const [ready, setReady] = useState(false);
 
@@ -35,6 +44,10 @@ export default function App() {
 
     MobileAds().initialize()
       .then(() => initDb())
+      .then(() => {
+        // DB 초기화 완료 후 스토어에 설정값 동기화
+        useDayStartStore.getState().setDayStartHour(getDayStartHour());
+      })
       .then(() => requestNotificationPermission())
       .then(async () => {
         // 최소 유지 시간 보장 후 앱 렌더링 → 스플래시 숨김
@@ -57,6 +70,7 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#111111' }}>
       <QueryClientProvider client={queryClient}>
+        <AppTimers />
         <SafeAreaProvider>
           <PaperProvider theme={AppTheme}>
             <NavigationContainer theme={NavTheme}>

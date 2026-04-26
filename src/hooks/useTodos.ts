@@ -146,6 +146,8 @@ export const useTodayToggle = () => {
  *  앱 포그라운드 진입 및 탭 포커스 시 실행, 하루 1회만 실제 처리 */
 let _lastDueDateCheckDate = '';
 
+export const resetDueDateCheckGuard = () => { _lastDueDateCheckDate = ''; };
+
 export const runDueDateCheck = async (): Promise<boolean> => {
   const dayStartHour = getDayStartHour();
   const now = dayjs();

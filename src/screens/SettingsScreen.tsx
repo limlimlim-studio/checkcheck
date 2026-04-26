@@ -1,14 +1,19 @@
 import { View, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Appbar, Text, Divider } from 'react-native-paper';
+import { useQueryClient } from '@tanstack/react-query';
+import dayjs from 'dayjs';
 import { Colors } from '../theme';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SettingsStackParamList } from '../navigation/SettingsStack';
 import Constants from 'expo-constants';
 import { useAdFree, REQUIRED_AD_COUNT } from '../hooks/useAdFree';
-import { getDayStartHour, setDayStartHour } from '../db';
+import { setDayStartHour, db } from '../db';
+import { todos, todoCompletions } from '../db/schema';
+import { useDayStartStore } from '../stores/dayStartStore';
+import { resetDueDateCheckGuard, runDueDateCheck } from '../hooks/useTodos';
 
 type NavigationProp = NativeStackNavigationProp<SettingsStackParamList, 'SettingsHome'>;
 
@@ -23,23 +28,83 @@ function formatDate(ts: number): string {
   return `${d.getMonth() + 1}월 ${d.getDate()}일`;
 }
 
+function formatHour(hour: number): string {
+  if (hour === 0) return '오전 12:00';
+  if (hour < 12) return `오전 ${hour}:00`;
+  if (hour === 12) return '오후 12:00';
+  return `오후 ${hour - 12}:00`;
+}
+
 export default function SettingsScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { isAdFree, adFreeUntil, watchedCount, watchAd, isLoading, resetAdFree } = useAdFree();
-  const [dayStartHour, setDayStartHourState] = useState(() => getDayStartHour());
+  const queryClient = useQueryClient();
+
+  // 하루 시작 시간 — Zustand 스토어에서 읽음 (변경 시 타이머 자동 재시작)
+  const { dayStartHour, setDayStartHour: setDayStartHourInStore } = useDayStartStore();
   const [showTimePicker, setShowTimePicker] = useState(false);
 
-  const dayStartDate = new Date();
-  dayStartDate.setHours(dayStartHour, 0, 0, 0);
+  const dayStartDate = useMemo(() => {
+    const d = new Date();
+    d.setHours(dayStartHour, 0, 0, 0);
+    return d;
+  }, [dayStartHour]);
+
+  const nextTimerStr = useMemo(() => {
+    const now = dayjs();
+    let next = now.startOf('day').add(dayStartHour, 'hour');
+    if (!now.isBefore(next)) next = next.add(1, 'day');
+    return next.format('M월 D일 HH:mm');
+  }, [dayStartHour]);
 
   const handleTimeChange = (_: DateTimePickerEvent, date?: Date) => {
     setShowTimePicker(false);
     if (date) {
       const hour = date.getHours();
-      setDayStartHour(hour);
-      setDayStartHourState(hour);
+      setDayStartHour(hour);         // DB 저장
+      setDayStartHourInStore(hour);  // 스토어 업데이트 → 타이머 재시작
     }
   };
+
+  // ── 개발용 ──────────────────────────────────────────
+  const handleCreateTestTodo = async () => {
+    const yesterday = dayjs().subtract(1, 'day');
+    const yesterdayTs = yesterday.startOf('day').valueOf();
+    const yesterdayStr = yesterday.format('YYYY-MM-DD');
+    const now = Date.now();
+
+    const cats = db.select().from(require('../db/schema').categories).all() as { id: number }[];
+    const catId = cats[0]?.id ?? 1;
+
+    const result = db.insert(todos).values({
+      categoryId: catId,
+      title: '[타이머테스트] 어제 완료한 할 일',
+      dueDate: yesterdayTs,
+      sortOrder: -9999,
+      urgency: 0,
+      importance: 0,
+      createdAt: now,
+      updatedAt: now,
+    }).returning({ id: todos.id }).get();
+
+    if (result) {
+      db.insert(todoCompletions).values({ todoId: result.id, completedDate: yesterdayStr }).run();
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
+      Alert.alert(
+        '테스트 할 일 생성',
+        `"[타이머테스트] 어제 완료한 할 일" 생성\n어제(${yesterdayStr}) 완료 기록 추가\n\n이제 "타이머 강제 실행"을 눌러 정리 여부를 확인하세요`,
+      );
+    }
+  };
+
+  const handleForceRunTimer = async () => {
+    resetDueDateCheckGuard();
+    const changed = await runDueDateCheck();
+    queryClient.invalidateQueries({ queryKey: ['todos'] });
+    queryClient.invalidateQueries({ queryKey: ['completions'], exact: false });
+    Alert.alert('타이머 강제 실행', changed ? '할 일이 정리됐어요 ✓' : '정리할 항목이 없어요');
+  };
+  // ────────────────────────────────────────────────────
 
   return (
     <View style={styles.container}>
@@ -103,6 +168,22 @@ export default function SettingsScreen() {
             >
               <Text variant="bodyLarge" style={{ color: Colors.danger }}>광고 면제 초기화</Text>
             </TouchableOpacity>
+            <Divider />
+            <TouchableOpacity style={styles.item} onPress={handleCreateTestTodo}>
+              <View>
+                <Text variant="bodyLarge" style={{ color: Colors.danger }}>테스트 할 일 생성</Text>
+                <Text variant="bodySmall" style={styles.description}>어제 날짜 + 완료 기록 포함</Text>
+              </View>
+            </TouchableOpacity>
+            <Divider />
+            <TouchableOpacity style={styles.item} onPress={handleForceRunTimer}>
+              <View>
+                <Text variant="bodyLarge" style={{ color: Colors.danger }}>타이머 강제 실행</Text>
+                <Text variant="bodySmall" style={styles.description}>
+                  다음 예약: {nextTimerStr}
+                </Text>
+              </View>
+            </TouchableOpacity>
           </View>
         </>
       )}
@@ -113,16 +194,17 @@ export default function SettingsScreen() {
           <View>
             <Text variant="bodyLarge">하루 시작 시간</Text>
             <Text variant="bodySmall" style={styles.description}>
-              이 시간 이후부터 새로운 날로 인식해요
+              이 시간이 지나면 오늘 완료한 할 일이 정리돼요
             </Text>
           </View>
-          <Text style={styles.timeValue}>오전 {String(dayStartHour).padStart(2, '0')}:00</Text>
+          <Text style={styles.timeValue}>{formatHour(dayStartHour)}</Text>
         </TouchableOpacity>
         {showTimePicker && (
           <DateTimePicker
             value={dayStartDate}
             mode="time"
             display="spinner"
+            themeVariant="dark"
             onChange={handleTimeChange}
           />
         )}
