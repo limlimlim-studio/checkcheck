@@ -3,10 +3,9 @@ import dayjs from 'dayjs';
 import { useQueryClient } from '@tanstack/react-query';
 import { runDueDateCheck } from './useTodos';
 
-export function useDayStartTimer(dayStartHour: number) {
+export function useDayStartTimer(dayStartMinutes: number) {
   const queryClient = useQueryClient();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // scheduleRef로 재귀 호출 시 최신 dayStartHour를 참조
   const scheduleRef = useRef<() => void>(() => {});
 
   useEffect(() => {
@@ -14,7 +13,7 @@ export function useDayStartTimer(dayStartHour: number) {
       if (timerRef.current) clearTimeout(timerRef.current);
 
       const now = dayjs();
-      let next = now.startOf('day').add(dayStartHour, 'hour');
+      let next = now.startOf('day').add(dayStartMinutes, 'minute');
       if (!now.isBefore(next)) next = next.add(1, 'day');
       const delay = next.valueOf() - now.valueOf();
 
@@ -32,7 +31,7 @@ export function useDayStartTimer(dayStartHour: number) {
           queryClient.invalidateQueries({ queryKey: ['todos'] });
           queryClient.invalidateQueries({ queryKey: ['completions'], exact: false });
         }
-        scheduleRef.current(); // 다음 날 타이머 재예약
+        scheduleRef.current();
       }, delay);
     };
 
@@ -41,5 +40,5 @@ export function useDayStartTimer(dayStartHour: number) {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [dayStartHour, queryClient]);
+  }, [dayStartMinutes, queryClient]);
 }

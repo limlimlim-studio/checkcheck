@@ -1,7 +1,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { and, asc, desc, eq, gte, isNull, lt, or } from 'drizzle-orm';
 import dayjs from 'dayjs';
-import { db, getDayStartHour } from '../db';
+import { db, getDayStartMinutes } from '../db';
 import { todos, todoCompletions } from '../db/schema';
 import { scheduleTodoNotifications, cancelTodoNotifications, offsetsToString } from '../utils/notifications';
 
@@ -149,12 +149,12 @@ let _lastDueDateCheckDate = '';
 export const resetDueDateCheckGuard = () => { _lastDueDateCheckDate = ''; };
 
 export const runDueDateCheck = async (): Promise<boolean> => {
-  const dayStartHour = getDayStartHour();
+  const dayStartMinutes = getDayStartMinutes();
   const now = dayjs();
-  const todayAtStartHour = now.startOf('day').add(dayStartHour, 'hour');
-  const effectiveDayStart = now.isBefore(todayAtStartHour)
-    ? todayAtStartHour.subtract(1, 'day')
-    : todayAtStartHour;
+  const todayAtStart = now.startOf('day').add(dayStartMinutes, 'minute');
+  const effectiveDayStart = now.isBefore(todayAtStart)
+    ? todayAtStart.subtract(1, 'day')
+    : todayAtStart;
 
   const today = effectiveDayStart.format('YYYY-MM-DD');
   if (_lastDueDateCheckDate === today) return false;

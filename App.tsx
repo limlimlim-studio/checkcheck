@@ -8,7 +8,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import MobileAds from 'react-native-google-mobile-ads';
-import { initDb, getDayStartHour } from './src/db';
+import { initDb, getDayStartMinutes } from './src/db';
 import { requestNotificationPermission } from './src/utils/notifications';
 import RootNavigator from './src/navigation/RootNavigator';
 import { AppTheme, NavTheme } from './src/theme';
@@ -31,8 +31,8 @@ const SPLASH_MIN_DURATION = 1500;
 
 // 하루 시작 타이머 — QueryClientProvider 내부에서 마운트
 function AppTimers() {
-  const dayStartHour = useDayStartStore(s => s.dayStartHour);
-  useDayStartTimer(dayStartHour);
+  const dayStartMinutes = useDayStartStore(s => s.dayStartMinutes);
+  useDayStartTimer(dayStartMinutes);
   return null;
 }
 
@@ -46,7 +46,7 @@ export default function App() {
       .then(() => initDb())
       .then(() => {
         // DB 초기화 완료 후 스토어에 설정값 동기화
-        useDayStartStore.getState().setDayStartHour(getDayStartHour());
+        useDayStartStore.getState().setDayStartMinutes(getDayStartMinutes());
       })
       .then(() => requestNotificationPermission())
       .then(async () => {

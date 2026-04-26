@@ -128,16 +128,17 @@ export const initDb = async () => {
   }
 };
 
-export function getDayStartHour(): number {
+/** 하루 시작 시각 — 자정 기준 분(0~1439). 기본값 0(자정). */
+export function getDayStartMinutes(): number {
   const row = db.select().from(schema.appSettings)
     .where(eq(schema.appSettings.key, 'day_start_hour')).get();
   return row ? parseInt(row.value, 10) : 0;
 }
 
-export function setDayStartHour(hour: number): void {
+export function setDayStartMinutes(minutes: number): void {
   db.insert(schema.appSettings)
-    .values({ key: 'day_start_hour', value: String(hour) })
-    .onConflictDoUpdate({ target: schema.appSettings.key, set: { value: String(hour) } })
+    .values({ key: 'day_start_hour', value: String(minutes) })
+    .onConflictDoUpdate({ target: schema.appSettings.key, set: { value: String(minutes) } })
     .run();
 }
 
