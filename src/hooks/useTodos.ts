@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { and, asc, desc, eq, gte, isNull, lt, or } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, isNull, lt, lte, or } from 'drizzle-orm';
 import dayjs from 'dayjs';
 import { db } from '../db';
 import { todos, todoCompletions } from '../db/schema';
@@ -393,5 +393,52 @@ export const useBulkDeleteTodos = () => {
       }
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos'] }),
+  });
+};
+
+/** 오늘 탭에서 체크된 항목을 즉시 완료 처리 (isCompleted=1)
+ *  자정이 지나도 앱이 켜져 있어 runDueDateCheck가 재실행되지 않을 때 수동으로 정리 */
+export const useFlushTodayCompleted = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (): Promise<number> => {
+      const today = dayjs().format('YYYY-MM-DD');
+      const todayStart = dayjs().startOf('day').valueOf();
+      const todayEnd = dayjs().endOf('day').valueOf();
+      const now = Date.now();
+
+      const todayTodos = db.select().from(todos)
+        .where(and(
+          eq(todos.isCompleted, 0),
+          eq(todos.isDeleted, 0),
+          gte(todos.dueDate, todayStart),
+          lte(todos.dueDate, todayEnd),
+        ))
+        .all();
+
+      let count = 0;
+      for (const todo of todayTodos) {
+        const completion = db.select().from(todoCompletions)
+          .where(and(
+            eq(todoCompletions.todoId, todo.id),
+            eq(todoCompletions.completedDate, today),
+          ))
+          .get();
+        if (completion) {
+          db.update(todos).set({
+            isCompleted: 1,
+            completedAt: now,
+            updatedAt: now,
+          }).where(eq(todos.id, todo.id)).run();
+          count++;
+        }
+      }
+      return count;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
+      queryClient.invalidateQueries({ queryKey: ['todo-completions'] });
+      queryClient.invalidateQueries({ queryKey: ['completions'] });
+    },
   });
 };
