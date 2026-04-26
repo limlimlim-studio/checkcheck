@@ -11,7 +11,10 @@
     "ios:prebuild": "expo prebuild --platform ios --clean",
     "web": "expo start --web",
     "db:generate": "drizzle-kit generate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "build:ios": "bash scripts/build-ios.sh",
+    "build:android": "bash scripts/build-android.sh",
+    "build:all": "bash scripts/build-all.sh"
   },
   "dependencies": {
     "@react-native-community/datetimepicker": "8.4.4",
