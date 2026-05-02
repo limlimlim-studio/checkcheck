@@ -7,7 +7,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Colors } from '../theme';
-import { getAdFreeUntil } from '../db';
+import { getAdFreeUntil, computeEffectiveToday } from '../db';
+import { useDayStartStore } from '../stores/dayStartStore';
 import { runDueDateCheck, useFlushTodayCompleted } from '../hooks/useTodos';
 import { TodoStackParamList } from '../navigation/TodoStack';
 import BannerAdView from '../components/BannerAdView';
@@ -57,8 +58,14 @@ export default function TodoScreen() {
   useEffect(() => {
     if (!isFocused) return;
     const task = InteractionManager.runAfterInteractions(() => {
-      runDueDateCheck().then((changed) => {
-        if (changed) queryClient.invalidateQueries({ queryKey: ['todos'] });
+      // effectiveToday를 앞으로만 갱신 (뒤로 돌아가지 않음)
+      const newEffective = computeEffectiveToday();
+      if (newEffective > useDayStartStore.getState().effectiveToday) {
+        useDayStartStore.getState().setEffectiveToday(newEffective);
+      }
+      runDueDateCheck().then(() => {
+        queryClient.invalidateQueries({ queryKey: ['todos'] });
+        queryClient.invalidateQueries({ queryKey: ['completions'], exact: false });
       });
     });
     return () => task.cancel();

@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react';
 import dayjs from 'dayjs';
 import { useQueryClient } from '@tanstack/react-query';
 import { runDueDateCheck } from './useTodos';
+import { computeEffectiveToday } from '../db';
+import { useDayStartStore } from '../stores/dayStartStore';
 
 export function useDayStartTimer(dayStartMinutes: number) {
   const queryClient = useQueryClient();
@@ -26,11 +28,15 @@ export function useDayStartTimer(dayStartMinutes: number) {
 
       timerRef.current = setTimeout(async () => {
         if (__DEV__) console.log('[DayStartTimer] 할 일 정리 실행');
-        const changed = await runDueDateCheck();
-        if (changed) {
-          queryClient.invalidateQueries({ queryKey: ['todos'] });
-          queryClient.invalidateQueries({ queryKey: ['completions'], exact: false });
+        // effectiveToday 먼저 갱신 → 이후 쿼리 re-fetch 시 새 날짜 기준으로 동작
+        const newEffective = computeEffectiveToday();
+        const current = useDayStartStore.getState().effectiveToday;
+        if (newEffective > current) {
+          useDayStartStore.getState().setEffectiveToday(newEffective);
         }
+        await runDueDateCheck();
+        queryClient.invalidateQueries({ queryKey: ['todos'] });
+        queryClient.invalidateQueries({ queryKey: ['completions'], exact: false });
         scheduleRef.current();
       }, delay);
     };
