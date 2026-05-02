@@ -3,6 +3,7 @@ import { and, asc, desc, eq, gte, isNull, lt, lte, or } from 'drizzle-orm';
 import dayjs from 'dayjs';
 import { db, getDayStartMinutes } from '../db';
 import { todos, todoCompletions } from '../db/schema';
+import { useDayStartStore } from '../stores/dayStartStore';
 import { scheduleTodoNotifications, cancelTodoNotifications, offsetsToString } from '../utils/notifications';
 
 export const useTodos = (isCompleted: 0 | 1) =>
@@ -103,12 +104,12 @@ export const useTodosCompletedByCategory = (categoryId: number) =>
 
 /** 오늘 탭 전용: 오늘 완료 체크된 todoId Set */
 export const useTodayCompletionIds = () => {
-  const today = dayjs().format('YYYY-MM-DD');
+  const effectiveToday = useDayStartStore(s => s.effectiveToday);
   return useQuery({
-    queryKey: ['todayCompletionIds', today],
+    queryKey: ['todayCompletionIds', effectiveToday],
     queryFn: () => {
       const records = db.select().from(todoCompletions)
-        .where(eq(todoCompletions.completedDate, today))
+        .where(eq(todoCompletions.completedDate, effectiveToday))
         .all();
       return new Set(records.map((r) => r.todoId));
     },
@@ -120,7 +121,7 @@ export const useTodayToggle = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: number) => {
-      const today = dayjs().format('YYYY-MM-DD');
+      const today = useDayStartStore.getState().effectiveToday;
       const existing = db.select().from(todoCompletions)
         .where(and(eq(todoCompletions.todoId, id), eq(todoCompletions.completedDate, today)))
         .get();
@@ -411,9 +412,9 @@ export const useFlushTodayCompleted = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (): Promise<number> => {
-      const today = dayjs().format('YYYY-MM-DD');
-      const todayStart = dayjs().startOf('day').valueOf();
-      const todayEnd = dayjs().endOf('day').valueOf();
+      const today = useDayStartStore.getState().effectiveToday;
+      const todayStart = dayjs(today).startOf('day').valueOf();
+      const todayEnd = dayjs(today).endOf('day').valueOf();
       const now = Date.now();
 
       const todayTodos = db.select().from(todos)
