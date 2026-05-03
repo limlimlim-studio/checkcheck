@@ -102,6 +102,24 @@ export const useTodosCompletedByCategory = (categoryId: number) =>
       lastPage.length < PAGE_SIZE ? undefined : allPages.length,
   });
 
+/** 프로그레스 바 전용: 기한 == 오늘인 모든 할 일 (완료 여부 무관) */
+export const useTodayAllTodos = () => {
+  const todayStart = dayjs().startOf('day').valueOf();
+  const todayEnd = dayjs().endOf('day').valueOf();
+  return useQuery({
+    queryKey: ['todos', 'today', 'all'],
+    queryFn: () =>
+      db.select().from(todos)
+        .where(and(
+          eq(todos.isDeleted, 0),
+          gte(todos.dueDate, todayStart),
+          lt(todos.dueDate, todayEnd + 1),
+        ))
+        .orderBy(asc(todos.sortOrder))
+        .all(),
+  });
+};
+
 /** 오늘 탭 전용: 오늘 완료 체크된 todoId Set */
 export const useTodayCompletionIds = () => {
   const effectiveToday = useDayStartStore(s => s.effectiveToday);

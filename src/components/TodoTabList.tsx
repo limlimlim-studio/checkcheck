@@ -5,7 +5,7 @@ import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
-import { useTodosList, useTodosToday, useTodayCompletionIds, useTodayToggle, useCleanupChecked } from '../hooks/useTodos';
+import { useTodosList, useTodayAllTodos, useTodayCompletionIds, useTodayToggle, useCleanupChecked } from '../hooks/useTodos';
 import { useCategories } from '../hooks/useCategories';
 import { useCategoryMap } from '../hooks/useCategoryMap';
 import { useCheckable } from '../hooks/useCheckable';
@@ -53,7 +53,7 @@ export default function TodoTabList() {
   const navigation = useNavigation<Nav>();
   const { t } = useTranslation();
   const { data: todos = [] } = useTodosList();
-  const { data: todayTodos = [] } = useTodosToday();
+  const { data: allTodayTodos = [] } = useTodayAllTodos();
   const { data: completedIds = new Set<number>() } = useTodayCompletionIds();
   const { data: categories = [] } = useCategories();
   const { mutate: todayToggle } = useTodayToggle();
@@ -71,7 +71,7 @@ export default function TodoTabList() {
 
   const progressSegments = useMemo(() => {
     const map = new Map<number, { color: string; count: number }>();
-    for (const todo of todayTodos as Todo[]) {
+    for (const todo of allTodayTodos as Todo[]) {
       if (!completedIds.has(todo.id)) continue;
       const cat = categoryMap.get(todo.categoryId);
       const color = cat?.color ?? Colors.primary;
@@ -79,9 +79,9 @@ export default function TodoTabList() {
       map.set(key, { color, count: (map.get(key)?.count ?? 0) + 1 });
     }
     return [...map.entries()].map(([categoryId, { color, count }]) => ({ categoryId, color, count }));
-  }, [todayTodos, completedIds, categoryMap]);
+  }, [allTodayTodos, completedIds, categoryMap]);
 
-  const progressTotal = (todayTodos as Todo[]).length;
+  const progressTotal = (allTodayTodos as Todo[]).length;
   const progressCompleted = progressSegments.reduce((s, seg) => s + seg.count, 0);
 
   const LIST_SORT_OPTIONS = [
