@@ -55,10 +55,8 @@ type Props = {
 };
 
 export default function TodayProgressBar({ segments, totalCompleted, total }: Props) {
-  if (total === 0) return null;
-
-  const uncompleted = total - totalCompleted;
-  const percent = Math.round((totalCompleted / total) * 100);
+  const uncompleted = Math.max(0, total - totalCompleted);
+  const percent = total > 0 ? Math.round((totalCompleted / total) * 100) : 0;
 
   return (
     <View style={styles.container}>
