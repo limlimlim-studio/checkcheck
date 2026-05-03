@@ -1,34 +1,20 @@
 {
-  "planFile": "shimmying-snuggling-cat.md",
-  "mainIssueNumber": 115,
+  "planFile": "warm-fluttering-cray.md",
+  "mainIssueNumber": 146,
   "phases": [
     {
       "number": 1,
-      "title": "할 일 시간 설정",
-      "issueNumber": 116,
-      "branch": "feature/issue-115/due-time",
-      "status": "done"
+      "title": "루틴 탭 신설 및 오늘 탭 제거",
+      "issueNumber": 147,
+      "branch": "feature/issue-146/tab-restructure-add-routine-tab",
+      "status": "in_progress"
     },
     {
       "number": 2,
-      "title": "알림",
-      "issueNumber": 117,
-      "branch": "feature/issue-115/notifications",
-      "status": "done"
-    },
-    {
-      "number": 3,
-      "title": "정렬",
-      "issueNumber": 118,
-      "branch": "feature/issue-115/sort",
-      "status": "done"
-    },
-    {
-      "number": 4,
-      "title": "사용자 가이드",
-      "issueNumber": 119,
-      "branch": "feature/issue-115/onboarding",
-      "status": "in_progress"
+      "title": "할 일 탭 오늘 프로그레스 바 추가",
+      "issueNumber": 148,
+      "branch": "feature/issue-146/todo-tab-today-progress",
+      "status": "pending"
     }
   ]
 }

@@ -13,16 +13,16 @@ import { useDayStartStore } from '../stores/dayStartStore';
 import { runDueDateCheck, useFlushTodayCompleted } from '../hooks/useTodos';
 import { TodoStackParamList } from '../navigation/TodoStack';
 import BannerAdView from '../components/BannerAdView';
-import TodoTabToday from '../components/TodoTabToday';
 import TodoTabList from '../components/TodoTabList';
+import TodoTabRoutine from '../components/TodoTabRoutine';
 import TodoTabOverdue from '../components/TodoTabOverdue';
 
 type Nav = NativeStackNavigationProp<TodoStackParamList, 'TodoList'>;
 
 const renderScene = ({ route }: { route: { key: string } }) => {
   switch (route.key) {
-    case 'today': return <TodoTabToday />;
     case 'list': return <TodoTabList />;
+    case 'routine': return <TodoTabRoutine />;
     case 'overdue': return <TodoTabOverdue />;
     default: return null;
   }
@@ -40,8 +40,8 @@ export default function TodoScreen() {
   const queryClient = useQueryClient();
 
   const ROUTES = [
-    { key: 'today', title: t('todo.tab_today') },
     { key: 'list', title: t('todo.tab_list') },
+    { key: 'routine', title: t('todo.tab_routine') },
     { key: 'overdue', title: t('todo.tab_overdue') },
   ];
 
@@ -130,7 +130,10 @@ export default function TodoScreen() {
         <FAB
           icon="plus"
           style={[styles.fab, !isAdFree && styles.fabWithAd]}
-          onPress={() => navigation.navigate('TodoForm')}
+          onPress={() => {
+            if (tabIndex === 0) navigation.navigate('TodoForm');
+            else navigation.navigate('RoutineRoot' as never);
+          }}
         />
       )}
     </View>

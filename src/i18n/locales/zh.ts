@@ -17,8 +17,8 @@ const zh: TranslationKeys = {
   todo: {
     title_new: '新建任务',
     title_edit: '编辑任务',
-    tab_today: '今天',
     tab_list: '任务',
+    tab_routine: '例行',
     tab_overdue: '逾期',
     field_title: '标题 *',
     field_description: '描述',
@@ -80,6 +80,7 @@ const zh: TranslationKeys = {
     title_new: '新建习惯',
     title_edit: '编辑习惯',
     empty: '没有习惯',
+    empty_today: '今天没有例行任务',
     field_title: '标题 *',
     field_description: '描述',
     field_category: '分类 *',
