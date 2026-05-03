@@ -180,6 +180,12 @@ export function setOnboardingCompleted(): void {
     .run();
 }
 
+export function resetOnboardingCompleted(): void {
+  db.delete(schema.appSettings)
+    .where(eq(schema.appSettings.key, 'onboarding_completed'))
+    .run();
+}
+
 export function getAppLanguage(): string {
   const row = db.select().from(schema.appSettings)
     .where(eq(schema.appSettings.key, 'app_language')).get();
