@@ -1,6 +1,7 @@
 import { openDatabaseSync } from 'expo-sqlite';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { eq } from 'drizzle-orm';
+import dayjs from 'dayjs';
 import * as schema from './schema';
 
 type Db = ReturnType<typeof drizzle<typeof schema>>;
@@ -133,6 +134,17 @@ export function getDayStartMinutes(): number {
   const row = db.select().from(schema.appSettings)
     .where(eq(schema.appSettings.key, 'day_start_hour')).get();
   return row ? parseInt(row.value, 10) : 0;
+}
+
+/** 현재 시각 기준 "유효 오늘" (YYYY-MM-DD).
+ *  하루 시작 시간 전이면 어제 날짜를 반환. */
+export function computeEffectiveToday(): string {
+  const minutes = getDayStartMinutes();
+  const now = dayjs();
+  const todayAtStart = now.startOf('day').add(minutes, 'minute');
+  return now.isBefore(todayAtStart)
+    ? now.subtract(1, 'day').format('YYYY-MM-DD')
+    : now.format('YYYY-MM-DD');
 }
 
 export function setDayStartMinutes(minutes: number): void {

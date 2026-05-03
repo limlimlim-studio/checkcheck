@@ -8,10 +8,10 @@ import { AppState, AppStateStatus } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import MobileAds from 'react-native-google-mobile-ads';
+import MobileAds, { MaxAdContentRating } from 'react-native-google-mobile-ads';
 import * as Localization from 'expo-localization';
 import i18next from 'i18next';
-import { initDb, getDayStartMinutes, getAppLanguage } from './src/db';
+import { initDb, getDayStartMinutes, computeEffectiveToday, getAppLanguage } from './src/db';
 import { requestNotificationPermission } from './src/utils/notifications';
 import RootNavigator from './src/navigation/RootNavigator';
 import { AppTheme, NavTheme } from './src/theme';
@@ -50,10 +50,20 @@ export default function App() {
   useEffect(() => {
     const start = Date.now();
 
-    MobileAds().initialize()
+    MobileAds()
+      .setRequestConfiguration({
+        tagForChildDirectedTreatment: false,
+        tagForUnderAgeOfConsent: false,
+        maxAdContentRating: MaxAdContentRating.T,
+      })
+      .then(() => MobileAds().initialize())
+      .then((adapterStatuses) => {
+        console.log('[AdMob] 초기화 완료:', JSON.stringify(adapterStatuses));
+      })
       .then(() => initDb())
       .then(() => {
         useDayStartStore.getState().setDayStartMinutes(getDayStartMinutes());
+        useDayStartStore.getState().setEffectiveToday(computeEffectiveToday());
 
         const savedLang = getAppLanguage();
         const resolvedLang = savedLang === 'auto' ? getDeviceLanguage() : savedLang;
