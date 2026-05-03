@@ -1,6 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { View, FlatList, StyleSheet } from 'react-native';
-import { Text, Divider } from 'react-native-paper';
+import { Text, Divider, FAB } from 'react-native-paper';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
 import { useRoutinesToday, useToggleRoutineCompletion } from '../hooks/useRoutines';
@@ -11,12 +12,19 @@ import TodayProgressBar from './TodayProgressBar';
 import RoutineItem from './RoutineItem';
 
 export default function TodoTabRoutine() {
+  const navigation = useNavigation();
   const { t } = useTranslation();
   const { data: routines = [] } = useRoutinesToday();
   const { data: categories = [] } = useCategories();
   const { mutate: toggleRoutine } = useToggleRoutineCompletion();
   const effectiveToday = useDayStartStore(s => s.effectiveToday);
   const categoryMap = useCategoryMap(categories);
+  const isFocused = useIsFocused();
+  const [cleanedUp, setCleanedUp] = useState(false);
+  const [fabOpen, setFabOpen] = useState(false);
+
+  const displayRoutines = cleanedUp ? routines.filter(r => !r.isCompletedToday) : routines;
+  const hasCompleted = routines.some(r => r.isCompletedToday);
 
   const segments = useMemo(() => {
     const map = new Map<number, { color: string; count: number }>();
@@ -36,7 +44,7 @@ export default function TodoTabRoutine() {
   return (
     <View style={styles.container}>
       <FlatList
-        data={routines}
+        data={displayRoutines}
         keyExtractor={(item) => `routine-${item.id}`}
         ListHeaderComponent={
           <TodayProgressBar segments={segments} totalCompleted={totalCompleted} total={total} />
@@ -57,6 +65,18 @@ export default function TodoTabRoutine() {
         )}
         style={styles.list}
       />
+
+      <FAB.Group
+        open={fabOpen}
+        visible={isFocused}
+        icon={fabOpen ? 'close' : 'plus'}
+        fabStyle={styles.fab}
+        actions={[
+          ...(hasCompleted && !cleanedUp ? [{ icon: 'broom', label: t('todo.menu_clear'), onPress: () => { setCleanedUp(true); setFabOpen(false); }, size: 'small' as const }] : []),
+          { icon: 'autorenew', label: t('todo.menu_routine'), onPress: () => { navigation.navigate('RoutineRoot' as never); setFabOpen(false); }, size: 'small' as const },
+        ]}
+        onStateChange={({ open }) => setFabOpen(open)}
+      />
     </View>
   );
 }
@@ -65,4 +85,5 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   list: { flex: 1 },
   empty: { textAlign: 'center', marginTop: 60, color: Colors.textMuted },
+  fab: { transform: [{ scale: 0.85 }] },
 });

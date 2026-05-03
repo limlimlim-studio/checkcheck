@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react';
 import { View, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-import { Text, Divider, Menu } from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
+import { Text, Divider, Menu, FAB } from 'react-native-paper';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
-import { useTodosList, useTodosToday, useTodayCompletionIds, useTodayToggle } from '../hooks/useTodos';
+import { useTodosList, useTodosToday, useTodayCompletionIds, useTodayToggle, useCleanupChecked } from '../hooks/useTodos';
 import { useCategories } from '../hooks/useCategories';
 import { useCategoryMap } from '../hooks/useCategoryMap';
 import { useCheckable } from '../hooks/useCheckable';
@@ -57,9 +57,12 @@ export default function TodoTabList() {
   const { data: completedIds = new Set<number>() } = useTodayCompletionIds();
   const { data: categories = [] } = useCategories();
   const { mutate: todayToggle } = useTodayToggle();
+  const { mutate: cleanup } = useCleanupChecked();
+  const isFocused = useIsFocused();
 
   const [sortKey, setSortKey] = useState<SortKey>('deadline');
   const [sortMenuVisible, setSortMenuVisible] = useState(false);
+  const [fabOpen, setFabOpen] = useState(false);
 
   const categoryMap = useCategoryMap(categories);
   const getCheckable = useCheckable({ mode: 'today', completedIds, toggleFn: todayToggle });
@@ -143,6 +146,18 @@ export default function TodoTabList() {
         renderItem={renderItem}
         style={styles.list}
       />
+
+      <FAB.Group
+        open={fabOpen}
+        visible={isFocused}
+        icon={fabOpen ? 'close' : 'plus'}
+        fabStyle={styles.fab}
+        actions={[
+          ...(completedIds.size > 0 ? [{ icon: 'broom', label: t('todo.menu_clear'), onPress: () => { cleanup(); setFabOpen(false); }, size: 'small' as const }] : []),
+          { icon: 'plus', label: t('todo.title_new'), onPress: () => { navigation.navigate('TodoForm'); setFabOpen(false); }, size: 'small' as const },
+        ]}
+        onStateChange={({ open }) => setFabOpen(open)}
+      />
     </View>
   );
 }
@@ -164,4 +179,5 @@ const styles = StyleSheet.create({
   sortText: { color: Colors.textSecondary },
   list: { flex: 1 },
   empty: { textAlign: 'center', marginTop: 60, color: Colors.textMuted },
+  fab: { transform: [{ scale: 0.85 }] },
 });

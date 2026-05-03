@@ -7,14 +7,14 @@
       "title": "자동 완료 프로세스 제거 및 훅 교체",
       "issueNumber": 152,
       "branch": "feature/issue-151/remove-auto-complete-process",
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "number": 2,
       "title": "정리 FAB 구현 (할 일/루틴 탭)",
       "issueNumber": 153,
       "branch": "feature/issue-151/cleanup-fab",
-      "status": "pending"
+      "status": "in_progress"
     }
   ]
 }
