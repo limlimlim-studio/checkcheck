@@ -16,7 +16,6 @@ import { setDayStartMinutes, db, setAppLanguage } from '../db';
 import { todos, todoCompletions } from '../db/schema';
 import { useDayStartStore } from '../stores/dayStartStore';
 import { useLanguageStore } from '../stores/languageStore';
-import { resetDueDateCheckGuard, runDueDateCheck } from '../hooks/useTodos';
 
 type NavigationProp = NativeStackNavigationProp<SettingsStackParamList, 'SettingsHome'>;
 
@@ -139,18 +138,12 @@ export default function SettingsScreen() {
     }
   };
 
-  const handleForceRunTimer = async () => {
-    resetDueDateCheckGuard();
-    // 다음날 시작 시각을 시뮬레이션 — effectiveToday를 하루 앞으로 이동
+  const handleForceRunTimer = () => {
     const currentEffective = useDayStartStore.getState().effectiveToday;
     setEffectiveToday(dayjs(currentEffective).add(1, 'day').format('YYYY-MM-DD'));
-    const changed = await runDueDateCheck();
     queryClient.invalidateQueries({ queryKey: ['todos'] });
     queryClient.invalidateQueries({ queryKey: ['completions'], exact: false });
-    Alert.alert(
-      t('settings.dev_timer_alert_title'),
-      changed ? t('settings.dev_timer_alert_changed') : t('settings.dev_timer_alert_no_change'),
-    );
+    Alert.alert(t('settings.dev_timer_alert_title'), t('settings.dev_timer_alert_changed'));
   };
   // ────────────────────────────────────────────────────
 

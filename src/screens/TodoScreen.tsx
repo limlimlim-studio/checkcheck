@@ -1,5 +1,5 @@
 import { StyleSheet, View, useWindowDimensions, InteractionManager } from 'react-native';
-import { Appbar, FAB, Menu } from 'react-native-paper';
+import { Appbar, Menu } from 'react-native-paper';
 import { TabView, TabBar } from 'react-native-tab-view';
 import { useNavigation, useIsFocused, CommonActions } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -8,9 +8,8 @@ import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
-import { getAdFreeUntil, computeEffectiveToday } from '../db';
+import { computeEffectiveToday } from '../db';
 import { useDayStartStore } from '../stores/dayStartStore';
-import { runDueDateCheck, useFlushTodayCompleted } from '../hooks/useTodos';
 import { TodoStackParamList } from '../navigation/TodoStack';
 import BannerAdView from '../components/BannerAdView';
 import TodoTabList from '../components/TodoTabList';
@@ -34,8 +33,6 @@ export default function TodoScreen() {
   const layout = useWindowDimensions();
   const [tabIndex, setTabIndex] = useState(0);
   const [menuVisible, setMenuVisible] = useState(false);
-  const isAdFree = getAdFreeUntil() > Date.now();
-  const { mutate: flushTodayCompleted } = useFlushTodayCompleted();
   const isFocused = useIsFocused();
   const queryClient = useQueryClient();
 
@@ -60,20 +57,15 @@ export default function TodoScreen() {
   useEffect(() => {
     if (!isFocused) return;
     const task = InteractionManager.runAfterInteractions(() => {
-      // effectiveToday를 앞으로만 갱신 (뒤로 돌아가지 않음)
       const newEffective = computeEffectiveToday();
       if (newEffective > useDayStartStore.getState().effectiveToday) {
         useDayStartStore.getState().setEffectiveToday(newEffective);
       }
-      runDueDateCheck().then(() => {
-        queryClient.invalidateQueries({ queryKey: ['todos'] });
-        queryClient.invalidateQueries({ queryKey: ['completions'], exact: false });
-      });
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
+      queryClient.invalidateQueries({ queryKey: ['completions'], exact: false });
     });
     return () => task.cancel();
   }, [isFocused, queryClient]);
-
-  const showFab = tabIndex === 0 || tabIndex === 1;
 
   return (
     <View style={styles.container}>
@@ -87,13 +79,6 @@ export default function TodoScreen() {
             <Appbar.Action icon="dots-vertical" onPress={() => setMenuVisible(true)} />
           }
         >
-          {tabIndex === 0 && (
-            <Menu.Item
-              leadingIcon="broom"
-              title={t('todo.menu_clear')}
-              onPress={() => { setMenuVisible(false); flushTodayCompleted(); }}
-            />
-          )}
           <Menu.Item
             leadingIcon="label-multiple-outline"
             title={t('todo.menu_category')}
@@ -125,17 +110,6 @@ export default function TodoScreen() {
       />
 
       <BannerAdView />
-
-      {showFab && (
-        <FAB
-          icon="plus"
-          style={[styles.fab, !isAdFree && styles.fabWithAd]}
-          onPress={() => {
-            if (tabIndex === 0) navigation.navigate('TodoForm');
-            else navigation.navigate('RoutineRoot' as never);
-          }}
-        />
-      )}
     </View>
   );
 }
@@ -145,6 +119,4 @@ const styles = StyleSheet.create({
   header: { height: 72 },
   tabBar: { backgroundColor: Colors.surface },
   indicator: { backgroundColor: Colors.primary },
-  fab: { position: 'absolute', right: 16, bottom: 16 },
-  fabWithAd: { bottom: 74 },
 });
