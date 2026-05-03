@@ -1,5 +1,6 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Appbar, Text, Divider, FAB } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
@@ -25,6 +26,7 @@ export default function CategoryManagementScreen() {
   const { t } = useTranslation();
   const { data: categories = [] } = useCategories();
   const { mutate: reorderCategories } = useReorderCategories();
+  const { bottom: bottomInset } = useSafeAreaInsets();
 
   const handleDragEnd = ({ data }: { data: Category[] }) => {
     reorderCategories(data.map((c) => c.id));
@@ -79,7 +81,7 @@ export default function CategoryManagementScreen() {
 
       <FAB
         icon="plus"
-        style={styles.fab}
+        style={[styles.fab, { bottom: bottomInset + 16 }]}
         onPress={() => navigation.navigate('CategoryForm')}
       />
     </View>
@@ -108,5 +110,5 @@ const styles = StyleSheet.create({
   },
   description: { color: Colors.textSecondary, marginTop: 2 },
   dragHandle: { color: Colors.textMuted, fontSize: 18 },
-  fab: { position: 'absolute', right: 16, bottom: 48 },
+  fab: { position: 'absolute', right: 16, transform: [{ scale: 0.85 }] },
 });

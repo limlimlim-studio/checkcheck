@@ -1,5 +1,6 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Appbar, Text, Divider, FAB } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
@@ -53,6 +54,7 @@ export default function RoutineManagementScreen() {
   const { data: routines = [] } = useRoutines();
   const { data: categories = [] } = useCategories();
   const { mutate: reorderRoutines } = useReorderRoutines();
+  const { bottom: bottomInset } = useSafeAreaInsets();
 
   const categoryMap = useMemo(
     () => new Map(categories.map((c) => [c.id, c])),
@@ -113,7 +115,7 @@ export default function RoutineManagementScreen() {
 
       <FAB
         icon="plus"
-        style={styles.fab}
+        style={[styles.fab, { bottom: bottomInset + 16 }]}
         onPress={() => navigation.navigate('RoutineForm')}
       />
     </View>
@@ -140,6 +142,6 @@ const styles = StyleSheet.create({
   },
   repeatTagText: { fontSize: 10, fontWeight: '600', color: Colors.textSecondary },
   dragHandle: { color: Colors.textMuted, fontSize: 18 },
-  fab: { position: 'absolute', right: 16, bottom: 48 },
+  fab: { position: 'absolute', right: 16, transform: [{ scale: 0.85 }] },
   empty: { textAlign: 'center', marginTop: 60, color: Colors.textMuted },
 });
