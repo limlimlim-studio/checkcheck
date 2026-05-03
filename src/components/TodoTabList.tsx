@@ -5,12 +5,13 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
-import { useTodosList, useTodayCompletionIds, useTodayToggle } from '../hooks/useTodos';
+import { useTodosList, useTodosToday, useTodayCompletionIds, useTodayToggle } from '../hooks/useTodos';
 import { useCategories } from '../hooks/useCategories';
 import { useCategoryMap } from '../hooks/useCategoryMap';
 import { useCheckable } from '../hooks/useCheckable';
 import TodoItem from './TodoItem';
 import DateSeparator from './DateSeparator';
+import TodayProgressBar from './TodayProgressBar';
 import { TodoStackParamList } from '../navigation/TodoStack';
 import { Todo } from '../types';
 import { toDateKey, formatDueDateLabel } from '../utils/date';
@@ -52,6 +53,7 @@ export default function TodoTabList() {
   const navigation = useNavigation<Nav>();
   const { t } = useTranslation();
   const { data: todos = [] } = useTodosList();
+  const { data: todayTodos = [] } = useTodosToday();
   const { data: completedIds = new Set<number>() } = useTodayCompletionIds();
   const { data: categories = [] } = useCategories();
   const { mutate: todayToggle } = useTodayToggle();
@@ -63,6 +65,21 @@ export default function TodoTabList() {
   const getCheckable = useCheckable({ mode: 'today', completedIds, toggleFn: todayToggle });
 
   const listItems = useMemo(() => buildGroupedList(todos as Todo[], sortKey), [todos, sortKey]);
+
+  const progressSegments = useMemo(() => {
+    const map = new Map<number, { color: string; count: number }>();
+    for (const todo of todayTodos as Todo[]) {
+      if (!completedIds.has(todo.id)) continue;
+      const cat = categoryMap.get(todo.categoryId);
+      const color = cat?.color ?? Colors.primary;
+      const key = todo.categoryId ?? 0;
+      map.set(key, { color, count: (map.get(key)?.count ?? 0) + 1 });
+    }
+    return [...map.entries()].map(([categoryId, { color, count }]) => ({ categoryId, color, count }));
+  }, [todayTodos, completedIds, categoryMap]);
+
+  const progressTotal = (todayTodos as Todo[]).length;
+  const progressCompleted = progressSegments.reduce((s, seg) => s + seg.count, 0);
 
   const LIST_SORT_OPTIONS = [
     { key: 'deadline' as SortKey, label: t('todo.sort_deadline') },
@@ -91,6 +108,11 @@ export default function TodoTabList() {
 
   return (
     <View style={styles.container}>
+      <TodayProgressBar
+        segments={progressSegments}
+        totalCompleted={progressCompleted}
+        total={progressTotal}
+      />
       <View style={styles.sortRow}>
         <Menu
           visible={sortMenuVisible}
