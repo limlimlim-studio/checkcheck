@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { Text, Divider, Button, FAB, Dialog, Portal, Snackbar, Menu } from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
-import { useTodosOverdue, useToggleTodo, useBulkMoveToToday, useBulkDeleteTodos } from '../hooks/useTodos';
+import { useTodosOverdue, useBulkMoveToToday, useBulkDeleteTodos } from '../hooks/useTodos';
 import { useCategories } from '../hooks/useCategories';
 import { useCategoryMap } from '../hooks/useCategoryMap';
 import { useSelectable } from '../hooks/useSelectable';
@@ -53,19 +53,19 @@ export default function TodoTabOverdue() {
   const { t } = useTranslation();
   const { data: todos = [] } = useTodosOverdue();
   const { data: categories = [] } = useCategories();
-  const { mutate: toggleTodo } = useToggleTodo();
   const { mutate: bulkMoveToToday } = useBulkMoveToToday();
   const { mutate: bulkDelete } = useBulkDeleteTodos();
 
+  const isFocused = useIsFocused();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('deadline');
   const [sortMenuVisible, setSortMenuVisible] = useState(false);
+  const [fabOpen, setFabOpen] = useState(false);
 
   const categoryMap = useCategoryMap(categories);
-  const { isSelecting, selectedIds, startSelecting, clearSelection, toggleSelection } =
-    useSelectable(todos as Todo[]);
+  const { selectedIds, clearSelection, toggleSelection } = useSelectable(todos as Todo[]);
 
   const listItems = useMemo(() => buildGroupedList(todos as Todo[], sortKey), [todos, sortKey]);
 
@@ -95,22 +95,14 @@ export default function TodoTabOverdue() {
       return <DateSeparator label={item.label} />;
     }
     const { todo } = item;
-    const checked = isSelecting ? selectedIds.has(todo.id) : false;
-    const onCheck = isSelecting
-      ? () => toggleSelection(todo.id)
-      : () => toggleTodo({ id: todo.id, isCompleted: todo.isCompleted });
-    const onPress = isSelecting
-      ? () => toggleSelection(todo.id)
-      : () => navigation.navigate('TodoForm', { todo });
-
     return (
       <TodoItem
         todo={todo}
         category={categoryMap.get(todo.categoryId)}
-        checked={checked}
-        onCheck={onCheck}
-        onPress={onPress}
-        checkboxVisible={isSelecting}
+        checked={selectedIds.has(todo.id)}
+        onCheck={() => toggleSelection(todo.id)}
+        onPress={() => navigation.navigate('TodoForm', { todo })}
+        checkboxVisible
         showDescription
       />
     );
@@ -120,28 +112,26 @@ export default function TodoTabOverdue() {
 
   return (
     <View style={styles.container}>
-      {!isSelecting && (
-        <View style={styles.sortRow}>
-          <Menu
-            visible={sortMenuVisible}
-            onDismiss={() => setSortMenuVisible(false)}
-            anchor={
-              <TouchableOpacity style={styles.sortAnchor} onPress={() => setSortMenuVisible(true)}>
-                <Text variant="labelSmall" style={styles.sortText}>{currentLabel} ▾</Text>
-              </TouchableOpacity>
-            }
-          >
-            {OVERDUE_SORT_OPTIONS.map((opt) => (
-              <Menu.Item
-                key={opt.key}
-                title={opt.label}
-                onPress={() => { setSortKey(opt.key); setSortMenuVisible(false); }}
-                trailingIcon={sortKey === opt.key ? 'check' : undefined}
-              />
-            ))}
-          </Menu>
-        </View>
-      )}
+      <View style={styles.sortRow}>
+        <Menu
+          visible={sortMenuVisible}
+          onDismiss={() => setSortMenuVisible(false)}
+          anchor={
+            <TouchableOpacity style={styles.sortAnchor} onPress={() => setSortMenuVisible(true)}>
+              <Text variant="labelSmall" style={styles.sortText}>{currentLabel} ▾</Text>
+            </TouchableOpacity>
+          }
+        >
+          {OVERDUE_SORT_OPTIONS.map((opt) => (
+            <Menu.Item
+              key={opt.key}
+              title={opt.label}
+              onPress={() => { setSortKey(opt.key); setSortMenuVisible(false); }}
+              trailingIcon={sortKey === opt.key ? 'check' : undefined}
+            />
+          ))}
+        </Menu>
+      </View>
       <FlatList
         data={listItems}
         keyExtractor={(item) => item.key}
@@ -153,34 +143,27 @@ export default function TodoTabOverdue() {
         style={styles.list}
       />
 
-      {isSelecting ? (
-        <View style={styles.actionColumn}>
-          <FAB
-            icon="calendar-arrow-right"
-            style={[styles.fabAction, selectedIds.size === 0 && styles.fabDisabled]}
-            onPress={handleMoveToToday}
-            disabled={selectedIds.size === 0}
-          />
-          <FAB
-            icon="trash-can-outline"
-            style={[styles.fabAction, styles.fabDanger, selectedIds.size === 0 && styles.fabDisabled]}
-            color={Colors.danger}
-            onPress={() => selectedIds.size > 0 && setShowDeleteDialog(true)}
-            disabled={selectedIds.size === 0}
-          />
-          <FAB
-            icon="close-circle-outline"
-            style={styles.fabAction}
-            onPress={clearSelection}
-          />
-        </View>
-      ) : (
-        <FAB
-          icon="check-circle-outline"
-          style={styles.fab}
-          onPress={startSelecting}
-        />
-      )}
+      <FAB.Group
+        open={fabOpen}
+        visible={isFocused && selectedIds.size > 0}
+        icon={fabOpen ? 'close' : 'dots-vertical'}
+        fabStyle={styles.fab}
+        actions={[
+          {
+            icon: 'calendar-arrow-right',
+            label: t('todo.move_to_today_msg', { count: selectedIds.size }),
+            onPress: () => { handleMoveToToday(); setFabOpen(false); },
+            size: 'small' as const,
+          },
+          {
+            icon: 'trash-can-outline',
+            label: t('common.delete'),
+            onPress: () => { setShowDeleteDialog(true); setFabOpen(false); },
+            size: 'small' as const,
+          },
+        ]}
+        onStateChange={({ open }) => setFabOpen(open)}
+      />
 
       <Portal>
         <Dialog visible={showDeleteDialog} onDismiss={() => setShowDeleteDialog(false)}>
@@ -226,16 +209,5 @@ const styles = StyleSheet.create({
   list: { flex: 1, backgroundColor: Colors.background },
   empty: { textAlign: 'center', marginTop: 60, color: Colors.textMuted },
   snackbar: { marginBottom: 80 },
-  fab: { position: 'absolute', right: 16, bottom: 16 },
-  actionColumn: {
-    position: 'absolute',
-    right: 16,
-    bottom: 16,
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 12,
-  },
-  fabAction: {},
-  fabDanger: { backgroundColor: Colors.surfaceVariant },
-  fabDisabled: { opacity: 0.4 },
+  fab: { transform: [{ scale: 0.85 }] },
 });
