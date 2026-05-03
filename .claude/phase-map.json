@@ -1,20 +1,20 @@
 {
   "planFile": "warm-fluttering-cray.md",
-  "mainIssueNumber": 146,
+  "mainIssueNumber": 151,
   "phases": [
     {
       "number": 1,
-      "title": "루틴 탭 신설 및 오늘 탭 제거",
-      "issueNumber": 147,
-      "branch": "feature/issue-146/tab-restructure-add-routine-tab",
-      "status": "done"
+      "title": "자동 완료 프로세스 제거 및 훅 교체",
+      "issueNumber": 152,
+      "branch": "feature/issue-151/remove-auto-complete-process",
+      "status": "in_progress"
     },
     {
       "number": 2,
-      "title": "할 일 탭 오늘 프로그레스 바 추가",
-      "issueNumber": 148,
-      "branch": "feature/issue-146/todo-tab-today-progress",
-      "status": "in_progress"
+      "title": "정리 FAB 구현 (할 일/루틴 탭)",
+      "issueNumber": 153,
+      "branch": "feature/issue-151/cleanup-fab",
+      "status": "pending"
     }
   ]
 }

@@ -1,7 +1,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { and, asc, desc, eq, gte, isNull, lt, lte, or } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, isNull, lt, or } from 'drizzle-orm';
 import dayjs from 'dayjs';
-import { db, getDayStartMinutes } from '../db';
+import { db } from '../db';
 import { todos, todoCompletions } from '../db/schema';
 import { useDayStartStore } from '../stores/dayStartStore';
 import { scheduleTodoNotifications, cancelTodoNotifications, offsetsToString } from '../utils/notifications';
@@ -141,72 +141,28 @@ export const useTodayToggle = () => {
   });
 };
 
-/** 기한/완료 체크: 아래 두 조건 중 하나라도 해당하면 isCompleted=1로 이동.
- *  1. 기한이 지난 항목 중 완료 기록이 있는 경우
- *  2. 기한에 관계없이 이전 날짜에 완료 기록된 항목 (어제 이전에 체크한 항목)
- *  앱 포그라운드 진입 및 탭 포커스 시 실행, 하루 1회만 실제 처리 */
-let _lastDueDateCheckDate = '';
-
-export const resetDueDateCheckGuard = () => { _lastDueDateCheckDate = ''; };
-
-export const runDueDateCheck = async (): Promise<boolean> => {
-  const dayStartMinutes = getDayStartMinutes();
-  const now = dayjs();
-  const todayAtStart = now.startOf('day').add(dayStartMinutes, 'minute');
-  const effectiveDayStart = now.isBefore(todayAtStart)
-    ? todayAtStart.subtract(1, 'day')
-    : todayAtStart;
-
-  const today = effectiveDayStart.format('YYYY-MM-DD');
-  if (_lastDueDateCheckDate === today) return false;
-  _lastDueDateCheckDate = today;
-
-  const todayStart = effectiveDayStart.valueOf();
-  let changed = false;
-
-  // 1. 기한이 지난 항목 중 완료 기록 있는 경우
-  const overdueTodos = db.select().from(todos)
-    .where(and(eq(todos.isCompleted, 0), eq(todos.isDeleted, 0), lt(todos.dueDate, todayStart)))
-    .all();
-
-  for (const todo of overdueTodos) {
-    const completion = db.select().from(todoCompletions)
-      .where(eq(todoCompletions.todoId, todo.id))
-      .get();
-    if (completion) {
+/** 오늘 체크된 할일을 isCompleted=1로 일괄 처리 (사용자가 정리 버튼 눌렀을 때) */
+export const useCleanupChecked = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const today = useDayStartStore.getState().effectiveToday;
+      const completions = db.select().from(todoCompletions)
+        .where(eq(todoCompletions.completedDate, today))
+        .all();
       const now = Date.now();
-      await db.update(todos).set({
-        isCompleted: 1,
-        completedAt: now,
-        updatedAt: now,
-      }).where(eq(todos.id, todo.id)).run();
-      changed = true;
-    }
-  }
-
-  // 2. 이전 날짜에 체크된 항목 (오늘 이전 completedDate 기록이 있는 미완료 항목)
-  const prevCompletions = db.select({ todoId: todoCompletions.todoId })
-    .from(todoCompletions)
-    .where(lt(todoCompletions.completedDate, today))
-    .all();
-
-  const prevIds = [...new Set(prevCompletions.map((r) => r.todoId))];
-  for (const id of prevIds) {
-    const todo = db.select().from(todos)
-      .where(and(eq(todos.id, id), eq(todos.isCompleted, 0), eq(todos.isDeleted, 0)))
-      .get();
-    if (todo) {
-      const now = Date.now();
-      await db.update(todos).set({
-        isCompleted: 1,
-        completedAt: now,
-        updatedAt: now,
-      }).where(eq(todos.id, id)).run();
-      changed = true;
-    }
-  }
-
-  return changed;
+      for (const c of completions) {
+        db.update(todos).set({ isCompleted: 1, completedAt: now, updatedAt: now })
+          .where(and(eq(todos.id, c.todoId), eq(todos.isCompleted, 0), eq(todos.isDeleted, 0)))
+          .run();
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
+      queryClient.invalidateQueries({ queryKey: ['todayCompletionIds'] });
+      queryClient.invalidateQueries({ queryKey: ['completions'], exact: false });
+    },
+  });
 };
 
 export const useCreateTodo = () => {
@@ -406,49 +362,3 @@ export const useBulkDeleteTodos = () => {
   });
 };
 
-/** 오늘 탭에서 체크된 항목을 즉시 완료 처리 (isCompleted=1)
- *  자정이 지나도 앱이 켜져 있어 runDueDateCheck가 재실행되지 않을 때 수동으로 정리 */
-export const useFlushTodayCompleted = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (): Promise<number> => {
-      const today = useDayStartStore.getState().effectiveToday;
-      const todayStart = dayjs(today).startOf('day').valueOf();
-      const todayEnd = dayjs(today).endOf('day').valueOf();
-      const now = Date.now();
-
-      const todayTodos = db.select().from(todos)
-        .where(and(
-          eq(todos.isCompleted, 0),
-          eq(todos.isDeleted, 0),
-          gte(todos.dueDate, todayStart),
-          lte(todos.dueDate, todayEnd),
-        ))
-        .all();
-
-      let count = 0;
-      for (const todo of todayTodos) {
-        const completion = db.select().from(todoCompletions)
-          .where(and(
-            eq(todoCompletions.todoId, todo.id),
-            eq(todoCompletions.completedDate, today),
-          ))
-          .get();
-        if (completion) {
-          db.update(todos).set({
-            isCompleted: 1,
-            completedAt: now,
-            updatedAt: now,
-          }).where(eq(todos.id, todo.id)).run();
-          count++;
-        }
-      }
-      return count;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['todos'] });
-      queryClient.invalidateQueries({ queryKey: ['todo-completions'] });
-      queryClient.invalidateQueries({ queryKey: ['completions'] });
-    },
-  });
-};
