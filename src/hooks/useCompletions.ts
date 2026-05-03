@@ -1,7 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
-import { eq, and, gte, lte, sql } from 'drizzle-orm';
+import { eq, and, gte, lte, sql, desc } from 'drizzle-orm';
 import { db } from '../db';
 import { todoCompletions, todos, routineCompletions, routines } from '../db/schema';
+
+export type RoutineCompletionRecord = {
+  completionId: number;
+  routineId: number;
+  title: string;
+  urgency: number | null;
+  importance: number | null;
+  completedDate: string; // YYYY-MM-DD
+};
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -77,4 +86,23 @@ export const useCompletionsByCategory = (categoryId: number, year: number) =>
       }
       return map;
     },
+  });
+
+export const useRoutineCompletionsByCategory = (categoryId: number) =>
+  useQuery({
+    queryKey: ['completions', 'routine', categoryId],
+    queryFn: (): RoutineCompletionRecord[] =>
+      db.select({
+        completionId: routineCompletions.id,
+        routineId: routineCompletions.routineId,
+        title: routines.title,
+        urgency: routines.urgency,
+        importance: routines.importance,
+        completedDate: routineCompletions.completedDate,
+      })
+      .from(routineCompletions)
+      .innerJoin(routines, eq(routineCompletions.routineId, routines.id))
+      .where(eq(routines.categoryId, categoryId))
+      .orderBy(desc(routineCompletions.completedDate))
+      .all(),
   });
