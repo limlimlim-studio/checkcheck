@@ -3,6 +3,7 @@ import { View, ScrollView, StyleSheet } from 'react-native';
 import { Appbar, Text, IconButton, TouchableRipple, Menu } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
 import { useCategories } from '../hooks/useCategories';
 import { useEarliestCompletionYear } from '../hooks/useCompletions';
@@ -16,6 +17,7 @@ const CURRENT_YEAR = new Date().getFullYear();
 
 export default function RecordScreen() {
   const navigation = useNavigation<Nav>();
+  const { t } = useTranslation();
   const [year, setYear] = useState(CURRENT_YEAR);
   const [menuVisible, setMenuVisible] = useState(false);
   const { data: categories = [] } = useCategories();
@@ -34,12 +36,12 @@ export default function RecordScreen() {
         >
           <Menu.Item
             leadingIcon="tag-outline"
-            title="카테고리 관리"
+            title={t('record.menu_category')}
             onPress={() => { setMenuVisible(false); navigation.navigate('CategoryRoot' as never); }}
           />
           <Menu.Item
             leadingIcon="repeat"
-            title="루틴 관리"
+            title={t('record.menu_routine')}
             onPress={() => { setMenuVisible(false); navigation.navigate('RoutineRoot' as never); }}
           />
         </Menu>

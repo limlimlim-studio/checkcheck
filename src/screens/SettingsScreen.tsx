@@ -1,48 +1,56 @@
 import { View, ScrollView, Modal, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useMemo, useState } from 'react';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { Appbar, Text, Divider } from 'react-native-paper';
+import { Appbar, Text, Divider, Dialog, Portal, RadioButton } from 'react-native-paper';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
+import i18next from 'i18next';
 import { Colors } from '../theme';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SettingsStackParamList } from '../navigation/SettingsStack';
 import Constants from 'expo-constants';
 import { useAdFree, REQUIRED_AD_COUNT } from '../hooks/useAdFree';
-import { setDayStartMinutes, db } from '../db';
+import { setDayStartMinutes, db, setAppLanguage } from '../db';
 import { todos, todoCompletions } from '../db/schema';
 import { useDayStartStore } from '../stores/dayStartStore';
+import { useLanguageStore } from '../stores/languageStore';
 import { resetDueDateCheckGuard, runDueDateCheck } from '../hooks/useTodos';
 
 type NavigationProp = NativeStackNavigationProp<SettingsStackParamList, 'SettingsHome'>;
 
-const APP_INFO = [
-  { label: '버전', value: Constants.expoConfig?.version ?? '1.0.0' },
+const LANGUAGE_OPTIONS = [
+  { value: 'auto', nativeLabel: null },
+  { value: 'ko',   nativeLabel: '한국어' },
+  { value: 'en',   nativeLabel: 'English' },
+  { value: 'zh',   nativeLabel: '中文(简体)' },
+  { value: 'ja',   nativeLabel: '日本語' },
 ];
 
-function formatDate(ts: number): string {
-  const d = new Date(ts);
-  return `${d.getMonth() + 1}월 ${d.getDate()}일`;
+function formatDate(ts: number, t: ReturnType<typeof useTranslation>['t']): string {
+  return dayjs(ts).format(t('date.format_short'));
 }
 
-function formatMinutes(minutes: number): string {
+function formatMinutes(minutes: number, t: ReturnType<typeof useTranslation>['t']): string {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   const mm = String(m).padStart(2, '0');
-  if (h === 0) return `오전 12:${mm}`;
-  if (h < 12) return `오전 ${h}:${mm}`;
-  if (h === 12) return `오후 12:${mm}`;
-  return `오후 ${h - 12}:${mm}`;
+  const isAM = h < 12;
+  const hour12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return `${t(isAM ? 'settings.am' : 'settings.pm')} ${hour12}:${mm}`;
 }
 
 export default function SettingsScreen() {
   const navigation = useNavigation<NavigationProp>();
+  const { t } = useTranslation();
   const { isAdFree, adFreeUntil, watchedCount, watchAd, isLoading, resetAdFree } = useAdFree();
   const queryClient = useQueryClient();
 
   const { dayStartMinutes, setDayStartMinutes: setDayStartMinutesInStore, setEffectiveToday } = useDayStartStore();
+  const { language, setLanguage } = useLanguageStore();
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showLangDialog, setShowLangDialog] = useState(false);
   const [tempDate, setTempDate] = useState<Date>(() => {
     const d = new Date();
     d.setHours(Math.floor(dayStartMinutes / 60), dayStartMinutes % 60, 0, 0);
@@ -59,8 +67,8 @@ export default function SettingsScreen() {
     const now = dayjs();
     let next = now.startOf('day').add(dayStartMinutes, 'minute');
     if (!now.isBefore(next)) next = next.add(1, 'day');
-    return next.format('M월 D일 HH:mm');
-  }, [dayStartMinutes]);
+    return next.format(t('date.format_short_with_time'));
+  }, [dayStartMinutes, t]);
 
   const handleOpenPicker = () => {
     setTempDate(dayStartDate);
@@ -80,6 +88,24 @@ export default function SettingsScreen() {
 
   const handleCancel = () => {
     setShowTimePicker(false);
+  };
+
+  const handleLanguageChange = (lang: string) => {
+    setAppLanguage(lang);
+    setLanguage(lang);
+    if (lang === 'auto') {
+      const deviceCode = (require('expo-localization').getLocales()[0]?.languageCode ?? 'en') as string;
+      const supported = ['ko', 'en', 'zh', 'ja'];
+      i18next.changeLanguage(supported.includes(deviceCode) ? deviceCode : 'en');
+    } else {
+      i18next.changeLanguage(lang);
+    }
+    setShowLangDialog(false);
+  };
+
+  const getLanguageDisplayLabel = () => {
+    if (language === 'auto') return t('language.auto');
+    return LANGUAGE_OPTIONS.find((o) => o.value === language)?.nativeLabel ?? language;
   };
 
   // ── 개발용 ──────────────────────────────────────────
@@ -107,8 +133,8 @@ export default function SettingsScreen() {
       db.insert(todoCompletions).values({ todoId: result.id, completedDate: yesterdayStr }).run();
       queryClient.invalidateQueries({ queryKey: ['todos'] });
       Alert.alert(
-        '테스트 할 일 생성',
-        `"[타이머테스트] 어제 완료한 할 일" 생성\n어제(${yesterdayStr}) 완료 기록 추가\n\n이제 "타이머 강제 실행"을 눌러 정리 여부를 확인하세요`,
+        t('settings.dev_test_todo_alert_title'),
+        t('settings.dev_test_todo_alert_msg', { date: yesterdayStr }),
       );
     }
   };
@@ -121,7 +147,10 @@ export default function SettingsScreen() {
     const changed = await runDueDateCheck();
     queryClient.invalidateQueries({ queryKey: ['todos'] });
     queryClient.invalidateQueries({ queryKey: ['completions'], exact: false });
-    Alert.alert('타이머 강제 실행', changed ? '할 일이 정리됐어요 ✓' : '정리할 항목이 없어요');
+    Alert.alert(
+      t('settings.dev_timer_alert_title'),
+      changed ? t('settings.dev_timer_alert_changed') : t('settings.dev_timer_alert_no_change'),
+    );
   };
   // ────────────────────────────────────────────────────
 
@@ -129,110 +158,121 @@ export default function SettingsScreen() {
     <View style={styles.container}>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => navigation.goBack()} />
-        <Appbar.Content title="설정" />
+        <Appbar.Content title={t('settings.title')} />
       </Appbar.Header>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-      <Text variant="labelSmall" style={styles.sectionLabel}>광고 없이 보기</Text>
-      <View style={styles.section}>
-        {isAdFree ? (
-          <View style={styles.item}>
-            <View>
-              <Text variant="bodyLarge">광고 없음</Text>
-              <Text variant="bodySmall" style={styles.description}>
-                {formatDate(adFreeUntil)}까지 광고가 표시되지 않아요
-              </Text>
-            </View>
-            <Text style={styles.checkmark}>✓</Text>
-          </View>
-        ) : (
-          <View style={styles.rewardedSection}>
-            <View style={styles.rewardedInfo}>
-              <Text variant="bodyLarge">광고 시청으로 30일 무광고</Text>
-              <Text variant="bodySmall" style={styles.description}>
-                동영상 광고 {REQUIRED_AD_COUNT}개를 시청하면 30일간 광고가 숨겨져요
-              </Text>
-              <View style={styles.dots}>
-                {Array.from({ length: REQUIRED_AD_COUNT }).map((_, i) => (
-                  <View
-                    key={i}
-                    style={[styles.dot, i < watchedCount && styles.dotFilled]}
-                  />
-                ))}
-              </View>
-            </View>
-            <TouchableOpacity
-              style={[styles.watchButton, isLoading && styles.watchButtonDisabled]}
-              onPress={watchAd}
-              disabled={isLoading}
-            >
-              {isLoading
-                ? <ActivityIndicator size="small" color={Colors.primary} />
-                : <Text style={styles.watchButtonText}>광고 시청</Text>
-              }
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-
-      {__DEV__ && (
-        <>
-          <Text variant="labelSmall" style={[styles.sectionLabel, { color: Colors.danger }]}>개발용</Text>
-          <View style={styles.section}>
-            <TouchableOpacity
-              style={styles.item}
-              onPress={() => Alert.alert('광고 없음 초기화', '광고 없음 상태를 초기화할까요?', [
-                { text: '취소', style: 'cancel' },
-                { text: '초기화', style: 'destructive', onPress: resetAdFree },
-              ])}
-            >
-              <Text variant="bodyLarge" style={{ color: Colors.danger }}>광고 면제 초기화</Text>
-            </TouchableOpacity>
-            <Divider />
-            <TouchableOpacity style={styles.item} onPress={handleCreateTestTodo}>
+        <Text variant="labelSmall" style={styles.sectionLabel}>{t('settings.section_ad')}</Text>
+        <View style={styles.section}>
+          {isAdFree ? (
+            <View style={styles.item}>
               <View>
-                <Text variant="bodyLarge" style={{ color: Colors.danger }}>테스트 할 일 생성</Text>
-                <Text variant="bodySmall" style={styles.description}>어제 날짜 + 완료 기록 포함</Text>
-              </View>
-            </TouchableOpacity>
-            <Divider />
-            <TouchableOpacity style={styles.item} onPress={handleForceRunTimer}>
-              <View>
-                <Text variant="bodyLarge" style={{ color: Colors.danger }}>타이머 강제 실행</Text>
+                <Text variant="bodyLarge">{t('settings.ad_free')}</Text>
                 <Text variant="bodySmall" style={styles.description}>
-                  다음 예약: {nextTimerStr}
+                  {t('settings.ad_free_until', { date: formatDate(adFreeUntil, t) })}
                 </Text>
               </View>
-            </TouchableOpacity>
-          </View>
-        </>
-      )}
+              <Text style={styles.checkmark}>✓</Text>
+            </View>
+          ) : (
+            <View style={styles.rewardedSection}>
+              <View style={styles.rewardedInfo}>
+                <Text variant="bodyLarge">{t('settings.watch_ad')}</Text>
+                <Text variant="bodySmall" style={styles.description}>
+                  {t('settings.watch_ad_desc', { count: REQUIRED_AD_COUNT })}
+                </Text>
+                <View style={styles.dots}>
+                  {Array.from({ length: REQUIRED_AD_COUNT }).map((_, i) => (
+                    <View
+                      key={i}
+                      style={[styles.dot, i < watchedCount && styles.dotFilled]}
+                    />
+                  ))}
+                </View>
+              </View>
+              <TouchableOpacity
+                style={[styles.watchButton, isLoading && styles.watchButtonDisabled]}
+                onPress={watchAd}
+                disabled={isLoading}
+              >
+                {isLoading
+                  ? <ActivityIndicator size="small" color={Colors.primary} />
+                  : <Text style={styles.watchButtonText}>{t('settings.watch_ad_btn')}</Text>
+                }
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
 
-      <Text variant="labelSmall" style={styles.sectionLabel}>하루 기준 시간</Text>
-      <View style={styles.section}>
-        <TouchableOpacity style={styles.item} onPress={handleOpenPicker}>
-          <View>
-            <Text variant="bodyLarge">하루 시작 시간</Text>
-            <Text variant="bodySmall" style={styles.description}>
-              이 시간이 지나면 오늘 완료한 할 일이 정리돼요
+        {__DEV__ && (
+          <>
+            <Text variant="labelSmall" style={[styles.sectionLabel, { color: Colors.danger }]}>
+              {t('settings.dev_section')}
+            </Text>
+            <View style={styles.section}>
+              <TouchableOpacity
+                style={styles.item}
+                onPress={() => Alert.alert(
+                  t('settings.dev_reset_confirm_title'),
+                  t('settings.dev_reset_confirm_msg'),
+                  [
+                    { text: t('common.cancel'), style: 'cancel' },
+                    { text: t('common.reset'), style: 'destructive', onPress: resetAdFree },
+                  ],
+                )}
+              >
+                <Text variant="bodyLarge" style={{ color: Colors.danger }}>{t('settings.dev_reset_ad')}</Text>
+              </TouchableOpacity>
+              <Divider />
+              <TouchableOpacity style={styles.item} onPress={handleCreateTestTodo}>
+                <View>
+                  <Text variant="bodyLarge" style={{ color: Colors.danger }}>{t('settings.dev_test_todo')}</Text>
+                  <Text variant="bodySmall" style={styles.description}>{t('settings.dev_test_todo_desc')}</Text>
+                </View>
+              </TouchableOpacity>
+              <Divider />
+              <TouchableOpacity style={styles.item} onPress={handleForceRunTimer}>
+                <View>
+                  <Text variant="bodyLarge" style={{ color: Colors.danger }}>{t('settings.dev_timer')}</Text>
+                  <Text variant="bodySmall" style={styles.description}>
+                    {t('settings.dev_timer_next', { time: nextTimerStr })}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
+
+        <Text variant="labelSmall" style={styles.sectionLabel}>{t('settings.section_day_start')}</Text>
+        <View style={styles.section}>
+          <TouchableOpacity style={styles.item} onPress={handleOpenPicker}>
+            <View>
+              <Text variant="bodyLarge">{t('settings.day_start_time')}</Text>
+              <Text variant="bodySmall" style={styles.description}>
+                {t('settings.day_start_desc')}
+              </Text>
+            </View>
+            <Text style={styles.timeValue}>{formatMinutes(dayStartMinutes, t)}</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text variant="labelSmall" style={styles.sectionLabel}>{t('settings.section_language')}</Text>
+        <View style={styles.section}>
+          <TouchableOpacity style={styles.item} onPress={() => setShowLangDialog(true)}>
+            <Text variant="bodyLarge">{t('settings.language_label')}</Text>
+            <Text style={styles.langValue}>{getLanguageDisplayLabel()}</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text variant="labelSmall" style={styles.sectionLabel}>{t('settings.section_app')}</Text>
+        <View style={styles.section}>
+          <View style={styles.infoItem}>
+            <Text variant="bodyLarge">{t('settings.version')}</Text>
+            <Text variant="bodyMedium" style={styles.infoValue}>
+              {Constants.expoConfig?.version ?? '1.0.0'}
             </Text>
           </View>
-          <Text style={styles.timeValue}>{formatMinutes(dayStartMinutes)}</Text>
-        </TouchableOpacity>
-      </View>
-
-      <Text variant="labelSmall" style={styles.sectionLabel}>앱</Text>
-      <View style={styles.section}>
-        {APP_INFO.map((info, index) => (
-          <View key={info.label}>
-            <View style={styles.infoItem}>
-              <Text variant="bodyLarge">{info.label}</Text>
-              <Text variant="bodyMedium" style={styles.infoValue}>{info.value}</Text>
-            </View>
-            {index < APP_INFO.length - 1 && <Divider />}
-          </View>
-        ))}
-      </View>
+        </View>
       </ScrollView>
 
       {/* 시간 선택 Modal */}
@@ -241,10 +281,10 @@ export default function SettingsScreen() {
           <View style={styles.modalSheet}>
             <View style={styles.modalHeader}>
               <TouchableOpacity onPress={handleCancel} hitSlop={12}>
-                <Text style={styles.modalCancel}>취소</Text>
+                <Text style={styles.modalCancel}>{t('settings.modal_cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={handleConfirm} hitSlop={12}>
-                <Text style={styles.modalConfirm}>완료</Text>
+                <Text style={styles.modalConfirm}>{t('settings.modal_confirm')}</Text>
               </TouchableOpacity>
             </View>
             <DateTimePicker
@@ -258,6 +298,29 @@ export default function SettingsScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* 언어 선택 Dialog */}
+      <Portal>
+        <Dialog visible={showLangDialog} onDismiss={() => setShowLangDialog(false)}>
+          <Dialog.Title>{t('language.select_title')}</Dialog.Title>
+          <Dialog.Content>
+            <RadioButton.Group onValueChange={handleLanguageChange} value={language}>
+              {LANGUAGE_OPTIONS.map((opt) => (
+                <TouchableOpacity
+                  key={opt.value}
+                  style={styles.langOption}
+                  onPress={() => handleLanguageChange(opt.value)}
+                >
+                  <RadioButton.Android value={opt.value} color={Colors.primary} />
+                  <Text variant="bodyMedium">
+                    {opt.value === 'auto' ? t('language.auto') : opt.nativeLabel}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </RadioButton.Group>
+          </Dialog.Content>
+        </Dialog>
+      </Portal>
     </View>
   );
 }
@@ -291,6 +354,12 @@ const styles = StyleSheet.create({
   },
   infoValue: { color: Colors.textSecondary },
   timeValue: { color: Colors.primary, fontWeight: '600', fontSize: 15 },
+  langValue: { color: Colors.primary, fontWeight: '600', fontSize: 15 },
+  langOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
   rewardedSection: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -330,7 +399,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 14,
   },
-  // Modal
   modalOverlay: {
     flex: 1,
     justifyContent: 'flex-end',

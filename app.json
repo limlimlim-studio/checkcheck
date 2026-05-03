@@ -57,7 +57,9 @@
             }
           }
         }
-      ]
+      ],
+      "expo-localization",
+      "./plugins/withFixPbxprojObjectVersion"
     ],
     "extra": {
       "eas": {

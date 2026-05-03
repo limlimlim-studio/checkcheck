@@ -1,6 +1,6 @@
 import * as Notifications from 'expo-notifications';
+import i18next from 'i18next';
 
-// 앱 포그라운드에서도 알림 표시
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -11,13 +11,17 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export const OFFSET_OPTIONS = [
-  { value: 0,   label: '정시' },
-  { value: 10,  label: '10분 전' },
-  { value: 30,  label: '30분 전' },
-  { value: 60,  label: '1시간 전' },
-  { value: 120, label: '2시간 전' },
-];
+export function getOffsetOptions() {
+  return [
+    { value: 0,   label: i18next.t('notif.on_time') },
+    { value: 10,  label: i18next.t('notif.before_10') },
+    { value: 30,  label: i18next.t('notif.before_30') },
+    { value: 60,  label: i18next.t('notif.before_1h') },
+    { value: 120, label: i18next.t('notif.before_2h') },
+  ];
+}
+
+export const OFFSET_OPTIONS = getOffsetOptions();
 
 export function offsetsToString(offsets: number[]): string {
   return offsets.sort((a, b) => a - b).join(',');
@@ -29,7 +33,7 @@ export function offsetsFromString(str: string | null | undefined): number[] {
 }
 
 export function offsetLabel(offset: number): string {
-  return OFFSET_OPTIONS.find((o) => o.value === offset)?.label ?? `${offset}분 전`;
+  return getOffsetOptions().find((o) => o.value === offset)?.label ?? `${offset}${i18next.t('notif.before_10').replace('10', '')}`;
 }
 
 export async function requestNotificationPermission(): Promise<boolean> {
@@ -37,7 +41,6 @@ export async function requestNotificationPermission(): Promise<boolean> {
   return status === 'granted';
 }
 
-/** 할 일 알림 전체 예약. 기존 예약은 모두 취소 후 재예약 */
 export async function scheduleTodoNotifications(todo: {
   id: number;
   title: string;
@@ -55,7 +58,7 @@ export async function scheduleTodoNotifications(todo: {
     await Notifications.scheduleNotificationAsync({
       identifier: `todo-${todo.id}-${offset}`,
       content: {
-        title: offset === 0 ? '지금' : offsetLabel(offset),
+        title: offset === 0 ? i18next.t('notif.now') : offsetLabel(offset),
         body: todo.title,
       },
       trigger: {
@@ -66,7 +69,6 @@ export async function scheduleTodoNotifications(todo: {
   }
 }
 
-/** 루틴 알림 전체 예약. 기존 예약은 모두 취소 후 재예약 */
 export async function scheduleRoutineNotifications(routine: {
   id: number;
   title: string;
@@ -85,7 +87,7 @@ export async function scheduleRoutineNotifications(routine: {
     await Notifications.scheduleNotificationAsync({
       identifier: `routine-${routine.id}-${offset}`,
       content: {
-        title: offset === 0 ? '지금' : offsetLabel(offset),
+        title: offset === 0 ? i18next.t('notif.now') : offsetLabel(offset),
         body: routine.title,
       },
       trigger: {
@@ -97,13 +99,13 @@ export async function scheduleRoutineNotifications(routine: {
 }
 
 export async function cancelTodoNotifications(todoId: number): Promise<void> {
-  for (const { value } of OFFSET_OPTIONS) {
+  for (const { value } of getOffsetOptions()) {
     await Notifications.cancelScheduledNotificationAsync(`todo-${todoId}-${value}`).catch(() => {});
   }
 }
 
 export async function cancelRoutineNotifications(routineId: number): Promise<void> {
-  for (const { value } of OFFSET_OPTIONS) {
+  for (const { value } of getOffsetOptions()) {
     await Notifications.cancelScheduledNotificationAsync(`routine-${routineId}-${value}`).catch(() => {});
   }
 }

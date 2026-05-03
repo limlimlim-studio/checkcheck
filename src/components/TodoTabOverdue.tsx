@@ -3,6 +3,7 @@ import { View, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { Text, Divider, Button, FAB, Dialog, Portal, Snackbar, Menu } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
 import { useTodosOverdue, useToggleTodo, useBulkMoveToToday, useBulkDeleteTodos } from '../hooks/useTodos';
 import { useCategories } from '../hooks/useCategories';
@@ -17,12 +18,6 @@ import { SortKey, sortTodos } from '../utils/sort';
 
 type Nav = NativeStackNavigationProp<TodoStackParamList, 'TodoList'>;
 
-const OVERDUE_SORT_OPTIONS: { key: SortKey; label: string }[] = [
-  { key: 'deadline', label: '기한순' },
-  { key: 'urgency', label: '긴급도순' },
-  { key: 'importance', label: '중요도순' },
-];
-
 type ListItem =
   | { type: 'header'; key: string; label: string }
   | { type: 'todo'; key: string; todo: Todo };
@@ -33,7 +28,6 @@ function buildGroupedList(todos: Todo[], sortKey: SortKey): ListItem[] {
     return sorted.map((todo) => ({ type: 'todo', key: `todo-${todo.id}`, todo }));
   }
 
-  // 기한순: 오래된 미완료 먼저
   const sorted = [...todos].sort((a, b) => {
     if (a.dueDate === null && b.dueDate === null) return a.sortOrder - b.sortOrder;
     if (a.dueDate === null) return 1;
@@ -56,6 +50,7 @@ function buildGroupedList(todos: Todo[], sortKey: SortKey): ListItem[] {
 
 export default function TodoTabOverdue() {
   const navigation = useNavigation<Nav>();
+  const { t } = useTranslation();
   const { data: todos = [] } = useTodosOverdue();
   const { data: categories = [] } = useCategories();
   const { mutate: toggleTodo } = useToggleTodo();
@@ -74,12 +69,18 @@ export default function TodoTabOverdue() {
 
   const listItems = useMemo(() => buildGroupedList(todos as Todo[], sortKey), [todos, sortKey]);
 
+  const OVERDUE_SORT_OPTIONS = [
+    { key: 'deadline' as SortKey, label: t('todo.sort_deadline') },
+    { key: 'urgency' as SortKey, label: t('todo.sort_urgency') },
+    { key: 'importance' as SortKey, label: t('todo.sort_importance') },
+  ];
+
   const handleMoveToToday = () => {
     if (selectedIds.size === 0) return;
     const count = selectedIds.size;
     bulkMoveToToday([...selectedIds]);
     clearSelection();
-    setSnackbarMessage(`${count}개 항목을 오늘 할 일로 이동했어요`);
+    setSnackbarMessage(t('todo.move_to_today_msg', { count }));
     setSnackbarVisible(true);
   };
 
@@ -115,7 +116,7 @@ export default function TodoTabOverdue() {
     );
   };
 
-  const currentLabel = OVERDUE_SORT_OPTIONS.find((o) => o.key === sortKey)?.label ?? '기한순';
+  const currentLabel = OVERDUE_SORT_OPTIONS.find((o) => o.key === sortKey)?.label ?? t('todo.sort_deadline');
 
   return (
     <View style={styles.container}>
@@ -147,7 +148,7 @@ export default function TodoTabOverdue() {
         ItemSeparatorComponent={({ leadingItem }) =>
           leadingItem?.type === 'header' ? null : <Divider />
         }
-        ListEmptyComponent={<Text style={styles.empty}>미완료 항목이 없어요</Text>}
+        ListEmptyComponent={<Text style={styles.empty}>{t('todo.empty_overdue')}</Text>}
         renderItem={renderItem}
         style={styles.list}
       />
@@ -183,13 +184,13 @@ export default function TodoTabOverdue() {
 
       <Portal>
         <Dialog visible={showDeleteDialog} onDismiss={() => setShowDeleteDialog(false)}>
-          <Dialog.Title>선택 항목 삭제</Dialog.Title>
+          <Dialog.Title>{t('todo.delete_selected_title')}</Dialog.Title>
           <Dialog.Content>
-            <Text>{selectedIds.size}개 항목을 삭제하시겠습니까?</Text>
+            <Text>{t('todo.delete_selected_msg', { count: selectedIds.size })}</Text>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={() => setShowDeleteDialog(false)}>취소</Button>
-            <Button textColor={Colors.danger} onPress={handleDeleteConfirm}>삭제</Button>
+            <Button onPress={() => setShowDeleteDialog(false)}>{t('common.cancel')}</Button>
+            <Button textColor={Colors.danger} onPress={handleDeleteConfirm}>{t('common.delete')}</Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>

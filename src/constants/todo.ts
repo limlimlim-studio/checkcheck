@@ -1,8 +1,14 @@
+import i18next from 'i18next';
+
 export const LEVEL_LABELS = ['', '낮음', '보통', '높음'] as const;
 
-export const LEVEL_OPTIONS = [
-  { value: '0', label: '없음' },
-  { value: '1', label: '낮음' },
-  { value: '2', label: '보통' },
-  { value: '3', label: '높음' },
-];
+export function getLevelOptions() {
+  return [
+    { value: '0', label: i18next.t('level.none') },
+    { value: '1', label: i18next.t('level.low') },
+    { value: '2', label: i18next.t('level.medium') },
+    { value: '3', label: i18next.t('level.high') },
+  ];
+}
+
+export const LEVEL_OPTIONS = getLevelOptions();

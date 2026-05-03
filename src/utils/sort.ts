@@ -1,13 +1,18 @@
 import { Todo } from '../types';
+import i18next from 'i18next';
 
 export type SortKey = 'default' | 'deadline' | 'urgency' | 'importance';
 
-export const SORT_OPTIONS: { key: SortKey; label: string }[] = [
-  { key: 'default', label: '기본순' },
-  { key: 'deadline', label: '기한순' },
-  { key: 'urgency', label: '긴급도순' },
-  { key: 'importance', label: '중요도순' },
-];
+export function getSortOptions(): { key: SortKey; label: string }[] {
+  return [
+    { key: 'default', label: i18next.t('todo.sort_default') },
+    { key: 'deadline', label: i18next.t('todo.sort_deadline') },
+    { key: 'urgency', label: i18next.t('todo.sort_urgency') },
+    { key: 'importance', label: i18next.t('todo.sort_importance') },
+  ];
+}
+
+export const SORT_OPTIONS = getSortOptions();
 
 export function sortTodos(todos: Todo[], key: SortKey): Todo[] {
   if (key === 'default') {

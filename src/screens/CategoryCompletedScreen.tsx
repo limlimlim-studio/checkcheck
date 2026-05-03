@@ -3,6 +3,7 @@ import { Appbar, Text, Divider } from 'react-native-paper';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
 import { useTodosCompletedByCategory } from '../hooks/useTodos';
 import TodoItem from '../components/TodoItem';
@@ -34,6 +35,7 @@ function buildCompletedList(todos: Todo[]): ListItem[] {
 export default function CategoryCompletedScreen() {
   const navigation = useNavigation<Nav>();
   const route = useRoute<Route>();
+  const { t } = useTranslation();
   const { categoryId, categoryName, categoryColor } = route.params;
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -91,7 +93,7 @@ export default function CategoryCompletedScreen() {
           ) : null
         }
         ListEmptyComponent={
-          <Text style={styles.empty}>완료된 항목이 없어요</Text>
+          <Text style={styles.empty}>{t('record.empty_completed')}</Text>
         }
         style={styles.list}
       />

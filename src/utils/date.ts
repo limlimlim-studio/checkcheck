@@ -1,40 +1,38 @@
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
+import 'dayjs/locale/en';
+import 'dayjs/locale/zh-cn';
+import 'dayjs/locale/ja';
+import i18next from 'i18next';
 
-dayjs.locale('ko');
-
-/** Unix timestamp(ms)를 'YYYY-MM-DD' 문자열로 변환 */
 export function toDateString(ts: number): string {
   return dayjs(ts).format('YYYY-MM-DD');
 }
 
-/** Unix timestamp(ms)를 날짜 그룹 키로 변환 (완료 목록 섹션 헤더용) */
 export function toDateKey(ts: number | null | undefined): string {
   if (!ts) return 'none';
   return dayjs(ts).format('YYYY-M-D');
 }
 
-/** Unix timestamp(ms)를 한국어 날짜 레이블로 변환 (오늘/어제/날짜) */
 export function formatDateLabel(ts: number | null | undefined): string {
-  if (!ts) return '날짜 없음';
+  if (!ts) return i18next.t('date.no_date');
   const d = dayjs(ts).startOf('day');
   const today = dayjs().startOf('day');
 
-  if (d.isSame(today)) return '오늘';
-  if (d.isSame(today.subtract(1, 'day'))) return '어제';
-  return d.format('YYYY년 M월 D일');
+  if (d.isSame(today)) return i18next.t('date.today');
+  if (d.isSame(today.subtract(1, 'day'))) return i18next.t('date.yesterday');
+  return d.format(i18next.t('date.format_year_month_day'));
 }
 
-/** dueDate 기준 날짜 구분선 레이블 (할 일/미완료 탭용) */
 export function formatDueDateLabel(ts: number | null | undefined): string {
-  if (!ts) return '날짜 없음';
+  if (!ts) return i18next.t('date.no_date');
   const d = dayjs(ts).startOf('day');
   const today = dayjs().startOf('day');
   const diff = d.diff(today, 'day');
 
-  if (diff === 0) return '오늘';
-  if (diff === 1) return '내일';
-  if (diff === -1) return '어제';
-  if (d.year() === today.year()) return d.format('M월 D일 (ddd)');
-  return d.format('YYYY년 M월 D일 (ddd)');
+  if (diff === 0) return i18next.t('date.today');
+  if (diff === 1) return i18next.t('date.tomorrow');
+  if (diff === -1) return i18next.t('date.yesterday');
+  if (d.year() === today.year()) return d.format(i18next.t('date.format_month_day'));
+  return d.format(i18next.t('date.format_year_month_day_ddd'));
 }

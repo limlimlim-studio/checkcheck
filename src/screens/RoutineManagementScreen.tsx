@@ -1,5 +1,6 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Appbar, Text, Divider, FAB } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { useNavigation } from '@react-navigation/native';
@@ -9,6 +10,7 @@ import { useRoutines, useReorderRoutines } from '../hooks/useRoutines';
 import { useCategories } from '../hooks/useCategories';
 import { RoutineStackParamList } from '../navigation/RoutineStack';
 import TodoItemMeta from '../components/TodoItem/TodoItemMeta';
+import type { TFunction } from 'i18next';
 
 type Nav = NativeStackNavigationProp<RoutineStackParamList, 'RoutineManagement'>;
 
@@ -28,25 +30,26 @@ type Routine = {
   updatedAt: number;
 };
 
-const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
+const DAY_KEYS = ['day_sun', 'day_mon', 'day_tue', 'day_wed', 'day_thu', 'day_fri', 'day_sat'] as const;
 
-function repeatDescription(routine: Routine): string {
-  if (routine.repeatType === 'daily') return '매일';
+function repeatDescription(routine: Routine, t: TFunction): string {
+  if (routine.repeatType === 'daily') return t('routine.repeat_label_daily');
   if (routine.repeatType === 'weekly' && routine.repeatValue) {
-    const days = routine.repeatValue.split(',').map((d) => DAY_NAMES[Number(d)]).join(', ');
-    return `매주 ${days}`;
+    const days = routine.repeatValue.split(',').map((d) => t(`routine.${DAY_KEYS[Number(d)]}`)).join(', ');
+    return `${t('routine.repeat_label_weekly_prefix')}${days}`;
   }
   if (routine.repeatType === 'monthly' && routine.repeatValue) {
     const days = routine.repeatValue.split(',')
-      .map((d) => d === 'last' ? '말일' : `${d}일`)
+      .map((d) => d === 'last' ? t('routine.repeat_label_monthly_lastday') : t('routine.repeat_label_monthly_day', { day: d }))
       .join(', ');
-    return `매월 ${days}`;
+    return `${t('routine.repeat_label_monthly_prefix')}${days}`;
   }
   return routine.repeatType;
 }
 
 export default function RoutineManagementScreen() {
   const navigation = useNavigation<Nav>();
+  const { t } = useTranslation();
   const { data: routines = [] } = useRoutines();
   const { data: categories = [] } = useCategories();
   const { mutate: reorderRoutines } = useReorderRoutines();
@@ -71,7 +74,7 @@ export default function RoutineManagementScreen() {
             <Text variant="bodyLarge">{item.title}</Text>
             <View style={styles.metaRow}>
               <View style={styles.repeatTag}>
-                <Text style={styles.repeatTagText}>{repeatDescription(item)}</Text>
+                <Text style={styles.repeatTagText}>{repeatDescription(item, t)}</Text>
               </View>
               <TodoItemMeta
                 category={category}
@@ -92,7 +95,7 @@ export default function RoutineManagementScreen() {
     <View style={styles.container}>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => navigation.goBack()} />
-        <Appbar.Content title="루틴 관리" />
+        <Appbar.Content title={t('routine.title_manage')} />
       </Appbar.Header>
 
       <DraggableFlatList
@@ -104,7 +107,7 @@ export default function RoutineManagementScreen() {
         autoscrollSpeed={200}
         containerStyle={{ flex: 1 }}
         ListEmptyComponent={
-          <Text style={styles.empty}>루틴이 없어요</Text>
+          <Text style={styles.empty}>{t('routine.empty')}</Text>
         }
       />
 

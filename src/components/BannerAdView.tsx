@@ -19,7 +19,7 @@ export default function BannerAdView() {
       unitId={adUnitId}
       size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
       onAdLoaded={() => console.log('[BannerAd] 로드 성공')}
-      onAdFailedToLoad={(error) => console.warn('[BannerAd] 로드 실패 코드', error.code, error.message)}
+      onAdFailedToLoad={(error) => console.warn('[BannerAd] 로드 실패 코드', (error as any).code, error.message)}
     />
   );
 }
