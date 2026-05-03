@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMemo, useState } from 'react';
 import dayjs from 'dayjs';
+import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
 import { useTodosToday, useTodayCompletionIds, useTodayToggle } from '../hooks/useTodos';
 import { useRoutinesToday, useToggleRoutineCompletion } from '../hooks/useRoutines';
@@ -15,14 +16,10 @@ import RoutineItem from './RoutineItem';
 import TodayProgressBar from './TodayProgressBar';
 import { TodoStackParamList } from '../navigation/TodoStack';
 import { Todo } from '../types';
-import { SortKey, SORT_OPTIONS, sortTodos } from '../utils/sort';
+import { SortKey, getSortOptions, sortTodos } from '../utils/sort';
+import i18next from 'i18next';
 
 type Nav = NativeStackNavigationProp<TodoStackParamList, 'TodoList'>;
-
-// 오늘 탭: 기한순 대신 시간순으로 대체
-const TODAY_SORT_OPTIONS = SORT_OPTIONS.map((o) =>
-  o.key === 'deadline' ? { ...o, label: '시간순' } : o,
-);
 
 function sortTodayTodos(todos: Todo[], sortKey: SortKey): Todo[] {
   if (sortKey === 'deadline') {
@@ -33,6 +30,7 @@ function sortTodayTodos(todos: Todo[], sortKey: SortKey): Todo[] {
 
 export default function TodoTabToday() {
   const navigation = useNavigation<Nav>();
+  const { t } = useTranslation();
   const { data: todos = [] } = useTodosToday();
   const { data: completedIds = new Set<number>() } = useTodayCompletionIds();
   const { data: routines = [] } = useRoutinesToday();
@@ -57,9 +55,9 @@ export default function TodoTabToday() {
         countMap.set(r.categoryId, (countMap.get(r.categoryId) ?? 0) + 1);
       }
     }
-    for (const t of todos) {
-      if (completedIds.has(t.id)) {
-        countMap.set(t.categoryId, (countMap.get(t.categoryId) ?? 0) + 1);
+    for (const td of todos) {
+      if (completedIds.has(td.id)) {
+        countMap.set(td.categoryId, (countMap.get(td.categoryId) ?? 0) + 1);
       }
     }
     const segments = [...countMap.entries()].map(([categoryId, count]) => ({
@@ -87,7 +85,11 @@ export default function TodoTabToday() {
   };
 
   const isEmpty = routines.length === 0 && todos.length === 0;
-  const currentLabel = TODAY_SORT_OPTIONS.find((o) => o.key === sortKey)?.label ?? '기본순';
+
+  const todaySortOptions = getSortOptions().map((o) =>
+    o.key === 'deadline' ? { ...o, label: t('todo.sort_time') } : o,
+  );
+  const currentLabel = todaySortOptions.find((o) => o.key === sortKey)?.label ?? t('todo.sort_default');
 
   return (
     <View style={styles.container}>
@@ -106,7 +108,7 @@ export default function TodoTabToday() {
           <>
             {routines.length > 0 && (
               <>
-                <Text variant="labelSmall" style={styles.sectionLabel}>루틴</Text>
+                <Text variant="labelSmall" style={styles.sectionLabel}>{t('todo.section_routine')}</Text>
                 {routines.map((routine, index) => (
                   <View key={`routine-${routine.id}`}>
                     <RoutineItem
@@ -129,7 +131,7 @@ export default function TodoTabToday() {
             )}
             {todos.length > 0 && (
               <View style={styles.todoHeader}>
-                <Text variant="labelSmall" style={styles.sectionLabel}>할 일</Text>
+                <Text variant="labelSmall" style={styles.sectionLabel}>{t('todo.section_todo')}</Text>
                 <Menu
                   visible={sortMenuVisible}
                   onDismiss={() => setSortMenuVisible(false)}
@@ -139,7 +141,7 @@ export default function TodoTabToday() {
                     </TouchableOpacity>
                   }
                 >
-                  {TODAY_SORT_OPTIONS.map((opt) => (
+                  {todaySortOptions.map((opt) => (
                     <Menu.Item
                       key={opt.key}
                       title={opt.label}
@@ -151,7 +153,7 @@ export default function TodoTabToday() {
               </View>
             )}
             {isEmpty && (
-              <Text style={styles.empty}>오늘 할 일이 없어요</Text>
+              <Text style={styles.empty}>{t('todo.empty_today')}</Text>
             )}
           </>
         }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Appbar, Text, TextInput, Button, IconButton, SegmentedButtons, Divider, Dialog, Portal, Checkbox } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -8,11 +9,17 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCategories } from '../hooks/useCategories';
 import { useCreateTodo, useUpdateTodo, useDeleteTodo } from '../hooks/useTodos';
 import { TodoStackParamList } from '../navigation/TodoStack';
-import { LEVEL_OPTIONS } from '../constants/todo';
-import { OFFSET_OPTIONS, offsetsFromString, offsetLabel } from '../utils/notifications';
+import { getLevelOptions } from '../constants/todo';
+import { getOffsetOptions, offsetsFromString, offsetLabel } from '../utils/notifications';
+import dayjs from 'dayjs';
+import i18next from 'i18next';
 
 type Nav = NativeStackNavigationProp<TodoStackParamList, 'TodoForm'>;
 type Route = RouteProp<TodoStackParamList, 'TodoForm'>;
+
+const PICKER_LOCALE: Record<string, string> = {
+  ko: 'ko', en: 'en', zh: 'zh-Hans', ja: 'ja',
+};
 
 function getTodayMidnight() {
   const d = new Date();
@@ -23,6 +30,7 @@ function getTodayMidnight() {
 export default function TodoFormScreen() {
   const navigation = useNavigation<Nav>();
   const route = useRoute<Route>();
+  const { t } = useTranslation();
   const todo = route.params?.todo;
   const isEdit = !!todo?.id;
 
@@ -46,6 +54,7 @@ export default function TodoFormScreen() {
   const [importance, setImportance] = useState('0');
   const [categoryId, setCategoryId] = useState<number | null>(null);
 
+  const pickerLocale = PICKER_LOCALE[i18next.language] ?? 'en';
 
   useEffect(() => {
     setTitle(todo?.title ?? '');
@@ -95,7 +104,7 @@ export default function TodoFormScreen() {
     <View style={styles.container}>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => navigation.goBack()} />
-        <Appbar.Content title={isEdit ? '할 일 수정' : '새 할 일'} />
+        <Appbar.Content title={isEdit ? t('todo.title_edit') : t('todo.title_new')} />
         <Button
           mode="contained"
           onPress={handleSave}
@@ -103,13 +112,13 @@ export default function TodoFormScreen() {
           style={styles.saveButton}
           labelStyle={styles.actionButtonLabel}
         >
-          저장
+          {t('common.save')}
         </Button>
       </Appbar.Header>
 
       <ScrollView contentContainerStyle={styles.content}>
         <TextInput
-          label="제목 *"
+          label={t('todo.field_title')}
           value={title}
           onChangeText={setTitle}
           mode="outlined"
@@ -118,7 +127,7 @@ export default function TodoFormScreen() {
         />
 
         <TextInput
-          label="설명"
+          label={t('todo.field_description')}
           value={description}
           onChangeText={setDescription}
           mode="outlined"
@@ -128,13 +137,13 @@ export default function TodoFormScreen() {
           keyboardAppearance="dark"
         />
 
-        <Text variant="labelLarge" style={styles.label}>기한 *</Text>
+        <Text variant="labelLarge" style={styles.label}>{t('todo.field_due_date')}</Text>
         <TouchableOpacity
           style={styles.dateButton}
           onPress={() => setShowDatePicker(true)}
         >
           <Text style={styles.dateText}>
-            {dueDate.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
+            {dayjs(dueDate).format(t('date.format_year_month_day'))}
           </Text>
         </TouchableOpacity>
 
@@ -143,7 +152,7 @@ export default function TodoFormScreen() {
             value={dueDate}
             mode="date"
             display="spinner"
-            locale="ko"
+            locale={pickerLocale}
             textColor="#F2F2F7"
             minimumDate={getTodayMidnight()}
             onChange={(_, date) => {
@@ -157,12 +166,12 @@ export default function TodoFormScreen() {
         {showDatePicker && (
           <View style={styles.dateConfirmRow}>
             <Button mode="contained" onPress={() => setShowDatePicker(false)}>
-              확인
+              {t('common.confirm')}
             </Button>
           </View>
         )}
 
-        <Text variant="labelLarge" style={styles.label}>시간</Text>
+        <Text variant="labelLarge" style={styles.label}>{t('todo.field_time')}</Text>
         <View style={styles.timeRow}>
           <TouchableOpacity
             style={[styles.dateButton, styles.timeButton]}
@@ -176,9 +185,7 @@ export default function TodoFormScreen() {
             }}
           >
             <Text style={dueTime ? styles.dateText : styles.datePlaceholder}>
-              {dueTime
-                ? dueTime.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
-                : '설정 안 함'}
+              {dueTime ? dayjs(dueTime).format('HH:mm') : t('todo.time_not_set')}
             </Text>
           </TouchableOpacity>
           {dueTime && (
@@ -191,7 +198,7 @@ export default function TodoFormScreen() {
             value={dueTime ?? new Date(new Date().setHours(9, 0, 0, 0))}
             mode="time"
             display="spinner"
-            locale="ko"
+            locale={pickerLocale}
             textColor="#F2F2F7"
             onChange={(_, date) => {
               if (date) setDueTime(date);
@@ -201,7 +208,7 @@ export default function TodoFormScreen() {
         {showTimePicker && (
           <View style={styles.dateConfirmRow}>
             <Button mode="contained" onPress={() => setShowTimePicker(false)}>
-              확인
+              {t('common.confirm')}
             </Button>
           </View>
         )}
@@ -218,7 +225,7 @@ export default function TodoFormScreen() {
               }}
               style={styles.notifBtn}
             >
-              알림 설정
+              {t('todo.notif_setting')}
             </Button>
             {notificationOffsets.length > 0 && (
               <View style={styles.notifTagRow}>
@@ -234,7 +241,7 @@ export default function TodoFormScreen() {
 
         <Divider style={styles.divider} />
 
-        <Text variant="labelLarge" style={styles.label}>카테고리</Text>
+        <Text variant="labelLarge" style={styles.label}>{t('todo.field_category')}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
           {categories.map((cat) => (
             <TouchableOpacity
@@ -257,19 +264,19 @@ export default function TodoFormScreen() {
 
         <Divider style={styles.divider} />
 
-        <Text variant="labelLarge" style={styles.label}>긴급도</Text>
+        <Text variant="labelLarge" style={styles.label}>{t('todo.field_urgency')}</Text>
         <SegmentedButtons
           value={urgency}
           onValueChange={setUrgency}
-          buttons={LEVEL_OPTIONS}
+          buttons={getLevelOptions()}
           style={styles.segment}
         />
 
-        <Text variant="labelLarge" style={styles.label}>중요도</Text>
+        <Text variant="labelLarge" style={styles.label}>{t('todo.field_importance')}</Text>
         <SegmentedButtons
           value={importance}
           onValueChange={setImportance}
-          buttons={LEVEL_OPTIONS}
+          buttons={getLevelOptions()}
           style={styles.segment}
         />
 
@@ -282,20 +289,20 @@ export default function TodoFormScreen() {
             style={styles.deleteButton}
             labelStyle={styles.actionButtonLabel}
           >
-            삭제
+            {t('common.delete')}
           </Button>
         )}
       </ScrollView>
 
       <Portal>
         <Dialog visible={deleteDialogVisible} onDismiss={() => setDeleteDialogVisible(false)}>
-          <Dialog.Title>할 일 삭제</Dialog.Title>
+          <Dialog.Title>{t('todo.delete_title')}</Dialog.Title>
           <Dialog.Content>
-            <Text>"{todo?.title}" 을(를) 삭제하시겠습니까?</Text>
+            <Text>{t('todo.delete_message', { title: todo?.title })}</Text>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={() => setDeleteDialogVisible(false)}>취소</Button>
-            <Button textColor={Colors.danger} onPress={handleDelete}>삭제</Button>
+            <Button onPress={() => setDeleteDialogVisible(false)}>{t('common.cancel')}</Button>
+            <Button textColor={Colors.danger} onPress={handleDelete}>{t('common.delete')}</Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
@@ -303,9 +310,9 @@ export default function TodoFormScreen() {
       {showNotifDialog && (
         <Portal>
           <Dialog visible onDismiss={() => setShowNotifDialog(false)}>
-            <Dialog.Title>알림 설정</Dialog.Title>
+            <Dialog.Title>{t('todo.notif_dialog_title')}</Dialog.Title>
             <Dialog.Content>
-              {OFFSET_OPTIONS.map((opt) => (
+              {getOffsetOptions().map((opt) => (
                 <TouchableOpacity
                   key={opt.value}
                   style={styles.checkRow}
@@ -326,9 +333,9 @@ export default function TodoFormScreen() {
               ))}
             </Dialog.Content>
             <Dialog.Actions>
-              <Button onPress={() => setShowNotifDialog(false)}>취소</Button>
+              <Button onPress={() => setShowNotifDialog(false)}>{t('common.cancel')}</Button>
               <Button onPress={() => { setNotificationOffsets(pendingOffsets); setShowNotifDialog(false); }}>
-                확인
+                {t('common.confirm')}
               </Button>
             </Dialog.Actions>
           </Dialog>
@@ -361,7 +368,6 @@ const styles = StyleSheet.create({
   },
   dateText: { fontSize: 15, color: Colors.text },
   datePlaceholder: { color: Colors.textMuted },
-  dateClear: { fontSize: 14, color: Colors.textSecondary },
   dateConfirmRow: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginBottom: 8 },
   timeRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
   timeButton: { flex: 1, marginBottom: 0 },

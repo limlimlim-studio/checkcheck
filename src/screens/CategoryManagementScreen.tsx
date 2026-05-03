@@ -1,5 +1,6 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Appbar, Text, Divider, FAB } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
 import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-native-draggable-flatlist';
 import { useNavigation } from '@react-navigation/native';
@@ -21,6 +22,7 @@ type Category = {
 
 export default function CategoryManagementScreen() {
   const navigation = useNavigation<Nav>();
+  const { t } = useTranslation();
   const { data: categories = [] } = useCategories();
   const { mutate: reorderCategories } = useReorderCategories();
 
@@ -45,7 +47,7 @@ export default function CategoryManagementScreen() {
           <View style={styles.itemRow}>
             <Text variant="bodyLarge">{item.name}</Text>
             {item.isDefault === 1 && (
-              <Text variant="labelSmall" style={styles.defaultBadge}>기본</Text>
+              <Text variant="labelSmall" style={styles.defaultBadge}>{t('category.default_badge')}</Text>
             )}
           </View>
           {item.description ? (
@@ -62,7 +64,7 @@ export default function CategoryManagementScreen() {
     <View style={styles.container}>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => navigation.goBack()} />
-        <Appbar.Content title="카테고리 관리" />
+        <Appbar.Content title={t('category.title_manage')} />
       </Appbar.Header>
 
       <DraggableFlatList

@@ -167,3 +167,16 @@ export function setOnboardingCompleted(): void {
     .onConflictDoNothing()
     .run();
 }
+
+export function getAppLanguage(): string {
+  const row = db.select().from(schema.appSettings)
+    .where(eq(schema.appSettings.key, 'app_language')).get();
+  return row?.value ?? 'auto';
+}
+
+export function setAppLanguage(lang: string): void {
+  db.insert(schema.appSettings)
+    .values({ key: 'app_language', value: lang })
+    .onConflictDoUpdate({ target: schema.appSettings.key, set: { value: lang } })
+    .run();
+}

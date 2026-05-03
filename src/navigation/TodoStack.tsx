@@ -11,10 +11,12 @@ export type TodoStackParamList = {
       title: string;
       description?: string | null;
       dueDate?: number | null;
+      dueTime?: number | null;
       urgency?: number | null;
       importance?: number | null;
       categoryId: number;
       isCompleted: number;
+      notificationOffsets?: string | null;
     };
   } | undefined;
   Search: undefined;

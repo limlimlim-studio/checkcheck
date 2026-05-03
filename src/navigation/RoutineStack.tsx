@@ -12,12 +12,14 @@ export type RoutineStackParamList = {
       description?: string | null;
       repeatType: string;
       repeatValue?: string | null;
+      alarmTime?: number | null;
       urgency: number | null;
       importance: number | null;
       sortOrder: number;
       isActive: number;
       createdAt: number;
       updatedAt: number;
+      notificationOffsets?: string | null;
     };
   } | undefined;
 };

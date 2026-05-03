@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { Appbar, Text, TextInput, Button, Dialog, Portal, IconButton } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -14,6 +15,7 @@ type Route = RouteProp<CategoryStackParamList, 'CategoryForm'>;
 export default function CategoryFormScreen() {
   const navigation = useNavigation<Nav>();
   const route = useRoute<Route>();
+  const { t } = useTranslation();
   const category = route.params?.category;
   const isEdit = !!category?.id;
 
@@ -26,7 +28,6 @@ export default function CategoryFormScreen() {
   const [description, setDescription] = useState('');
   const [color, setColor] = useState(generateRandomColor);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
-
 
   useEffect(() => {
     setName(category?.name ?? '');
@@ -58,7 +59,7 @@ export default function CategoryFormScreen() {
     <View style={styles.container}>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => navigation.goBack()} />
-        <Appbar.Content title={isEdit ? '카테고리 수정' : '새 카테고리'} />
+        <Appbar.Content title={isEdit ? t('category.title_edit') : t('category.title_new')} />
         <Button
           mode="contained"
           onPress={handleSave}
@@ -66,13 +67,13 @@ export default function CategoryFormScreen() {
           style={styles.saveButton}
           labelStyle={styles.actionButtonLabel}
         >
-          저장
+          {t('common.save')}
         </Button>
       </Appbar.Header>
 
       <ScrollView contentContainerStyle={styles.content}>
         <TextInput
-          label="이름 *"
+          label={t('category.field_name')}
           value={name}
           onChangeText={setName}
           mode="outlined"
@@ -80,7 +81,7 @@ export default function CategoryFormScreen() {
           keyboardAppearance="dark"
         />
         <TextInput
-          label="설명"
+          label={t('category.field_description')}
           value={description}
           onChangeText={setDescription}
           mode="outlined"
@@ -90,7 +91,7 @@ export default function CategoryFormScreen() {
           style={[styles.input, styles.descriptionInput]}
         />
 
-        <Text variant="labelLarge" style={styles.label}>색상</Text>
+        <Text variant="labelLarge" style={styles.label}>{t('category.field_color')}</Text>
         <View style={styles.colorPreviewRow}>
           <View style={[styles.colorPreview, { backgroundColor: color }]} />
           <Text style={styles.colorHex}>{color.toUpperCase()}</Text>
@@ -110,23 +111,20 @@ export default function CategoryFormScreen() {
             style={styles.deleteButton}
             labelStyle={styles.actionButtonLabel}
           >
-            삭제
+            {t('common.delete')}
           </Button>
         )}
       </ScrollView>
 
       <Portal>
         <Dialog visible={deleteDialogVisible} onDismiss={() => setDeleteDialogVisible(false)}>
-          <Dialog.Title>카테고리 삭제</Dialog.Title>
+          <Dialog.Title>{t('category.delete_title')}</Dialog.Title>
           <Dialog.Content>
-            <Text>
-              <Text style={styles.bold}>"{category?.name}"</Text> 카테고리에 속한 할 일이 모두{' '}
-              <Text style={styles.bold}>미분류</Text>로 이동됩니다.{'\n'}삭제하시겠습니까?
-            </Text>
+            <Text>{t('category.delete_message', { name: category?.name ?? '' })}</Text>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={() => setDeleteDialogVisible(false)}>취소</Button>
-            <Button textColor="#EA4335" onPress={handleDelete}>삭제</Button>
+            <Button onPress={() => setDeleteDialogVisible(false)}>{t('common.cancel')}</Button>
+            <Button textColor="#EA4335" onPress={handleDelete}>{t('common.delete')}</Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>

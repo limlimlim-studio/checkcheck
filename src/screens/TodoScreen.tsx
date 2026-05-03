@@ -6,6 +6,7 @@ import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
 import { getAdFreeUntil } from '../db';
 import { runDueDateCheck, useFlushTodayCompleted } from '../hooks/useTodos';
@@ -16,12 +17,6 @@ import TodoTabList from '../components/TodoTabList';
 import TodoTabOverdue from '../components/TodoTabOverdue';
 
 type Nav = NativeStackNavigationProp<TodoStackParamList, 'TodoList'>;
-
-const ROUTES = [
-  { key: 'today', title: '오늘' },
-  { key: 'list', title: '할 일' },
-  { key: 'overdue', title: '미완료' },
-];
 
 const renderScene = ({ route }: { route: { key: string } }) => {
   switch (route.key) {
@@ -34,6 +29,7 @@ const renderScene = ({ route }: { route: { key: string } }) => {
 
 export default function TodoScreen() {
   const navigation = useNavigation<Nav>();
+  const { t } = useTranslation();
   const layout = useWindowDimensions();
   const [tabIndex, setTabIndex] = useState(0);
   const [menuVisible, setMenuVisible] = useState(false);
@@ -41,6 +37,12 @@ export default function TodoScreen() {
   const { mutate: flushTodayCompleted } = useFlushTodayCompleted();
   const isFocused = useIsFocused();
   const queryClient = useQueryClient();
+
+  const ROUTES = [
+    { key: 'today', title: t('todo.tab_today') },
+    { key: 'list', title: t('todo.tab_list') },
+    { key: 'overdue', title: t('todo.tab_overdue') },
+  ];
 
   useEffect(() => {
     const parentNav = navigation.getParent<BottomTabNavigationProp<Record<string, undefined>>>();
@@ -64,10 +66,6 @@ export default function TodoScreen() {
     return () => task.cancel();
   }, [isFocused, queryClient]);
 
-  const handleTabIndexChange = (index: number) => {
-    setTabIndex(index);
-  };
-
   const showFab = tabIndex === 0 || tabIndex === 1;
 
   return (
@@ -85,18 +83,18 @@ export default function TodoScreen() {
           {tabIndex === 0 && (
             <Menu.Item
               leadingIcon="broom"
-              title="완료 항목 정리"
+              title={t('todo.menu_clear')}
               onPress={() => { setMenuVisible(false); flushTodayCompleted(); }}
             />
           )}
           <Menu.Item
             leadingIcon="label-multiple-outline"
-            title="카테고리 관리"
+            title={t('todo.menu_category')}
             onPress={() => { setMenuVisible(false); navigation.navigate('CategoryRoot' as never); }}
           />
           <Menu.Item
             leadingIcon="autorenew"
-            title="루틴 관리"
+            title={t('todo.menu_routine')}
             onPress={() => { setMenuVisible(false); navigation.navigate('RoutineRoot' as never); }}
           />
         </Menu>
@@ -105,7 +103,7 @@ export default function TodoScreen() {
       <TabView
         navigationState={{ index: tabIndex, routes: ROUTES }}
         renderScene={renderScene}
-        onIndexChange={handleTabIndexChange}
+        onIndexChange={setTabIndex}
         initialLayout={{ width: layout.width }}
         renderTabBar={(props) => (
           <TabBar

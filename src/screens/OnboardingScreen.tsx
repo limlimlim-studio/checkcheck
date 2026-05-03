@@ -4,85 +4,44 @@ import { Text, Button } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { RootStackParamList } from '../navigation/RootNavigator';
 import { Colors } from '../theme';
 import { setOnboardingCompleted } from '../db';
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'Onboarding'>;
 
-const { width: SW, height: SH } = Dimensions.get('window');
+const { width: SW } = Dimensions.get('window');
 
-// 스크린샷 논리 해상도 (iPhone 기준)
 const SS_W = 390;
 const SS_H = 844;
-
 const FOOTER_H = 140;
-
-// 이미지 가로를 화면에 꽉 차게 (좌우 16px 여백)
 const IMG_SCALE = (SW - 32) / SS_W;
 const FULL_IMG_H = Math.round(SS_H * IMG_SCALE);
 
-type Card = {
-  image: ReturnType<typeof require>;
-  title: string;
-  description: string;
-  cropTop?: number;    // 스크린샷 픽셀 기준 (기본 0)
-  cropBottom?: number; // 스크린샷 픽셀 기준 (기본 SS_H)
+type CardKey =
+  | 'card_1' | 'card_2' | 'card_3'
+  | 'card_4' | 'card_5' | 'card_6';
+
+const CARD_IMAGES: Record<CardKey, ReturnType<typeof require>> = {
+  card_1: require('../../assets/onboarding/1-todo.png'),
+  card_2: require('../../assets/onboarding/2-today.png'),
+  card_3: require('../../assets/onboarding/3-category-routine.png'),
+  card_4: require('../../assets/onboarding/4-category.png'),
+  card_5: require('../../assets/onboarding/5-routine.png'),
+  card_6: require('../../assets/onboarding/6-history.png'),
 };
 
-const CARDS: Card[] = [
-  {
-    image: require('../../assets/onboarding/1-todo.png'),
-    title: '할 일 관리',
-    description: '탭을 눌러 오늘·기한별 할 일을 구분하고\n정렬로 우선순위를 정리하세요',
-    cropTop: 0,
-    cropBottom: 520,
-  },
-  {
-    image: require('../../assets/onboarding/2-today.png'),
-    title: '오늘 탭',
-    description: '루틴과 오늘 마감 할 일을 한 화면에서\n확인하고 완료 체크하세요',
-    cropTop: 0,
-    cropBottom: 520,
-  },
-  {
-    image: require('../../assets/onboarding/3-category-routine.png'),
-    title: '카테고리 · 루틴 진입',
-    description: '오른쪽 상단 ⋮ 버튼을 눌러\n카테고리와 루틴을 관리하세요',
-    cropTop: 0,
-    cropBottom: 520,
-  },
-  {
-    image: require('../../assets/onboarding/4-category.png'),
-    title: '카테고리',
-    description: '색상으로 할 일을 분류하고\n드래그로 순서를 변경할 수 있어요',
-    cropTop: 0,
-    cropBottom: 520,
-  },
-  {
-    image: require('../../assets/onboarding/5-routine.png'),
-    title: '루틴',
-    description: '매일·매주·매월 반복할 습관을\n루틴으로 등록하고 관리하세요',
-    cropTop: 0,
-    cropBottom: 520,
-  },
-  {
-    image: require('../../assets/onboarding/6-history.png'),
-    title: '완료 기록',
-    description: '카테고리별 완료 이력을\n날짜 격자로 한눈에 확인하세요',
-    cropTop: 0,
-    cropBottom: 520,
-  },
-];
-
+const CARD_KEYS: CardKey[] = ['card_1', 'card_2', 'card_3', 'card_4', 'card_5', 'card_6'];
 
 export default function OnboardingScreen() {
   const navigation = useNavigation<Nav>();
   const { top: safeTop } = useSafeAreaInsets();
+  const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
 
-  const isLast = currentIndex === CARDS.length - 1;
+  const isLast = currentIndex === CARD_KEYS.length - 1;
 
   const handleNext = () => {
     if (isLast) {
@@ -93,24 +52,20 @@ export default function OnboardingScreen() {
     }
   };
 
-  const renderCard = ({ item }: { item: Card }) => {
-    const cropTop = item.cropTop ?? 0;
-    const cropBottom = item.cropBottom ?? SS_H;
-    const cropTopPx = cropTop * IMG_SCALE;
-    const vpH = (cropBottom - cropTop) * IMG_SCALE;
+  const renderCard = ({ item }: { item: CardKey }) => {
+    const cropTopPx = 0;
+    const vpH = 520 * IMG_SCALE;
 
     return (
       <View style={styles.card}>
-        {/* 제목 · 설명 */}
         <View style={[styles.header, { paddingTop: safeTop + 24 }]}>
-          <Text style={styles.title}>{item.title}</Text>
-          <Text style={styles.description}>{item.description}</Text>
+          <Text style={styles.title}>{t(`onboarding.${item}_title`)}</Text>
+          <Text style={styles.description}>{t(`onboarding.${item}_desc`)}</Text>
         </View>
 
-        {/* 크롭된 스크린샷 뷰포트 */}
         <View style={[styles.imageViewport, { height: vpH }]}>
           <Image
-            source={item.image}
+            source={CARD_IMAGES[item]}
             style={{
               position: 'absolute',
               top: -cropTopPx,
@@ -121,7 +76,6 @@ export default function OnboardingScreen() {
             resizeMode="stretch"
           />
         </View>
-
       </View>
     );
   };
@@ -130,8 +84,8 @@ export default function OnboardingScreen() {
     <View style={styles.container}>
       <FlatList
         ref={flatListRef}
-        data={CARDS}
-        keyExtractor={(_, i) => String(i)}
+        data={CARD_KEYS}
+        keyExtractor={(item) => item}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
@@ -145,7 +99,7 @@ export default function OnboardingScreen() {
 
       <View style={styles.footer}>
         <View style={styles.dots}>
-          {CARDS.map((_, i) => (
+          {CARD_KEYS.map((_, i) => (
             <View key={i} style={[styles.dot, i === currentIndex && styles.dotActive]} />
           ))}
         </View>
@@ -156,7 +110,7 @@ export default function OnboardingScreen() {
           contentStyle={styles.buttonContent}
           labelStyle={styles.buttonLabel}
         >
-          {isLast ? '시작하기' : '다음'}
+          {isLast ? t('onboarding.start') : t('onboarding.next')}
         </Button>
       </View>
     </View>

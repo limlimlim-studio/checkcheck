@@ -3,6 +3,7 @@ import { View, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, Divider, Menu } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
 import { useTodosList, useTodayCompletionIds, useTodayToggle } from '../hooks/useTodos';
 import { useCategories } from '../hooks/useCategories';
@@ -16,12 +17,6 @@ import { toDateKey, formatDueDateLabel } from '../utils/date';
 import { SortKey, sortTodos } from '../utils/sort';
 
 type Nav = NativeStackNavigationProp<TodoStackParamList, 'TodoList'>;
-
-const LIST_SORT_OPTIONS: { key: SortKey; label: string }[] = [
-  { key: 'deadline', label: '기한순' },
-  { key: 'urgency', label: '긴급도순' },
-  { key: 'importance', label: '중요도순' },
-];
 
 type ListItem =
   | { type: 'header'; key: string; label: string }
@@ -55,6 +50,7 @@ function buildGroupedList(todos: Todo[], sortKey: SortKey): ListItem[] {
 
 export default function TodoTabList() {
   const navigation = useNavigation<Nav>();
+  const { t } = useTranslation();
   const { data: todos = [] } = useTodosList();
   const { data: completedIds = new Set<number>() } = useTodayCompletionIds();
   const { data: categories = [] } = useCategories();
@@ -67,6 +63,12 @@ export default function TodoTabList() {
   const getCheckable = useCheckable({ mode: 'today', completedIds, toggleFn: todayToggle });
 
   const listItems = useMemo(() => buildGroupedList(todos as Todo[], sortKey), [todos, sortKey]);
+
+  const LIST_SORT_OPTIONS = [
+    { key: 'deadline' as SortKey, label: t('todo.sort_deadline') },
+    { key: 'urgency' as SortKey, label: t('todo.sort_urgency') },
+    { key: 'importance' as SortKey, label: t('todo.sort_importance') },
+  ];
 
   const renderItem = ({ item }: { item: ListItem }) => {
     if (item.type === 'header') {
@@ -85,7 +87,7 @@ export default function TodoTabList() {
     );
   };
 
-  const currentLabel = LIST_SORT_OPTIONS.find((o) => o.key === sortKey)?.label ?? '기한순';
+  const currentLabel = LIST_SORT_OPTIONS.find((o) => o.key === sortKey)?.label ?? t('todo.sort_deadline');
 
   return (
     <View style={styles.container}>
@@ -115,7 +117,7 @@ export default function TodoTabList() {
         ItemSeparatorComponent={({ leadingItem }) =>
           leadingItem?.type === 'header' ? null : <Divider />
         }
-        ListEmptyComponent={<Text style={styles.empty}>할 일이 없어요</Text>}
+        ListEmptyComponent={<Text style={styles.empty}>{t('todo.empty_list')}</Text>}
         renderItem={renderItem}
         style={styles.list}
       />

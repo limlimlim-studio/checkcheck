@@ -4,12 +4,14 @@ import { Appbar, Text, Searchbar, Divider } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
 import { useSearch } from '../hooks/useSearch';
 import { useCategories } from '../hooks/useCategories';
 import { useCategoryMap } from '../hooks/useCategoryMap';
 import { TodoStackParamList } from '../navigation/TodoStack';
 import { formatDueDateLabel } from '../utils/date';
+import i18next from 'i18next';
 
 type Nav = NativeStackNavigationProp<TodoStackParamList, 'Search'>;
 
@@ -17,9 +19,17 @@ type SectionItem =
   | { kind: 'todo'; id: number; title: string; categoryId: number; dueDate: number | null; isCompleted: number; item: any }
   | { kind: 'routine'; id: number; title: string; categoryId: number; repeatType: string; item: any };
 
+function repeatLabel(repeatType: string): string {
+  if (repeatType === 'daily') return i18next.t('routine.repeat_label_daily');
+  if (repeatType === 'weekly') return i18next.t('routine.repeat_weekly');
+  if (repeatType === 'monthly') return i18next.t('routine.repeat_monthly');
+  return repeatType;
+}
+
 export default function SearchScreen() {
   const navigation = useNavigation<Nav>();
   const { top } = useSafeAreaInsets();
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const { data: categories = [] } = useCategories();
   const categoryMap = useCategoryMap(categories);
@@ -28,17 +38,17 @@ export default function SearchScreen() {
   const sections = [
     ...(todos.length > 0
       ? [{
-          title: '할 일',
-          data: todos.map((t): SectionItem => ({
-            kind: 'todo', id: t.id, title: t.title,
-            categoryId: t.categoryId, dueDate: t.dueDate,
-            isCompleted: t.isCompleted, item: t,
+          title: t('todo.search_section_todo'),
+          data: todos.map((td): SectionItem => ({
+            kind: 'todo', id: td.id, title: td.title,
+            categoryId: td.categoryId, dueDate: td.dueDate,
+            isCompleted: td.isCompleted, item: td,
           })),
         }]
       : []),
     ...(routines.length > 0
       ? [{
-          title: '루틴',
+          title: t('todo.search_section_routine'),
           data: routines.map((r): SectionItem => ({
             kind: 'routine', id: r.id, title: r.title,
             categoryId: r.categoryId, repeatType: r.repeatType, item: r,
@@ -75,7 +85,7 @@ export default function SearchScreen() {
             {item.title}
           </Text>
           <Text style={styles.itemMeta} numberOfLines={1}>
-            {category?.name ?? '미분류'}
+            {category?.name ?? t('todo.search_uncategorized')}
             {item.kind === 'todo' && item.dueDate
               ? `  ·  ${formatDueDateLabel(item.dueDate)}`
               : item.kind === 'routine'
@@ -100,7 +110,7 @@ export default function SearchScreen() {
       <Appbar.Header style={styles.header}>
         <Appbar.BackAction onPress={() => navigation.goBack()} />
         <Searchbar
-          placeholder="할 일, 루틴 검색"
+          placeholder={t('todo.search_placeholder')}
           value={query}
           onChangeText={setQuery}
           style={styles.searchbar}
@@ -111,11 +121,11 @@ export default function SearchScreen() {
 
       {isEmpty ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyText}>검색 결과가 없어요</Text>
+          <Text style={styles.emptyText}>{t('todo.search_empty')}</Text>
         </View>
       ) : query.trim().length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyText}>제목으로 검색하세요</Text>
+          <Text style={styles.emptyText}>{t('todo.search_hint')}</Text>
         </View>
       ) : (
         <SectionList
@@ -131,13 +141,6 @@ export default function SearchScreen() {
       )}
     </View>
   );
-}
-
-function repeatLabel(repeatType: string): string {
-  if (repeatType === 'daily') return '매일';
-  if (repeatType === 'weekly') return '매주';
-  if (repeatType === 'monthly') return '매월';
-  return repeatType;
 }
 
 const styles = StyleSheet.create({
