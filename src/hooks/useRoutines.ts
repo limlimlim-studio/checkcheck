@@ -3,6 +3,7 @@ import { and, asc, eq } from 'drizzle-orm';
 import dayjs from 'dayjs';
 import { db } from '../db';
 import { routines, routineCompletions } from '../db/schema';
+import { useDayStartStore } from '../stores/dayStartStore';
 import { scheduleRoutineNotifications, cancelRoutineNotifications, offsetsToString } from '../utils/notifications';
 
 export const useRoutines = () =>
@@ -182,12 +183,12 @@ export const useToggleRoutineCompletion = () => {
 
 /** 오늘 해당하는 루틴 목록 + 완료 여부 */
 export const useRoutinesToday = () => {
-  const today = dayjs().format('YYYY-MM-DD');
-  const dayOfWeek = String(dayjs().day());   // 0=일 ~ 6=토
-  const dayOfMonth = String(dayjs().date()); // 1~31
+  const effectiveToday = useDayStartStore(s => s.effectiveToday);
+  const dayOfWeek = String(dayjs().day());
+  const dayOfMonth = String(dayjs().date());
 
   return useQuery({
-    queryKey: ['routinesToday', today],
+    queryKey: ['routinesToday', effectiveToday],
     queryFn: () => {
       const allRoutines = db.select().from(routines)
         .where(eq(routines.isActive, 1))
@@ -209,7 +210,7 @@ export const useRoutinesToday = () => {
 
       const completedIds = new Set(
         db.select().from(routineCompletions)
-          .where(eq(routineCompletions.completedDate, today))
+          .where(eq(routineCompletions.completedDate, effectiveToday))
           .all()
           .map((rc) => rc.routineId),
       );

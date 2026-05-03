@@ -3,9 +3,9 @@ import { Text, Divider, Menu } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMemo, useState } from 'react';
-import dayjs from 'dayjs';
 import { Colors } from '../theme';
 import { useTodosToday, useTodayCompletionIds, useTodayToggle } from '../hooks/useTodos';
+import { useDayStartStore } from '../stores/dayStartStore';
 import { useRoutinesToday, useToggleRoutineCompletion } from '../hooks/useRoutines';
 import { useCategories } from '../hooks/useCategories';
 import { useCategoryMap } from '../hooks/useCategoryMap';
@@ -43,7 +43,7 @@ export default function TodoTabToday() {
   const [sortKey, setSortKey] = useState<SortKey>('default');
   const [sortMenuVisible, setSortMenuVisible] = useState(false);
 
-  const today = dayjs().format('YYYY-MM-DD');
+  const today = useDayStartStore(s => s.effectiveToday);
 
   const categoryMap = useCategoryMap(categories);
   const getCheckable = useCheckable({ mode: 'today', completedIds, toggleFn: todayToggle });

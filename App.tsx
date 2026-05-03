@@ -8,7 +8,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import MobileAds, { MaxAdContentRating } from 'react-native-google-mobile-ads';
-import { initDb, getDayStartMinutes } from './src/db';
+import { initDb, getDayStartMinutes, computeEffectiveToday } from './src/db';
 import { requestNotificationPermission } from './src/utils/notifications';
 import RootNavigator from './src/navigation/RootNavigator';
 import { AppTheme, NavTheme } from './src/theme';
@@ -56,6 +56,7 @@ export default function App() {
       .then(() => {
         // DB 초기화 완료 후 스토어에 설정값 동기화
         useDayStartStore.getState().setDayStartMinutes(getDayStartMinutes());
+        useDayStartStore.getState().setEffectiveToday(computeEffectiveToday());
       })
       .then(() => requestNotificationPermission())
       .then(async () => {

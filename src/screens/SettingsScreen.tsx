@@ -41,7 +41,7 @@ export default function SettingsScreen() {
   const { isAdFree, adFreeUntil, watchedCount, watchAd, isLoading, resetAdFree } = useAdFree();
   const queryClient = useQueryClient();
 
-  const { dayStartMinutes, setDayStartMinutes: setDayStartMinutesInStore } = useDayStartStore();
+  const { dayStartMinutes, setDayStartMinutes: setDayStartMinutesInStore, setEffectiveToday } = useDayStartStore();
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [tempDate, setTempDate] = useState<Date>(() => {
     const d = new Date();
@@ -115,6 +115,9 @@ export default function SettingsScreen() {
 
   const handleForceRunTimer = async () => {
     resetDueDateCheckGuard();
+    // 다음날 시작 시각을 시뮬레이션 — effectiveToday를 하루 앞으로 이동
+    const currentEffective = useDayStartStore.getState().effectiveToday;
+    setEffectiveToday(dayjs(currentEffective).add(1, 'day').format('YYYY-MM-DD'));
     const changed = await runDueDateCheck();
     queryClient.invalidateQueries({ queryKey: ['todos'] });
     queryClient.invalidateQueries({ queryKey: ['completions'], exact: false });
