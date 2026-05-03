@@ -7,12 +7,12 @@ import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import i18next from 'i18next';
 import { Colors } from '../theme';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SettingsStackParamList } from '../navigation/SettingsStack';
 import Constants from 'expo-constants';
 import { useAdFree, REQUIRED_AD_COUNT } from '../hooks/useAdFree';
-import { setDayStartMinutes, db, setAppLanguage } from '../db';
+import { setDayStartMinutes, db, setAppLanguage, resetOnboardingCompleted } from '../db';
 import { todos, todoCompletions } from '../db/schema';
 import { seedDemoData } from '../utils/seedData';
 import { useDayStartStore } from '../stores/dayStartStore';
@@ -158,6 +158,12 @@ export default function SettingsScreen() {
     queryClient.invalidateQueries({ queryKey: ['completions'], exact: false });
     Alert.alert('시드 완료', `루틴 ${result.routines}개 · 할 일 ${result.todos}개 · 루틴 완료 기록 ${result.routineCompletions}건 · 할 일 완료 기록 ${result.todoCompletions}건 생성됨`);
   };
+  const handleReplayOnboarding = () => {
+    resetOnboardingCompleted();
+    navigation.getParent()?.getParent()?.dispatch(
+      CommonActions.reset({ index: 0, routes: [{ name: 'Onboarding' }] }),
+    );
+  };
   // ────────────────────────────────────────────────────
 
   return (
@@ -251,6 +257,15 @@ export default function SettingsScreen() {
                   <Text variant="bodyLarge" style={{ color: Colors.danger }}>시드 데이터 생성</Text>
                   <Text variant="bodySmall" style={styles.description}>
                     할 일 / 루틴 / 완료 이력 데모 데이터 삽입 (기존 데이터 없을 때만 동작)
+                  </Text>
+                </View>
+              </TouchableOpacity>
+              <Divider />
+              <TouchableOpacity style={styles.item} onPress={handleReplayOnboarding}>
+                <View>
+                  <Text variant="bodyLarge" style={{ color: Colors.danger }}>온보딩 다시 보기</Text>
+                  <Text variant="bodySmall" style={styles.description}>
+                    완료 기록을 초기화하고 가이드 화면으로 이동
                   </Text>
                 </View>
               </TouchableOpacity>
