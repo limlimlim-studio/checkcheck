@@ -7,14 +7,14 @@
       "title": "루틴 탭 신설 및 오늘 탭 제거",
       "issueNumber": 147,
       "branch": "feature/issue-146/tab-restructure-add-routine-tab",
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "number": 2,
       "title": "할 일 탭 오늘 프로그레스 바 추가",
       "issueNumber": 148,
       "branch": "feature/issue-146/todo-tab-today-progress",
-      "status": "pending"
+      "status": "in_progress"
     }
   ]
 }
