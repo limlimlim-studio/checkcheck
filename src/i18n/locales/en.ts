@@ -17,8 +17,8 @@ const en: TranslationKeys = {
   todo: {
     title_new: 'New Task',
     title_edit: 'Edit Task',
-    tab_today: 'Today',
     tab_list: 'Tasks',
+    tab_routine: 'Routine',
     tab_overdue: 'Overdue',
     field_title: 'Title *',
     field_description: 'Description',
@@ -80,6 +80,7 @@ const en: TranslationKeys = {
     title_new: 'New Routine',
     title_edit: 'Edit Routine',
     empty: 'No routines yet',
+    empty_today: 'No routines for today',
     field_title: 'Title *',
     field_description: 'Description',
     field_category: 'Category *',

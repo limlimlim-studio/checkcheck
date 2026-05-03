@@ -15,8 +15,8 @@ const ko = {
   todo: {
     title_new: '새 할 일',
     title_edit: '할 일 수정',
-    tab_today: '오늘',
     tab_list: '할 일',
+    tab_routine: '루틴',
     tab_overdue: '미완료',
     field_title: '제목 *',
     field_description: '설명',
@@ -78,6 +78,7 @@ const ko = {
     title_new: '새 루틴',
     title_edit: '루틴 수정',
     empty: '루틴이 없어요',
+    empty_today: '오늘 루틴이 없어요',
     field_title: '제목 *',
     field_description: '설명',
     field_category: '카테고리 *',

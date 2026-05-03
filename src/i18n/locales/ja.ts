@@ -17,8 +17,8 @@ const ja: TranslationKeys = {
   todo: {
     title_new: '新しいタスク',
     title_edit: 'タスクを編集',
-    tab_today: '今日',
     tab_list: 'タスク',
+    tab_routine: 'ルーティン',
     tab_overdue: '期限切れ',
     field_title: 'タイトル *',
     field_description: '説明',
@@ -80,6 +80,7 @@ const ja: TranslationKeys = {
     title_new: '新しいルーティン',
     title_edit: 'ルーティンを編集',
     empty: 'ルーティンがありません',
+    empty_today: '今日のルーティンはありません',
     field_title: 'タイトル *',
     field_description: '説明',
     field_category: 'カテゴリ *',
