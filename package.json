@@ -1,6 +1,6 @@
 {
   "name": "checkcheck",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "main": "index.ts",
   "scripts": {
     "start": "expo start --dev-client",
@@ -14,7 +14,9 @@
     "db:studio": "drizzle-kit studio",
     "build:ios": "bash scripts/build-ios.sh",
     "build:android": "bash scripts/build-android.sh",
-    "build:all": "bash scripts/build-all.sh"
+    "build:all": "bash scripts/build-all.sh",
+    "upload:ios": "bash scripts/upload-ios.sh",
+    "upload:android": "bash scripts/upload-android.sh"
   },
   "dependencies": {
     "@react-native-community/datetimepicker": "8.4.4",
