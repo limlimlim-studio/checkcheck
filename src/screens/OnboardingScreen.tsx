@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import i18next from 'i18next';
 import { RootStackParamList } from '../navigation/RootNavigator';
 import { Colors } from '../theme';
 import { setOnboardingCompleted } from '../db';
@@ -18,21 +19,27 @@ const SS_H = 844;
 const FOOTER_H = 140;
 const IMG_SCALE = (SW - 32) / SS_W;
 const FULL_IMG_H = Math.round(SS_H * IMG_SCALE);
+const CROP_TOP = Math.round(54 * IMG_SCALE); // hide status bar (time/battery/notch)
 
-type CardKey =
-  | 'card_1' | 'card_2' | 'card_3'
-  | 'card_4' | 'card_5' | 'card_6';
+type CardKey = 'card_1' | 'card_2' | 'card_3' | 'card_4' | 'card_5';
 
-const CARD_IMAGES: Record<CardKey, ReturnType<typeof require>> = {
-  card_1: require('../../assets/onboarding/1-todo.png'),
-  card_2: require('../../assets/onboarding/2-today.png'),
-  card_3: require('../../assets/onboarding/3-category-routine.png'),
-  card_4: require('../../assets/onboarding/4-category.png'),
-  card_5: require('../../assets/onboarding/5-routine.png'),
-  card_6: require('../../assets/onboarding/6-history.png'),
+const CARD_KEYS: CardKey[] = ['card_1', 'card_2', 'card_3', 'card_4', 'card_5'];
+
+const CARD_IMAGES_KO: Record<CardKey, ReturnType<typeof require>> = {
+  card_1: require('../../assets/onboarding/1-task.png'),
+  card_2: require('../../assets/onboarding/2-routine.png'),
+  card_3: require('../../assets/onboarding/3-overdue.png'),
+  card_4: require('../../assets/onboarding/4-record.png'),
+  card_5: require('../../assets/onboarding/5-management.png'),
 };
 
-const CARD_KEYS: CardKey[] = ['card_1', 'card_2', 'card_3', 'card_4', 'card_5', 'card_6'];
+const CARD_IMAGES_EN: Record<CardKey, ReturnType<typeof require>> = {
+  card_1: require('../../assets/onboarding/1-task-en.png'),
+  card_2: require('../../assets/onboarding/2-routine-en.png'),
+  card_3: require('../../assets/onboarding/3.overdue-en.png'),
+  card_4: require('../../assets/onboarding/4-record-en.png'),
+  card_5: require('../../assets/onboarding/5-management-en.png'),
+};
 
 export default function OnboardingScreen() {
   const navigation = useNavigation<Nav>();
@@ -53,28 +60,27 @@ export default function OnboardingScreen() {
   };
 
   const renderCard = ({ item }: { item: CardKey }) => {
-    const cropTopPx = 0;
-    const vpH = 520 * IMG_SCALE;
+    const images = i18next.language === 'ko' ? CARD_IMAGES_KO : CARD_IMAGES_EN;
+    const vpH = Math.round(520 * IMG_SCALE) - CROP_TOP;
 
     return (
       <View style={styles.card}>
-        <View style={[styles.header, { paddingTop: safeTop + 24 }]}>
-          <Text style={styles.title}>{t(`onboarding.${item}_title`)}</Text>
-          <Text style={styles.description}>{t(`onboarding.${item}_desc`)}</Text>
-        </View>
-
-        <View style={[styles.imageViewport, { height: vpH }]}>
+        <View style={[styles.imageViewport, { marginTop: safeTop + 16, height: vpH }]}>
           <Image
-            source={CARD_IMAGES[item]}
+            source={images[item]}
             style={{
               position: 'absolute',
-              top: -cropTopPx,
+              top: -CROP_TOP,
               left: 0,
               width: SW - 32,
               height: FULL_IMG_H,
             }}
             resizeMode="stretch"
           />
+        </View>
+        <View style={styles.header}>
+          <Text style={styles.title}>{t(`onboarding.${item}_title`)}</Text>
+          <Text style={styles.description}>{t(`onboarding.${item}_desc`)}</Text>
         </View>
       </View>
     );
@@ -124,8 +130,14 @@ const styles = StyleSheet.create({
     width: SW,
     flex: 1,
   },
+  imageViewport: {
+    marginHorizontal: 16,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
   header: {
     paddingHorizontal: 24,
+    paddingTop: 20,
     paddingBottom: 16,
   },
   title: {
@@ -138,12 +150,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.textSecondary,
     lineHeight: 22,
-  },
-  imageViewport: {
-    marginHorizontal: 16,
-    marginTop: 20,
-    borderRadius: 16,
-    overflow: 'hidden',
   },
   footer: {
     height: FOOTER_H,

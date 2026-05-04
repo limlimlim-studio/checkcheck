@@ -1,19 +1,19 @@
 {
   "planFile": "warm-fluttering-cray.md",
-  "mainIssueNumber": 151,
+  "mainIssueNumber": 164,
   "phases": [
     {
       "number": 1,
-      "title": "자동 완료 프로세스 제거 및 훅 교체",
-      "issueNumber": 152,
-      "branch": "feature/issue-151/remove-auto-complete-process",
-      "status": "done"
+      "title": "OnboardingScreen 재구성",
+      "issueNumber": 165,
+      "branch": "feature/issue-164/onboarding-redesign",
+      "status": "in_progress"
     },
     {
       "number": 2,
-      "title": "정리 FAB 구현 (할 일/루틴 탭)",
-      "issueNumber": 153,
-      "branch": "feature/issue-151/cleanup-fab",
+      "title": "i18n 4개 로케일 업데이트",
+      "issueNumber": 166,
+      "branch": "feature/issue-164/onboarding-i18n",
       "status": "done"
     }
   ]
