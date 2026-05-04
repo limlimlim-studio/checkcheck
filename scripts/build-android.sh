@@ -13,7 +13,7 @@ fi
 # 빌드 시작 시간
 START=$(date +%s)
 
-eas build --platform android --profile production --local
+eas build --platform android --profile production --local --non-interactive
 
 # 빌드 결과물 확인
 BUILD_FILE=$(ls *.apk *.aab 2>/dev/null | head -1)
