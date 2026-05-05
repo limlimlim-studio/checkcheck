@@ -51,6 +51,7 @@ export default function SettingsScreen() {
   const { language, setLanguage } = useLanguageStore();
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [showLangDialog, setShowLangDialog] = useState(false);
+  const [sampleLocale, setSampleLocale] = useState<'ko' | 'en' | 'zh' | 'ja'>('ko');
   const [tempDate, setTempDate] = useState<Date>(() => {
     const d = new Date();
     d.setHours(Math.floor(dayStartMinutes / 60), dayStartMinutes % 60, 0, 0);
@@ -158,6 +159,34 @@ export default function SettingsScreen() {
     queryClient.invalidateQueries({ queryKey: ['completions'], exact: false });
     Alert.alert('시드 완료', `루틴 ${result.routines}개 · 할 일 ${result.todos}개 · 루틴 완료 기록 ${result.routineCompletions}건 · 할 일 완료 기록 ${result.todoCompletions}건 생성됨`);
   };
+  const handleApplySampleData = () => {
+    const localeLabel = { ko: '한국어', en: 'English', zh: '中文', ja: '日本語' };
+    Alert.alert(
+      '샘플 데이터 적용',
+      `[${localeLabel[sampleLocale]}] 샘플 데이터를 적용합니다.\n기존 할 일·루틴·완료 기록이 모두 삭제됩니다.`,
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '적용',
+          style: 'destructive',
+          onPress: () => {
+            const { applySampleData } = require('../utils/sampleDataLoader');
+            const result = applySampleData(sampleLocale);
+            queryClient.invalidateQueries({ queryKey: ['todos'] });
+            queryClient.invalidateQueries({ queryKey: ['routines'] });
+            queryClient.invalidateQueries({ queryKey: ['routinesToday'] });
+            queryClient.invalidateQueries({ queryKey: ['completions'], exact: false });
+            queryClient.invalidateQueries({ queryKey: ['categories'] });
+            Alert.alert(
+              '적용 완료',
+              `카테고리 ${result.categories}개 · 루틴 ${result.routines}개 · 할 일 ${result.todos}개\n루틴 완료 ${result.routineCompletions}건 · 할 일 완료 ${result.todoCompletions}건`,
+            );
+          },
+        },
+      ],
+    );
+  };
+
   const handleReplayOnboarding = () => {
     resetOnboardingCompleted();
     navigation.getParent()?.getParent()?.dispatch(
@@ -269,6 +298,34 @@ export default function SettingsScreen() {
                   </Text>
                 </View>
               </TouchableOpacity>
+              <Divider />
+              <View style={styles.item}>
+                <View style={{ flex: 1 }}>
+                  <Text variant="bodyLarge" style={{ color: Colors.danger }}>스크린샷용 샘플 데이터</Text>
+                  <Text variant="bodySmall" style={styles.description}>
+                    언어별 로컬라이즈 데이터로 초기화 (기존 데이터 전체 삭제)
+                  </Text>
+                  <View style={styles.localePicker}>
+                    {(['ko', 'en', 'zh', 'ja'] as ('ko' | 'en' | 'zh' | 'ja')[]).map((loc) => (
+                      <TouchableOpacity
+                        key={loc}
+                        style={[styles.localeBtn, sampleLocale === loc && styles.localeBtnActive]}
+                        onPress={() => setSampleLocale(loc)}
+                      >
+                        <Text
+                          variant="labelMedium"
+                          style={sampleLocale === loc ? styles.localeBtnTextActive : styles.localeBtnText}
+                        >
+                          {loc}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                  <TouchableOpacity style={styles.applyBtn} onPress={handleApplySampleData}>
+                    <Text variant="labelMedium" style={styles.applyBtnText}>적용</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
           </>
         )}
@@ -375,6 +432,26 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   description: { color: Colors.textSecondary, marginTop: 2 },
+  localePicker: { flexDirection: 'row', gap: 8, marginTop: 10 },
+  localeBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  localeBtnActive: { backgroundColor: Colors.danger, borderColor: Colors.danger },
+  localeBtnText: { color: Colors.textSecondary },
+  localeBtnTextActive: { color: '#fff' },
+  applyBtn: {
+    marginTop: 10,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 16,
+    paddingVertical: 7,
+    borderRadius: 6,
+    backgroundColor: Colors.danger,
+  },
+  applyBtnText: { color: '#fff' },
   checkmark: { fontSize: 18, color: Colors.primary, fontWeight: '700' },
   infoItem: {
     flexDirection: 'row',

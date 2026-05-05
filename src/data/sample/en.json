@@ -1,0 +1,44 @@
+{
+  "defaultCategoryName": "Uncategorized",
+  "categories": [
+    { "key": "work", "name": "Work", "color": "#4285F4", "description": "Work tasks", "sortOrder": 1 },
+    { "key": "personal", "name": "Personal", "color": "#EA4335", "description": "Personal tasks", "sortOrder": 2 },
+    { "key": "health", "name": "Health", "color": "#34A853", "description": "Health & fitness", "sortOrder": 3 },
+    { "key": "study", "name": "Study", "color": "#FBBC05", "description": "Learning & growth", "sortOrder": 4 },
+    { "key": "shopping", "name": "Shopping", "color": "#9C27B0", "description": "Shopping list", "sortOrder": 5 }
+  ],
+  "routines": [
+    { "categoryKey": "health", "title": "Morning stretching (10 min)", "description": "Start the day with full-body stretching", "repeatType": "daily", "repeatValue": null, "alarmTime": 420, "urgency": 1, "importance": 3, "sortOrder": 1, "completionRate": 0.85, "completionDays": 90 },
+    { "categoryKey": "health", "title": "Drink 2L of water", "description": "Stay hydrated throughout the day", "repeatType": "daily", "repeatValue": null, "alarmTime": null, "urgency": 1, "importance": 2, "sortOrder": 2, "completionRate": 0.80, "completionDays": 90 },
+    { "categoryKey": "health", "title": "Run or walk 30 min", "description": "Cardio workout for fitness", "repeatType": "weekly", "repeatValue": "1,3,5", "alarmTime": 1140, "urgency": 2, "importance": 4, "sortOrder": 3, "completionRate": 0.75, "completionDays": 90 },
+    { "categoryKey": "work", "title": "Check today's schedule", "description": "Review Slack, email & calendar", "repeatType": "daily", "repeatValue": null, "alarmTime": 540, "urgency": 2, "importance": 3, "sortOrder": 1, "completionRate": 0.90, "completionDays": 90 },
+    { "categoryKey": "work", "title": "Weekly goal review", "description": "Recap this week's goals every Monday", "repeatType": "weekly", "repeatValue": "1", "alarmTime": 570, "urgency": 2, "importance": 4, "sortOrder": 2, "completionRate": 0.80, "completionDays": 90 },
+    { "categoryKey": "personal", "title": "Write daily journal", "description": "Record today's highlights & 3 gratitudes", "repeatType": "daily", "repeatValue": null, "alarmTime": 1350, "urgency": 1, "importance": 3, "sortOrder": 1, "completionRate": 0.70, "completionDays": 90 },
+    { "categoryKey": "personal", "title": "Read for 20 minutes", "description": "Wind down with a book before sleep", "repeatType": "daily", "repeatValue": null, "alarmTime": 1380, "urgency": 1, "importance": 2, "sortOrder": 2, "completionRate": 0.65, "completionDays": 90 },
+    { "categoryKey": "study", "title": "Memorize 20 vocabulary words", "description": "Anki deck review + new words", "repeatType": "daily", "repeatValue": null, "alarmTime": 510, "urgency": 1, "importance": 3, "sortOrder": 1, "completionRate": 0.75, "completionDays": 90 },
+    { "categoryKey": "study", "title": "Study for 1 hour", "description": "Side project or online course", "repeatType": "daily", "repeatValue": null, "alarmTime": null, "urgency": 1, "importance": 4, "sortOrder": 2, "completionRate": 0.70, "completionDays": 90 },
+    { "categoryKey": "shopping", "title": "Write weekly shopping list", "description": "Check fridge and note what's needed", "repeatType": "weekly", "repeatValue": "0", "alarmTime": 600, "urgency": 1, "importance": 2, "sortOrder": 1, "completionRate": 0.85, "completionDays": 90 }
+  ],
+  "todos": [
+    { "categoryKey": "work", "title": "Draft Q2 report", "description": "Compile Q2 performance and summary", "dueDateOffset": 0, "urgency": 3, "importance": 4, "isCompleted": false, "completedAtOffset": null, "sortOrder": 1 },
+    { "categoryKey": "work", "title": "Review team meeting agenda", "description": "Check agenda before 3pm weekly meeting", "dueDateOffset": 0, "urgency": 3, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 2 },
+    { "categoryKey": "personal", "title": "Call parents", "description": "Check in this week", "dueDateOffset": 0, "urgency": 1, "importance": 4, "isCompleted": false, "completedAtOffset": null, "sortOrder": 1 },
+    { "categoryKey": "health", "title": "Book orthopedic appointment", "description": "Knee pain — need to see a doctor", "dueDateOffset": 0, "urgency": 2, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 1 },
+    { "categoryKey": "study", "title": "TypeScript generics notes", "description": "Read official docs and write examples", "dueDateOffset": 0, "urgency": 1, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 1 },
+    { "categoryKey": "shopping", "title": "Buy detergent & fabric softener", "description": "Order online for next-day delivery", "dueDateOffset": 0, "urgency": 1, "importance": 2, "isCompleted": false, "completedAtOffset": null, "sortOrder": 1 },
+    { "categoryKey": "work", "title": "Prepare client presentation", "description": "Final review of proposal deck for Company A", "dueDateOffset": 1, "urgency": 4, "importance": 4, "isCompleted": false, "completedAtOffset": null, "sortOrder": 3 },
+    { "categoryKey": "personal", "title": "Order friend's birthday gift", "description": "Party is next week — order in advance", "dueDateOffset": 3, "urgency": 3, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 2 },
+    { "categoryKey": "health", "title": "Replace running shoes", "description": "6+ months of use, soles are worn", "dueDateOffset": 4, "urgency": 1, "importance": 2, "isCompleted": false, "completedAtOffset": null, "sortOrder": 2 },
+    { "categoryKey": "study", "title": "Algorithm study presentation", "description": "Solve 3 greedy algorithm problems", "dueDateOffset": 5, "urgency": 2, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 2 },
+    { "categoryKey": "work", "title": "H1 KPI review report", "description": "Analyze goal achievement and plan for H2", "dueDateOffset": 9, "urgency": 2, "importance": 4, "isCompleted": false, "completedAtOffset": null, "sortOrder": 4 },
+    { "categoryKey": "personal", "title": "Book summer vacation accommodation", "description": "3-day beach trip in July", "dueDateOffset": 12, "urgency": 1, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 3 },
+    { "categoryKey": "work", "title": "Complete server deployment test", "description": "Full flow test on staging environment", "dueDateOffset": -3, "urgency": 4, "importance": 4, "isCompleted": false, "completedAtOffset": null, "sortOrder": 5 },
+    { "categoryKey": "study", "title": "Summarize 'The One Thing' notes", "description": "Key takeaways from chapters 1–5", "dueDateOffset": -5, "urgency": 1, "importance": 2, "isCompleted": false, "completedAtOffset": null, "sortOrder": 4 },
+    { "categoryKey": "personal", "title": "Dental checkup appointment", "description": "Scaling needed every 6 months", "dueDateOffset": -7, "urgency": 1, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 4 },
+    { "categoryKey": "work", "title": "April expense report", "description": "Submit receipts and expense claims", "dueDateOffset": -4, "urgency": 3, "importance": 4, "isCompleted": true, "completedAtOffset": -2, "sortOrder": 6 },
+    { "categoryKey": "work", "title": "New team member onboarding docs", "description": "Prepare first-week guide document", "dueDateOffset": -7, "urgency": 2, "importance": 3, "isCompleted": true, "completedAtOffset": -5, "sortOrder": 7 },
+    { "categoryKey": "personal", "title": "Car insurance renewal", "description": "Online renewal before March expiry", "dueDateOffset": -9, "urgency": 3, "importance": 4, "isCompleted": true, "completedAtOffset": -7, "sortOrder": 5 },
+    { "categoryKey": "health", "title": "Review blood test results", "description": "Pick up health screening report", "dueDateOffset": -4, "urgency": 2, "importance": 3, "isCompleted": true, "completedAtOffset": -3, "sortOrder": 3 },
+    { "categoryKey": "study", "title": "Finish JavaScript design patterns course", "description": "Completed all 15 patterns", "dueDateOffset": -12, "urgency": 1, "importance": 3, "isCompleted": true, "completedAtOffset": -10, "sortOrder": 5 }
+  ]
+}
