@@ -1,0 +1,44 @@
+{
+  "defaultCategoryName": "미분류",
+  "categories": [
+    { "key": "work", "name": "업무", "color": "#4285F4", "description": "직장 관련 할 일", "sortOrder": 1 },
+    { "key": "personal", "name": "개인", "color": "#EA4335", "description": "개인적인 할 일", "sortOrder": 2 },
+    { "key": "health", "name": "운동", "color": "#34A853", "description": "운동 및 건강 관리", "sortOrder": 3 },
+    { "key": "study", "name": "학습", "color": "#FBBC05", "description": "공부 및 자기계발", "sortOrder": 4 },
+    { "key": "shopping", "name": "쇼핑", "color": "#9C27B0", "description": "구매 목록", "sortOrder": 5 }
+  ],
+  "routines": [
+    { "categoryKey": "health", "title": "아침 스트레칭 10분", "description": "기상 후 전신 스트레칭으로 하루 시작", "repeatType": "daily", "repeatValue": null, "alarmTime": 420, "urgency": 1, "importance": 3, "sortOrder": 1, "completionRate": 0.85, "completionDays": 90 },
+    { "categoryKey": "health", "title": "물 2L 이상 마시기", "description": "하루 권장 수분 섭취량 달성", "repeatType": "daily", "repeatValue": null, "alarmTime": null, "urgency": 1, "importance": 2, "sortOrder": 2, "completionRate": 0.80, "completionDays": 90 },
+    { "categoryKey": "health", "title": "러닝 또는 걷기 30분", "description": "유산소 운동으로 체력 유지", "repeatType": "weekly", "repeatValue": "1,3,5", "alarmTime": 1140, "urgency": 2, "importance": 4, "sortOrder": 3, "completionRate": 0.75, "completionDays": 90 },
+    { "categoryKey": "work", "title": "오늘 업무 일정 확인", "description": "슬랙·이메일·캘린더 체크", "repeatType": "daily", "repeatValue": null, "alarmTime": 540, "urgency": 2, "importance": 3, "sortOrder": 1, "completionRate": 0.90, "completionDays": 90 },
+    { "categoryKey": "work", "title": "주간 목표 점검", "description": "월요일 아침 이번 주 목표 리마인드", "repeatType": "weekly", "repeatValue": "1", "alarmTime": 570, "urgency": 2, "importance": 4, "sortOrder": 2, "completionRate": 0.80, "completionDays": 90 },
+    { "categoryKey": "personal", "title": "하루 일기 쓰기", "description": "오늘 있었던 일 & 감사한 것 3가지", "repeatType": "daily", "repeatValue": null, "alarmTime": 1350, "urgency": 1, "importance": 3, "sortOrder": 1, "completionRate": 0.70, "completionDays": 90 },
+    { "categoryKey": "personal", "title": "독서 20분", "description": "취침 전 독서로 집중력 향상", "repeatType": "daily", "repeatValue": null, "alarmTime": 1380, "urgency": 1, "importance": 2, "sortOrder": 2, "completionRate": 0.65, "completionDays": 90 },
+    { "categoryKey": "study", "title": "영어 단어 암기 20개", "description": "Anki 덱 복습 + 신규 단어", "repeatType": "daily", "repeatValue": null, "alarmTime": 510, "urgency": 1, "importance": 3, "sortOrder": 1, "completionRate": 0.75, "completionDays": 90 },
+    { "categoryKey": "study", "title": "개발 공부 1시간 이상", "description": "사이드 프로젝트 or 강의 수강", "repeatType": "daily", "repeatValue": null, "alarmTime": null, "urgency": 1, "importance": 4, "sortOrder": 2, "completionRate": 0.70, "completionDays": 90 },
+    { "categoryKey": "shopping", "title": "주간 장보기 리스트 작성", "description": "냉장고 확인 후 필요한 것 정리", "repeatType": "weekly", "repeatValue": "0", "alarmTime": 600, "urgency": 1, "importance": 2, "sortOrder": 1, "completionRate": 0.85, "completionDays": 90 }
+  ],
+  "todos": [
+    { "categoryKey": "work", "title": "분기 보고서 초안 작성", "description": "2분기 실적 취합 및 요약 정리", "dueDateOffset": 0, "urgency": 3, "importance": 4, "isCompleted": false, "completedAtOffset": null, "sortOrder": 1 },
+    { "categoryKey": "work", "title": "팀 미팅 사전 자료 검토", "description": "오후 3시 주간 회의 전 아젠다 확인", "dueDateOffset": 0, "urgency": 3, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 2 },
+    { "categoryKey": "personal", "title": "부모님께 안부 전화", "description": "이번 주 안으로 꼭", "dueDateOffset": 0, "urgency": 1, "importance": 4, "isCompleted": false, "completedAtOffset": null, "sortOrder": 1 },
+    { "categoryKey": "health", "title": "정형외과 예약 전화", "description": "무릎 통증 관련 진료 예약", "dueDateOffset": 0, "urgency": 2, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 1 },
+    { "categoryKey": "study", "title": "TypeScript 제네릭 정리", "description": "공식 문서 읽고 예제 코드 작성", "dueDateOffset": 0, "urgency": 1, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 1 },
+    { "categoryKey": "shopping", "title": "세제 & 섬유유연제 구매", "description": "쿠팡 로켓배송 주문", "dueDateOffset": 0, "urgency": 1, "importance": 2, "isCompleted": false, "completedAtOffset": null, "sortOrder": 1 },
+    { "categoryKey": "work", "title": "클라이언트 미팅 준비", "description": "A사 제안 발표 자료 최종 점검", "dueDateOffset": 1, "urgency": 4, "importance": 4, "isCompleted": false, "completedAtOffset": null, "sortOrder": 3 },
+    { "categoryKey": "personal", "title": "친구 생일 선물 주문", "description": "다음 주 파티 전에 미리 준비", "dueDateOffset": 3, "urgency": 3, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 2 },
+    { "categoryKey": "health", "title": "러닝화 교체", "description": "6개월 이상 사용, 밑창 마모", "dueDateOffset": 4, "urgency": 1, "importance": 2, "isCompleted": false, "completedAtOffset": null, "sortOrder": 2 },
+    { "categoryKey": "study", "title": "알고리즘 스터디 발표 준비", "description": "그리디 알고리즘 예제 3문제 풀기", "dueDateOffset": 5, "urgency": 2, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 2 },
+    { "categoryKey": "work", "title": "상반기 KPI 점검 보고서", "description": "목표 달성률 분석 및 하반기 전략", "dueDateOffset": 9, "urgency": 2, "importance": 4, "isCompleted": false, "completedAtOffset": null, "sortOrder": 4 },
+    { "categoryKey": "personal", "title": "여행 숙소 예약", "description": "7월 제주 여행 2박 3일", "dueDateOffset": 12, "urgency": 1, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 3 },
+    { "categoryKey": "work", "title": "서버 배포 테스트 완료", "description": "스테이징 환경에서 전체 플로우 테스트", "dueDateOffset": -3, "urgency": 4, "importance": 4, "isCompleted": false, "completedAtOffset": null, "sortOrder": 5 },
+    { "categoryKey": "study", "title": "독서 노트 정리 - '원씽'", "description": "챕터 1~5 핵심 요약 정리", "dueDateOffset": -5, "urgency": 1, "importance": 2, "isCompleted": false, "completedAtOffset": null, "sortOrder": 4 },
+    { "categoryKey": "personal", "title": "치과 정기 검진 예약", "description": "6개월마다 스케일링 필요", "dueDateOffset": -7, "urgency": 1, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 4 },
+    { "categoryKey": "work", "title": "4월 정산 마감", "description": "경비 정산 및 영수증 제출", "dueDateOffset": -4, "urgency": 3, "importance": 4, "isCompleted": true, "completedAtOffset": -2, "sortOrder": 6 },
+    { "categoryKey": "work", "title": "신규 팀원 온보딩 자료 준비", "description": "입사 첫 주 가이드 문서 작성", "dueDateOffset": -7, "urgency": 2, "importance": 3, "isCompleted": true, "completedAtOffset": -5, "sortOrder": 7 },
+    { "categoryKey": "personal", "title": "자동차 보험 갱신", "description": "3월 만료 전 온라인 갱신 완료", "dueDateOffset": -9, "urgency": 3, "importance": 4, "isCompleted": true, "completedAtOffset": -7, "sortOrder": 5 },
+    { "categoryKey": "health", "title": "혈액 검사 결과 확인", "description": "건강검진 결과 리포트 수령", "dueDateOffset": -4, "urgency": 2, "importance": 3, "isCompleted": true, "completedAtOffset": -3, "sortOrder": 3 },
+    { "categoryKey": "study", "title": "JavaScript 디자인 패턴 강의 완강", "description": "패턴 15가지 모두 학습 완료", "dueDateOffset": -12, "urgency": 1, "importance": 3, "isCompleted": true, "completedAtOffset": -10, "sortOrder": 5 }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "defaultCategoryName": "未分类",
+  "categories": [
+    { "key": "work", "name": "工作", "color": "#4285F4", "description": "工作相关任务", "sortOrder": 1 },
+    { "key": "personal", "name": "个人", "color": "#EA4335", "description": "个人事务", "sortOrder": 2 },
+    { "key": "health", "name": "健康", "color": "#34A853", "description": "健康与运动", "sortOrder": 3 },
+    { "key": "study", "name": "学习", "color": "#FBBC05", "description": "学习与自我提升", "sortOrder": 4 },
+    { "key": "shopping", "name": "购物", "color": "#9C27B0", "description": "购物清单", "sortOrder": 5 }
+  ],
+  "routines": [
+    { "categoryKey": "health", "title": "晨间拉伸 10 分钟", "description": "起床后做全身拉伸，开启美好一天", "repeatType": "daily", "repeatValue": null, "alarmTime": 420, "urgency": 1, "importance": 3, "sortOrder": 1, "completionRate": 0.85, "completionDays": 90 },
+    { "categoryKey": "health", "title": "每天喝够 2L 水", "description": "保持每日推荐水分摄入", "repeatType": "daily", "repeatValue": null, "alarmTime": null, "urgency": 1, "importance": 2, "sortOrder": 2, "completionRate": 0.80, "completionDays": 90 },
+    { "categoryKey": "health", "title": "跑步或散步 30 分钟", "description": "有氧运动，保持体能", "repeatType": "weekly", "repeatValue": "1,3,5", "alarmTime": 1140, "urgency": 2, "importance": 4, "sortOrder": 3, "completionRate": 0.75, "completionDays": 90 },
+    { "categoryKey": "work", "title": "查看今日工作安排", "description": "检查 Slack、邮件和日历", "repeatType": "daily", "repeatValue": null, "alarmTime": 540, "urgency": 2, "importance": 3, "sortOrder": 1, "completionRate": 0.90, "completionDays": 90 },
+    { "categoryKey": "work", "title": "每周目标复盘", "description": "每周一早回顾本周目标", "repeatType": "weekly", "repeatValue": "1", "alarmTime": 570, "urgency": 2, "importance": 4, "sortOrder": 2, "completionRate": 0.80, "completionDays": 90 },
+    { "categoryKey": "personal", "title": "写日记", "description": "记录今天发生的事 & 3 件感恩的事", "repeatType": "daily", "repeatValue": null, "alarmTime": 1350, "urgency": 1, "importance": 3, "sortOrder": 1, "completionRate": 0.70, "completionDays": 90 },
+    { "categoryKey": "personal", "title": "睡前阅读 20 分钟", "description": "睡前读书，放松心情", "repeatType": "daily", "repeatValue": null, "alarmTime": 1380, "urgency": 1, "importance": 2, "sortOrder": 2, "completionRate": 0.65, "completionDays": 90 },
+    { "categoryKey": "study", "title": "背 20 个单词", "description": "Anki 复习 + 新单词学习", "repeatType": "daily", "repeatValue": null, "alarmTime": 510, "urgency": 1, "importance": 3, "sortOrder": 1, "completionRate": 0.75, "completionDays": 90 },
+    { "categoryKey": "study", "title": "学习 1 小时以上", "description": "个人项目或在线课程", "repeatType": "daily", "repeatValue": null, "alarmTime": null, "urgency": 1, "importance": 4, "sortOrder": 2, "completionRate": 0.70, "completionDays": 90 },
+    { "categoryKey": "shopping", "title": "写本周购物清单", "description": "检查冰箱，整理需要购买的物品", "repeatType": "weekly", "repeatValue": "0", "alarmTime": 600, "urgency": 1, "importance": 2, "sortOrder": 1, "completionRate": 0.85, "completionDays": 90 }
+  ],
+  "todos": [
+    { "categoryKey": "work", "title": "撰写 Q2 报告初稿", "description": "整理二季度业绩并撰写摘要", "dueDateOffset": 0, "urgency": 3, "importance": 4, "isCompleted": false, "completedAtOffset": null, "sortOrder": 1 },
+    { "categoryKey": "work", "title": "审阅团队会议议程", "description": "下午 3 点周会前确认议程", "dueDateOffset": 0, "urgency": 3, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 2 },
+    { "categoryKey": "personal", "title": "给父母打电话", "description": "这周一定要打", "dueDateOffset": 0, "urgency": 1, "importance": 4, "isCompleted": false, "completedAtOffset": null, "sortOrder": 1 },
+    { "categoryKey": "health", "title": "预约骨科门诊", "description": "膝盖疼痛，需要就诊", "dueDateOffset": 0, "urgency": 2, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 1 },
+    { "categoryKey": "study", "title": "整理 TypeScript 泛型笔记", "description": "阅读官方文档并编写示例代码", "dueDateOffset": 0, "urgency": 1, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 1 },
+    { "categoryKey": "shopping", "title": "购买洗涤剂和柔顺剂", "description": "网购，次日达", "dueDateOffset": 0, "urgency": 1, "importance": 2, "isCompleted": false, "completedAtOffset": null, "sortOrder": 1 },
+    { "categoryKey": "work", "title": "准备客户演示文稿", "description": "最终审查 A 公司提案幻灯片", "dueDateOffset": 1, "urgency": 4, "importance": 4, "isCompleted": false, "completedAtOffset": null, "sortOrder": 3 },
+    { "categoryKey": "personal", "title": "订购朋友生日礼物", "description": "下周派对前提前准备", "dueDateOffset": 3, "urgency": 3, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 2 },
+    { "categoryKey": "health", "title": "更换跑步鞋", "description": "使用超过 6 个月，鞋底磨损", "dueDateOffset": 4, "urgency": 1, "importance": 2, "isCompleted": false, "completedAtOffset": null, "sortOrder": 2 },
+    { "categoryKey": "study", "title": "算法学习小组演讲准备", "description": "解答 3 道贪心算法题目", "dueDateOffset": 5, "urgency": 2, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 2 },
+    { "categoryKey": "work", "title": "上半年 KPI 复盘报告", "description": "分析目标完成率并制定下半年战略", "dueDateOffset": 9, "urgency": 2, "importance": 4, "isCompleted": false, "completedAtOffset": null, "sortOrder": 4 },
+    { "categoryKey": "personal", "title": "预订暑假住宿", "description": "7 月三天两夜海岛之旅", "dueDateOffset": 12, "urgency": 1, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 3 },
+    { "categoryKey": "work", "title": "完成服务器部署测试", "description": "在预发布环境进行全流程测试", "dueDateOffset": -3, "urgency": 4, "importance": 4, "isCompleted": false, "completedAtOffset": null, "sortOrder": 5 },
+    { "categoryKey": "study", "title": "整理《最重要的事只有一件》读书笔记", "description": "第 1~5 章核心要点摘要", "dueDateOffset": -5, "urgency": 1, "importance": 2, "isCompleted": false, "completedAtOffset": null, "sortOrder": 4 },
+    { "categoryKey": "personal", "title": "预约牙科定期检查", "description": "每 6 个月需要洗牙", "dueDateOffset": -7, "urgency": 1, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 4 },
+    { "categoryKey": "work", "title": "四月报销结算", "description": "提交费用报销及发票", "dueDateOffset": -4, "urgency": 3, "importance": 4, "isCompleted": true, "completedAtOffset": -2, "sortOrder": 6 },
+    { "categoryKey": "work", "title": "准备新员工入职资料", "description": "制作第一周引导文档", "dueDateOffset": -7, "urgency": 2, "importance": 3, "isCompleted": true, "completedAtOffset": -5, "sortOrder": 7 },
+    { "categoryKey": "personal", "title": "续保汽车保险", "description": "三月到期前完成在线续保", "dueDateOffset": -9, "urgency": 3, "importance": 4, "isCompleted": true, "completedAtOffset": -7, "sortOrder": 5 },
+    { "categoryKey": "health", "title": "查看血液检查报告", "description": "领取体检结果报告", "dueDateOffset": -4, "urgency": 2, "importance": 3, "isCompleted": true, "completedAtOffset": -3, "sortOrder": 3 },
+    { "categoryKey": "study", "title": "完成 JavaScript 设计模式课程", "description": "学完全部 15 种设计模式", "dueDateOffset": -12, "urgency": 1, "importance": 3, "isCompleted": true, "completedAtOffset": -10, "sortOrder": 5 }
+  ]
+}

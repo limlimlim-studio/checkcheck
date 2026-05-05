@@ -1,0 +1,44 @@
+{
+  "defaultCategoryName": "未分類",
+  "categories": [
+    { "key": "work", "name": "仕事", "color": "#4285F4", "description": "仕事関連のタスク", "sortOrder": 1 },
+    { "key": "personal", "name": "個人", "color": "#EA4335", "description": "個人的なタスク", "sortOrder": 2 },
+    { "key": "health", "name": "健康", "color": "#34A853", "description": "健康・フィットネス", "sortOrder": 3 },
+    { "key": "study", "name": "学習", "color": "#FBBC05", "description": "勉強・自己成長", "sortOrder": 4 },
+    { "key": "shopping", "name": "買い物", "color": "#9C27B0", "description": "買い物リスト", "sortOrder": 5 }
+  ],
+  "routines": [
+    { "categoryKey": "health", "title": "朝のストレッチ 10分", "description": "起床後に全身ストレッチで一日をスタート", "repeatType": "daily", "repeatValue": null, "alarmTime": 420, "urgency": 1, "importance": 3, "sortOrder": 1, "completionRate": 0.85, "completionDays": 90 },
+    { "categoryKey": "health", "title": "水を2L以上飲む", "description": "一日の推奨水分摂取量を達成", "repeatType": "daily", "repeatValue": null, "alarmTime": null, "urgency": 1, "importance": 2, "sortOrder": 2, "completionRate": 0.80, "completionDays": 90 },
+    { "categoryKey": "health", "title": "ランニングまたはウォーキング 30分", "description": "有酸素運動で体力維持", "repeatType": "weekly", "repeatValue": "1,3,5", "alarmTime": 1140, "urgency": 2, "importance": 4, "sortOrder": 3, "completionRate": 0.75, "completionDays": 90 },
+    { "categoryKey": "work", "title": "今日のスケジュール確認", "description": "Slack・メール・カレンダーをチェック", "repeatType": "daily", "repeatValue": null, "alarmTime": 540, "urgency": 2, "importance": 3, "sortOrder": 1, "completionRate": 0.90, "completionDays": 90 },
+    { "categoryKey": "work", "title": "週次目標レビュー", "description": "月曜の朝に今週の目標を振り返る", "repeatType": "weekly", "repeatValue": "1", "alarmTime": 570, "urgency": 2, "importance": 4, "sortOrder": 2, "completionRate": 0.80, "completionDays": 90 },
+    { "categoryKey": "personal", "title": "日記を書く", "description": "今日あったこと＆感謝すること3つ", "repeatType": "daily", "repeatValue": null, "alarmTime": 1350, "urgency": 1, "importance": 3, "sortOrder": 1, "completionRate": 0.70, "completionDays": 90 },
+    { "categoryKey": "personal", "title": "就寝前に20分読書", "description": "読書でリラックスしてから眠る", "repeatType": "daily", "repeatValue": null, "alarmTime": 1380, "urgency": 1, "importance": 2, "sortOrder": 2, "completionRate": 0.65, "completionDays": 90 },
+    { "categoryKey": "study", "title": "英単語を20個暗記", "description": "Ankiデッキの復習＋新単語", "repeatType": "daily", "repeatValue": null, "alarmTime": 510, "urgency": 1, "importance": 3, "sortOrder": 1, "completionRate": 0.75, "completionDays": 90 },
+    { "categoryKey": "study", "title": "1時間以上勉強する", "description": "サイドプロジェクトまたはオンライン講座", "repeatType": "daily", "repeatValue": null, "alarmTime": null, "urgency": 1, "importance": 4, "sortOrder": 2, "completionRate": 0.70, "completionDays": 90 },
+    { "categoryKey": "shopping", "title": "週間買い物リストを作成", "description": "冷蔵庫を確認して必要なものをリストアップ", "repeatType": "weekly", "repeatValue": "0", "alarmTime": 600, "urgency": 1, "importance": 2, "sortOrder": 1, "completionRate": 0.85, "completionDays": 90 }
+  ],
+  "todos": [
+    { "categoryKey": "work", "title": "Q2レポートの下書き作成", "description": "第2四半期の実績まとめと要約", "dueDateOffset": 0, "urgency": 3, "importance": 4, "isCompleted": false, "completedAtOffset": null, "sortOrder": 1 },
+    { "categoryKey": "work", "title": "チーム会議の事前資料確認", "description": "午後3時の週次ミーティング前にアジェンダ確認", "dueDateOffset": 0, "urgency": 3, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 2 },
+    { "categoryKey": "personal", "title": "両親に電話する", "description": "今週中に必ず連絡する", "dueDateOffset": 0, "urgency": 1, "importance": 4, "isCompleted": false, "completedAtOffset": null, "sortOrder": 1 },
+    { "categoryKey": "health", "title": "整形外科の予約を入れる", "description": "膝の痛みで受診が必要", "dueDateOffset": 0, "urgency": 2, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 1 },
+    { "categoryKey": "study", "title": "TypeScriptのジェネリクスまとめ", "description": "公式ドキュメントを読んでサンプルコードを書く", "dueDateOffset": 0, "urgency": 1, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 1 },
+    { "categoryKey": "shopping", "title": "洗剤と柔軟剤を購入", "description": "翌日配達でオンライン注文", "dueDateOffset": 0, "urgency": 1, "importance": 2, "isCompleted": false, "completedAtOffset": null, "sortOrder": 1 },
+    { "categoryKey": "work", "title": "クライアント向けプレゼン準備", "description": "A社への提案資料の最終確認", "dueDateOffset": 1, "urgency": 4, "importance": 4, "isCompleted": false, "completedAtOffset": null, "sortOrder": 3 },
+    { "categoryKey": "personal", "title": "友人の誕生日プレゼントを注文", "description": "来週のパーティーまでに事前準備", "dueDateOffset": 3, "urgency": 3, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 2 },
+    { "categoryKey": "health", "title": "ランニングシューズを買い替え", "description": "6ヶ月以上使用、ソールが磨耗", "dueDateOffset": 4, "urgency": 1, "importance": 2, "isCompleted": false, "completedAtOffset": null, "sortOrder": 2 },
+    { "categoryKey": "study", "title": "アルゴリズム勉強会の発表準備", "description": "貪欲アルゴリズムの問題を3問解く", "dueDateOffset": 5, "urgency": 2, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 2 },
+    { "categoryKey": "work", "title": "上半期KPIレビューレポート", "description": "目標達成率の分析と下半期の戦略策定", "dueDateOffset": 9, "urgency": 2, "importance": 4, "isCompleted": false, "completedAtOffset": null, "sortOrder": 4 },
+    { "categoryKey": "personal", "title": "夏休みの宿泊先を予約", "description": "7月に3日間の旅行", "dueDateOffset": 12, "urgency": 1, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 3 },
+    { "categoryKey": "work", "title": "サーバーデプロイテスト完了", "description": "ステージング環境で全体フローをテスト", "dueDateOffset": -3, "urgency": 4, "importance": 4, "isCompleted": false, "completedAtOffset": null, "sortOrder": 5 },
+    { "categoryKey": "study", "title": "『エッセンシャル思考』読書ノート整理", "description": "第1〜5章のポイント要約", "dueDateOffset": -5, "urgency": 1, "importance": 2, "isCompleted": false, "completedAtOffset": null, "sortOrder": 4 },
+    { "categoryKey": "personal", "title": "歯科定期検診の予約", "description": "6ヶ月ごとにスケーリングが必要", "dueDateOffset": -7, "urgency": 1, "importance": 3, "isCompleted": false, "completedAtOffset": null, "sortOrder": 4 },
+    { "categoryKey": "work", "title": "4月の経費精算締め切り", "description": "経費精算と領収書の提出", "dueDateOffset": -4, "urgency": 3, "importance": 4, "isCompleted": true, "completedAtOffset": -2, "sortOrder": 6 },
+    { "categoryKey": "work", "title": "新メンバーのオンボーディング資料準備", "description": "初週向けのガイドドキュメント作成", "dueDateOffset": -7, "urgency": 2, "importance": 3, "isCompleted": true, "completedAtOffset": -5, "sortOrder": 7 },
+    { "categoryKey": "personal", "title": "自動車保険の更新", "description": "3月期限前にオンラインで更新完了", "dueDateOffset": -9, "urgency": 3, "importance": 4, "isCompleted": true, "completedAtOffset": -7, "sortOrder": 5 },
+    { "categoryKey": "health", "title": "血液検査の結果確認", "description": "健康診断の結果レポートを受け取る", "dueDateOffset": -4, "urgency": 2, "importance": 3, "isCompleted": true, "completedAtOffset": -3, "sortOrder": 3 },
+    { "categoryKey": "study", "title": "JavaScriptデザインパターン講座を完了", "description": "全15パターンを学習完了", "dueDateOffset": -12, "urgency": 1, "importance": 3, "isCompleted": true, "completedAtOffset": -10, "sortOrder": 5 }
+  ]
+}
