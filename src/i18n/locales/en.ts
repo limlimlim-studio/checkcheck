@@ -18,7 +18,7 @@ const en: TranslationKeys = {
     title_new: 'New Task',
     title_edit: 'Edit Task',
     tab_list: 'Tasks',
-    tab_routine: 'Routine',
+    tab_routine: 'Routines',
     tab_overdue: 'Overdue',
     field_title: 'Title *',
     field_description: 'Description',
