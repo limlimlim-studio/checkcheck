@@ -1,13 +1,19 @@
 import { useEffect, useRef } from 'react';
 import dayjs from 'dayjs';
 import { useQueryClient } from '@tanstack/react-query';
-import { computeEffectiveToday } from '../db';
+import { computeEffectiveToday, autoCompleteCheckedTodosBeforeDate } from '../db';
 import { useDayStartStore } from '../stores/dayStartStore';
 
 export function useDayStartTimer(dayStartMinutes: number) {
   const queryClient = useQueryClient();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scheduleRef = useRef<() => void>(() => {});
+
+  // 앱 시작 시: 이전 날 미처리 체크 항목 자동 완료
+  useEffect(() => {
+    const effectiveToday = useDayStartStore.getState().effectiveToday;
+    autoCompleteCheckedTodosBeforeDate(effectiveToday);
+  }, []);
 
   useEffect(() => {
     scheduleRef.current = () => {
@@ -27,11 +33,14 @@ export function useDayStartTimer(dayStartMinutes: number) {
 
       timerRef.current = setTimeout(() => {
         const newEffective = computeEffectiveToday();
+        // 하루 전환 시: 직전 날 체크된 할 일 자동 완료
+        autoCompleteCheckedTodosBeforeDate(newEffective);
         const current = useDayStartStore.getState().effectiveToday;
         if (newEffective > current) {
           useDayStartStore.getState().setEffectiveToday(newEffective);
         }
         queryClient.invalidateQueries({ queryKey: ['todos'] });
+        queryClient.invalidateQueries({ queryKey: ['todayCompletionIds'] });
         queryClient.invalidateQueries({ queryKey: ['completions'], exact: false });
         scheduleRef.current();
       }, delay);

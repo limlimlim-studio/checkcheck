@@ -1,6 +1,6 @@
 import { openDatabaseSync } from 'expo-sqlite';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
-import { eq } from 'drizzle-orm';
+import { and, eq, lt } from 'drizzle-orm';
 import dayjs from 'dayjs';
 import * as schema from './schema';
 
@@ -145,6 +145,25 @@ export function computeEffectiveToday(): string {
   return now.isBefore(todayAtStart)
     ? now.subtract(1, 'day').format('YYYY-MM-DD')
     : now.format('YYYY-MM-DD');
+}
+
+/** beforeDate(YYYY-MM-DD) 이전에 체크된 할 일을 isCompleted=1로 자동 완료 처리 */
+export function autoCompleteCheckedTodosBeforeDate(beforeDate: string): void {
+  const records = db.select().from(schema.todoCompletions)
+    .where(lt(schema.todoCompletions.completedDate, beforeDate))
+    .all();
+  if (records.length === 0) return;
+  const now = Date.now();
+  for (const c of records) {
+    db.update(schema.todos)
+      .set({ isCompleted: 1, completedAt: now, updatedAt: now })
+      .where(and(
+        eq(schema.todos.id, c.todoId),
+        eq(schema.todos.isCompleted, 0),
+        eq(schema.todos.isDeleted, 0),
+      ))
+      .run();
+  }
 }
 
 export function setDayStartMinutes(minutes: number): void {
