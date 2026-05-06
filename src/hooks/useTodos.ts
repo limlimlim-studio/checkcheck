@@ -82,6 +82,22 @@ export const useTodosCompleted = () =>
 
 const PAGE_SIZE = 30;
 
+/** 기록 화면: 전체 완료 항목, 최신순 무한 스크롤 */
+export const useAllTodosCompleted = () =>
+  useInfiniteQuery({
+    queryKey: ['todos', 'completed', 'all'],
+    queryFn: ({ pageParam }: { pageParam: number }) =>
+      db.select().from(todos)
+        .where(and(eq(todos.isCompleted, 1), eq(todos.isDeleted, 0)))
+        .orderBy(desc(todos.completedAt))
+        .limit(PAGE_SIZE)
+        .offset(pageParam * PAGE_SIZE)
+        .all(),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length < PAGE_SIZE ? undefined : allPages.length,
+  });
+
 /** 기록 화면: 카테고리별 완료 항목, 최신순 무한 스크롤 */
 export const useTodosCompletedByCategory = (categoryId: number) =>
   useInfiniteQuery({

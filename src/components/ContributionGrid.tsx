@@ -1,11 +1,13 @@
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Colors } from '../theme';
 import { useCompletionsByCategory } from '../hooks/useCompletions';
 
 type Props = {
-  categoryId: number;
-  color: string;
+  categoryId?: number;
+  color?: string;
   year: number;
+  cellColorMap?: Record<string, string>;
+  onPress?: () => void;
 };
 
 const CELL_GAP = 2;
@@ -19,8 +21,8 @@ const TODAY_STR = (() => {
   return `${d.getFullYear()}-${mm}-${dd}`;
 })();
 
-// 완료 수 → 색상 (0=빈셀, 1=40%, 2=60%, 3=80%, 4+=95%)
-const OPACITY_HEX = ['', '66', '99', 'CC', 'F2'];
+// 완료 수 → 색상 (0=빈셀, 1=30%, 2=55%, 3=75%, 4+=100%)
+const OPACITY_HEX = ['', '4D', '8C', 'BF', 'FF'];
 
 function getCellColor(count: number, baseColor: string): string {
   if (count === 0) return Colors.surface;
@@ -59,13 +61,13 @@ function groupByWeek(dates: { date: string; isFuture: boolean }[], year: number)
   return weeks;
 }
 
-export default function ContributionGrid({ categoryId, color, year }: Props) {
-  const { data: completionMap = {} } = useCompletionsByCategory(categoryId, year);
+export default function ContributionGrid({ categoryId, color = '', year, cellColorMap, onPress }: Props) {
+  const { data: completionMap = {} } = useCompletionsByCategory(categoryId ?? 0, year);
 
   const dates = buildGrid(year);
   const weeks = groupByWeek(dates, year);
 
-  return (
+  const grid = (
     <View style={styles.grid}>
       {weeks.map((week, wi) => (
         <View key={wi} style={[styles.column, { gap: CELL_GAP }]}>
@@ -73,9 +75,13 @@ export default function ContributionGrid({ categoryId, color, year }: Props) {
             const isToday = cell?.date === TODAY_STR;
             let cellColor = 'transparent';
             if (cell) {
-              cellColor = cell.isFuture
-                ? Colors.surface
-                : getCellColor(completionMap[cell.date] ?? 0, color);
+              if (cell.isFuture) {
+                cellColor = Colors.surface;
+              } else if (cellColorMap) {
+                cellColor = cellColorMap[cell.date] ?? Colors.surface;
+              } else {
+                cellColor = getCellColor(completionMap[cell.date] ?? 0, color);
+              }
             }
             return (
               <View
@@ -92,6 +98,11 @@ export default function ContributionGrid({ categoryId, color, year }: Props) {
       ))}
     </View>
   );
+
+  if (onPress) {
+    return <TouchableOpacity onPress={onPress} activeOpacity={0.7}>{grid}</TouchableOpacity>;
+  }
+  return grid;
 }
 
 const styles = StyleSheet.create({

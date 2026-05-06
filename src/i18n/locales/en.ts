@@ -188,6 +188,7 @@ const en: TranslationKeys = {
     menu_category: 'Categories',
     menu_routine: 'Routines',
     empty_completed: 'No completed tasks',
+    all_title: 'All',
   },
 };
 

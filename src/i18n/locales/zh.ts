@@ -188,6 +188,7 @@ const zh: TranslationKeys = {
     menu_category: '分类管理',
     menu_routine: '习惯管理',
     empty_completed: '没有已完成的任务',
+    all_title: '全部',
   },
 };
 

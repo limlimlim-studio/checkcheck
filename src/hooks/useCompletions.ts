@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { eq, and, gte, lte, sql, desc } from 'drizzle-orm';
 import { db } from '../db';
-import { todoCompletions, todos, routineCompletions, routines } from '../db/schema';
+import { todoCompletions, todos, routineCompletions, routines, categories } from '../db/schema';
 
 export type RoutineCompletionRecord = {
   completionId: number;
@@ -105,4 +105,102 @@ export const useRoutineCompletionsByCategory = (categoryId: number) =>
       .where(eq(routines.categoryId, categoryId))
       .orderBy(desc(routineCompletions.completedDate))
       .all(),
+  });
+
+export type AllRoutineCompletionRecord = RoutineCompletionRecord & {
+  categoryId: number;
+  categoryName: string;
+  categoryColor: string;
+};
+
+export const useAllRoutineCompletions = () =>
+  useQuery({
+    queryKey: ['completions', 'routine', 'all'],
+    queryFn: (): AllRoutineCompletionRecord[] =>
+      db.select({
+        completionId: routineCompletions.id,
+        routineId: routineCompletions.routineId,
+        title: routines.title,
+        urgency: routines.urgency,
+        importance: routines.importance,
+        completedDate: routineCompletions.completedDate,
+        categoryId: routines.categoryId,
+        categoryName: categories.name,
+        categoryColor: categories.color,
+      })
+      .from(routineCompletions)
+      .innerJoin(routines, eq(routineCompletions.routineId, routines.id))
+      .innerJoin(categories, eq(routines.categoryId, categories.id))
+      .orderBy(desc(routineCompletions.completedDate))
+      .all(),
+  });
+
+// 전체 잔디 전용: 0=빈셀, 1~7=10%~100% 균등 7단계
+const ALL_OPACITY_HEX = ['', '1A', '40', '66', '8C', 'B3', 'D9', 'FF'];
+
+// 전체 카테고리 날짜별 지배 카테고리 색상 맵 (전체 잔디용)
+// { 'YYYY-MM-DD': '#RRGGBBAA', ... }
+export const useAllCompletionsByYear = (year: number) =>
+  useQuery({
+    queryKey: ['completions', 'all', year],
+    queryFn: () => {
+      const startDate = `${year}-01-01`;
+      const endDate = `${year}-12-31`;
+
+      const todoRows = db
+        .select({
+          completedDate: todoCompletions.completedDate,
+          categoryId: todos.categoryId,
+          categoryColor: categories.color,
+          count: sql<number>`count(*)`,
+        })
+        .from(todoCompletions)
+        .innerJoin(todos, eq(todoCompletions.todoId, todos.id))
+        .innerJoin(categories, eq(todos.categoryId, categories.id))
+        .where(and(
+          gte(todoCompletions.completedDate, startDate),
+          lte(todoCompletions.completedDate, endDate),
+        ))
+        .groupBy(todoCompletions.completedDate, todos.categoryId)
+        .all();
+
+      const routineRows = db
+        .select({
+          completedDate: routineCompletions.completedDate,
+          categoryId: routines.categoryId,
+          categoryColor: categories.color,
+          count: sql<number>`count(*)`,
+        })
+        .from(routineCompletions)
+        .innerJoin(routines, eq(routineCompletions.routineId, routines.id))
+        .innerJoin(categories, eq(routines.categoryId, categories.id))
+        .where(and(
+          gte(routineCompletions.completedDate, startDate),
+          lte(routineCompletions.completedDate, endDate),
+        ))
+        .groupBy(routineCompletions.completedDate, routines.categoryId)
+        .all();
+
+      const dateMap: Record<string, Record<number, { color: string; count: number }>> = {};
+
+      for (const row of [...todoRows, ...routineRows]) {
+        if (!dateMap[row.completedDate]) dateMap[row.completedDate] = {};
+        const entry = dateMap[row.completedDate][row.categoryId];
+        if (entry) entry.count += row.count;
+        else dateMap[row.completedDate][row.categoryId] = { color: row.categoryColor, count: row.count };
+      }
+
+      const result: Record<string, string> = {};
+      for (const [date, cats] of Object.entries(dateMap)) {
+        let maxCount = 0;
+        let dominantColor = '';
+        let totalCount = 0;
+        for (const { color, count } of Object.values(cats)) {
+          totalCount += count;
+          if (count > maxCount) { maxCount = count; dominantColor = color; }
+        }
+        result[date] = dominantColor + ALL_OPACITY_HEX[Math.min(totalCount, 7)];
+      }
+      return result;
+    },
   });

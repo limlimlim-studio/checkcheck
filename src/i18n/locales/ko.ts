@@ -186,6 +186,7 @@ const ko = {
     menu_category: '카테고리 관리',
     menu_routine: '루틴 관리',
     empty_completed: '완료된 항목이 없어요',
+    all_title: '전체',
   },
 };
 

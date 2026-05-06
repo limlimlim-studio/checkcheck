@@ -1,28 +1,28 @@
 import { View, FlatList, ActivityIndicator, StyleSheet } from 'react-native';
 import { Appbar, Text, Divider } from 'react-native-paper';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMemo } from 'react';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
-import { useTodosCompletedByCategory } from '../hooks/useTodos';
-import { useRoutineCompletionsByCategory, RoutineCompletionRecord } from '../hooks/useCompletions';
+import { useAllTodosCompleted } from '../hooks/useTodos';
+import { useAllRoutineCompletions, AllRoutineCompletionRecord } from '../hooks/useCompletions';
+import { useCategories } from '../hooks/useCategories';
 import TodoItem from '../components/TodoItem';
 import TodoItemMeta from '../components/TodoItem/TodoItemMeta';
 import { toDateKey, formatDateLabel } from '../utils/date';
 import { RecordStackParamList } from '../navigation/RecordStack';
 import { Todo } from '../types';
 
-type Nav = NativeStackNavigationProp<RecordStackParamList, 'CategoryCompleted'>;
-type Route = RouteProp<RecordStackParamList, 'CategoryCompleted'>;
+type Nav = NativeStackNavigationProp<RecordStackParamList, 'AllCompleted'>;
 
 type ListItem =
   | { type: 'header'; label: string; key: string }
   | { type: 'todo'; key: string; todo: Todo }
-  | { type: 'routine'; key: string; record: RoutineCompletionRecord };
+  | { type: 'routine'; key: string; record: AllRoutineCompletionRecord };
 
-function buildMergedList(todos: Todo[], routineRecords: RoutineCompletionRecord[]): ListItem[] {
+function buildMergedList(todos: Todo[], routineRecords: AllRoutineCompletionRecord[]): ListItem[] {
   type Entry = { dateKey: string; sortTs: number; item: ListItem };
   const entries: Entry[] = [];
 
@@ -45,9 +45,7 @@ function buildMergedList(todos: Todo[], routineRecords: RoutineCompletionRecord[
     if (entry.dateKey !== lastKey) {
       const ts = entry.item.type === 'todo'
         ? (entry.item.todo.completedAt ?? 0)
-        : entry.item.type === 'routine'
-          ? dayjs(entry.item.record.completedDate).valueOf()
-          : 0;
+        : dayjs((entry.item as { record: AllRoutineCompletionRecord }).record.completedDate).valueOf();
       result.push({ type: 'header', label: formatDateLabel(ts), key: entry.dateKey });
       lastKey = entry.dateKey;
     }
@@ -56,8 +54,9 @@ function buildMergedList(todos: Todo[], routineRecords: RoutineCompletionRecord[
   return result;
 }
 
-function RoutineCompletionItem({ record, category }: { record: RoutineCompletionRecord; category?: { id: number; name: string; color: string } }) {
+function RoutineItem({ record }: { record: AllRoutineCompletionRecord }) {
   const { t } = useTranslation();
+  const category = { id: record.categoryId, name: record.categoryName, color: record.categoryColor };
   return (
     <View style={styles.routineRow}>
       <View style={styles.routineContent}>
@@ -73,15 +72,18 @@ function RoutineCompletionItem({ record, category }: { record: RoutineCompletion
   );
 }
 
-export default function CategoryCompletedScreen() {
+export default function AllCompletedScreen() {
   const navigation = useNavigation<Nav>();
-  const route = useRoute<Route>();
   const { t } = useTranslation();
-  const { categoryId, categoryName, categoryColor } = route.params;
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useTodosCompletedByCategory(categoryId);
-  const { data: routineRecords = [] } = useRoutineCompletionsByCategory(categoryId);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useAllTodosCompleted();
+  const { data: routineRecords = [] } = useAllRoutineCompletions();
+  const { data: categoriesList = [] } = useCategories();
+
+  const categoryMap = useMemo(
+    () => Object.fromEntries(categoriesList.map((c) => [c.id, c])),
+    [categoriesList],
+  );
 
   const flatTodos = useMemo(
     () => (data?.pages.flat() ?? []) as Todo[],
@@ -93,8 +95,6 @@ export default function CategoryCompletedScreen() {
     [flatTodos, routineRecords],
   );
 
-  const category = { id: categoryId, name: categoryName, color: categoryColor };
-
   const renderItem = ({ item }: { item: ListItem }) => {
     if (item.type === 'header') {
       return <Text style={styles.dateHeader}>{item.label}</Text>;
@@ -102,11 +102,12 @@ export default function CategoryCompletedScreen() {
     if (item.type === 'routine') {
       return (
         <>
-          <RoutineCompletionItem record={item.record} category={category} />
+          <RoutineItem record={item.record} />
           <Divider />
         </>
       );
     }
+    const category = categoryMap[item.todo.categoryId];
     return (
       <>
         <TodoItem
@@ -126,14 +127,7 @@ export default function CategoryCompletedScreen() {
     <View style={styles.container}>
       <Appbar.Header style={styles.header}>
         <Appbar.BackAction onPress={() => navigation.goBack()} />
-        <Appbar.Content
-          title={
-            <View style={styles.titleRow}>
-              <View style={[styles.dot, { backgroundColor: categoryColor }]} />
-              <Text style={styles.titleText}>{categoryName}</Text>
-            </View>
-          }
-        />
+        <Appbar.Content title={t('record.all_title')} titleStyle={styles.titleText} />
       </Appbar.Header>
 
       <FlatList
@@ -143,9 +137,9 @@ export default function CategoryCompletedScreen() {
         onEndReached={() => { if (hasNextPage && !isFetchingNextPage) fetchNextPage(); }}
         onEndReachedThreshold={0.5}
         ListFooterComponent={
-          isFetchingNextPage ? (
-            <ActivityIndicator style={styles.footer} color={Colors.primary} />
-          ) : null
+          isFetchingNextPage
+            ? <ActivityIndicator style={styles.footer} color={Colors.primary} />
+            : null
         }
         ListEmptyComponent={
           <Text style={styles.empty}>{t('record.empty_completed')}</Text>
@@ -159,8 +153,6 @@ export default function CategoryCompletedScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   header: { height: 72 },
-  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  dot: { width: 10, height: 10, borderRadius: 5 },
   titleText: { fontWeight: '700', fontSize: 18, color: Colors.text },
   list: { flex: 1 },
   empty: { textAlign: 'center', marginTop: 60, color: Colors.textMuted },
