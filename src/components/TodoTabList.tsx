@@ -150,7 +150,7 @@ export default function TodoTabList() {
       <FAB.Group
         open={fabOpen}
         visible={isFocused}
-        icon={fabOpen ? 'close' : 'plus'}
+        icon={fabOpen ? 'close' : 'dots-vertical'}
         fabStyle={styles.fab}
         actions={[
           ...(completedIds.size > 0 ? [{ icon: 'broom', label: t('todo.menu_clear'), onPress: () => { cleanup(); setFabOpen(false); }, size: 'small' as const }] : []),

@@ -69,7 +69,7 @@ export default function TodoTabRoutine() {
       <FAB.Group
         open={fabOpen}
         visible={isFocused}
-        icon={fabOpen ? 'close' : 'plus'}
+        icon={fabOpen ? 'close' : 'dots-vertical'}
         fabStyle={styles.fab}
         actions={[
           ...(hasCompleted && !cleanedUp ? [{ icon: 'broom', label: t('todo.menu_clear'), onPress: () => { setCleanedUp(true); setFabOpen(false); }, size: 'small' as const }] : []),
