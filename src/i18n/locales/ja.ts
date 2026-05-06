@@ -188,6 +188,7 @@ const ja: TranslationKeys = {
     menu_category: 'カテゴリ管理',
     menu_routine: 'ルーティン管理',
     empty_completed: '完了したタスクがありません',
+    all_title: 'すべて',
   },
 };
 

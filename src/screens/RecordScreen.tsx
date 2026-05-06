@@ -6,7 +6,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
 import { useCategories } from '../hooks/useCategories';
-import { useEarliestCompletionYear } from '../hooks/useCompletions';
+import { useEarliestCompletionYear, useAllCompletionsByYear } from '../hooks/useCompletions';
 import ContributionGrid from '../components/ContributionGrid';
 import BannerAdView from '../components/BannerAdView';
 import { RecordStackParamList } from '../navigation/RecordStack';
@@ -22,6 +22,7 @@ export default function RecordScreen() {
   const [menuVisible, setMenuVisible] = useState(false);
   const { data: categories = [] } = useCategories();
   const { data: earliestYear = CURRENT_YEAR } = useEarliestCompletionYear();
+  const { data: allCellColorMap = {} } = useAllCompletionsByYear(year);
 
   return (
     <View style={styles.container}>
@@ -64,6 +65,28 @@ export default function RecordScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
+        {/* 전체 섹션 */}
+        <View style={styles.section}>
+          <TouchableRipple
+            onPress={() => navigation.navigate('AllCompleted')}
+            rippleColor={Colors.surfaceVariant}
+          >
+            <View style={styles.sectionHeader}>
+              <View style={[styles.dot, { backgroundColor: Colors.textMuted }]} />
+              <Text variant="titleSmall" style={styles.categoryName}>
+                {t('record.all_title')}
+              </Text>
+              <IconButton
+                icon="chevron-right"
+                size={16}
+                iconColor={Colors.textMuted}
+                style={styles.chevron}
+              />
+            </View>
+          </TouchableRipple>
+          <ContributionGrid year={year} cellColorMap={allCellColorMap} onPress={() => navigation.navigate('AllCompleted')} />
+        </View>
+
         {categories.map((category) => (
           <View key={category.id} style={styles.section}>
             <TouchableRipple
