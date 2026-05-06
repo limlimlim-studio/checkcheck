@@ -19,8 +19,8 @@ const TODAY_STR = (() => {
   return `${d.getFullYear()}-${mm}-${dd}`;
 })();
 
-// 완료 수 → 색상 (0=빈셀, 1=20%, 2=40%, 3=65%, 4+=85%)
-const OPACITY_HEX = ['', '33', '66', 'A6', 'D9'];
+// 완료 수 → 색상 (0=빈셀, 1=40%, 2=60%, 3=80%, 4+=95%)
+const OPACITY_HEX = ['', '66', '99', 'CC', 'F2'];
 
 function getCellColor(count: number, baseColor: string): string {
   if (count === 0) return Colors.surface;
