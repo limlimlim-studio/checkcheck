@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { Appbar, Text, TextInput, Button, IconButton, SegmentedButtons, Divider, Dialog, Portal, Checkbox } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
@@ -43,6 +43,8 @@ export default function TodoFormScreen() {
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState<Date>(getTodayMidnight);
   const [dueTime, setDueTime] = useState<Date | null>(null);
+  const [tempDate, setTempDate] = useState<Date>(getTodayMidnight);
+  const [tempTime, setTempTime] = useState<Date>(new Date(new Date().setHours(9, 0, 0, 0)));
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [notificationOffsets, setNotificationOffsets] = useState<number[]>([]);
@@ -140,7 +142,7 @@ export default function TodoFormScreen() {
         <Text variant="labelLarge" style={styles.label}>{t('todo.field_due_date')}</Text>
         <TouchableOpacity
           style={styles.dateButton}
-          onPress={() => setShowDatePicker(true)}
+          onPress={() => { setTempDate(dueDate); setShowDatePicker(true); }}
         >
           <Text style={styles.dateText}>
             {dayjs(dueDate).format(t('date.format_year_month_day'))}
@@ -149,23 +151,30 @@ export default function TodoFormScreen() {
 
         {showDatePicker && (
           <DateTimePicker
-            value={dueDate}
+            value={tempDate}
             mode="date"
             display="spinner"
             locale={pickerLocale}
             textColor="#F2F2F7"
             minimumDate={getTodayMidnight()}
-            onChange={(_, date) => {
-              if (date) {
-                const midnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-                setDueDate(midnight);
+            onChange={(event, date) => {
+              if (Platform.OS === 'android') {
+                setShowDatePicker(false);
+                if (event.type === 'set' && date) {
+                  setDueDate(new Date(date.getFullYear(), date.getMonth(), date.getDate()));
+                }
+              } else if (date) {
+                setTempDate(new Date(date.getFullYear(), date.getMonth(), date.getDate()));
               }
             }}
           />
         )}
-        {showDatePicker && (
+        {showDatePicker && Platform.OS === 'ios' && (
           <View style={styles.dateConfirmRow}>
-            <Button mode="contained" onPress={() => setShowDatePicker(false)}>
+            <Button mode="text" onPress={() => setShowDatePicker(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button mode="contained" onPress={() => { setDueDate(tempDate); setShowDatePicker(false); }}>
               {t('common.confirm')}
             </Button>
           </View>
@@ -175,14 +184,7 @@ export default function TodoFormScreen() {
         <View style={styles.timeRow}>
           <TouchableOpacity
             style={[styles.dateButton, styles.timeButton]}
-            onPress={() => {
-              if (!dueTime) {
-                const d = new Date();
-                d.setHours(9, 0, 0, 0);
-                setDueTime(d);
-              }
-              setShowTimePicker(true);
-            }}
+            onPress={() => { setTempTime(dueTime ?? new Date(new Date().setHours(9, 0, 0, 0))); setShowTimePicker(true); }}
           >
             <Text style={dueTime ? styles.dateText : styles.datePlaceholder}>
               {dueTime ? dayjs(dueTime).format('HH:mm') : t('todo.time_not_set')}
@@ -195,19 +197,27 @@ export default function TodoFormScreen() {
 
         {showTimePicker && (
           <DateTimePicker
-            value={dueTime ?? new Date(new Date().setHours(9, 0, 0, 0))}
+            value={tempTime}
             mode="time"
             display="spinner"
             locale={pickerLocale}
             textColor="#F2F2F7"
-            onChange={(_, date) => {
-              if (date) setDueTime(date);
+            onChange={(event, date) => {
+              if (Platform.OS === 'android') {
+                setShowTimePicker(false);
+                if (event.type === 'set' && date) setDueTime(date);
+              } else if (date) {
+                setTempTime(date);
+              }
             }}
           />
         )}
-        {showTimePicker && (
+        {showTimePicker && Platform.OS === 'ios' && (
           <View style={styles.dateConfirmRow}>
-            <Button mode="contained" onPress={() => setShowTimePicker(false)}>
+            <Button mode="text" onPress={() => setShowTimePicker(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button mode="contained" onPress={() => { setDueTime(tempTime); setShowTimePicker(false); }}>
               {t('common.confirm')}
             </Button>
           </View>

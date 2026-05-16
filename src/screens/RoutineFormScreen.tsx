@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { Appbar, Text, TextInput, Button, IconButton, Dialog, Portal, SegmentedButtons, Divider, Checkbox } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
@@ -40,6 +40,7 @@ export default function RoutineFormScreen() {
   const [selectedDays, setSelectedDays] = useState<Set<string>>(new Set());
   const [selectedMonthDays, setSelectedMonthDays] = useState<Set<string>>(new Set());
   const [alarmTime, setAlarmTime] = useState<Date | null>(null);
+  const [tempTime, setTempTime] = useState<Date>(new Date(new Date().setHours(9, 0, 0, 0)));
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [notificationOffsets, setNotificationOffsets] = useState<number[]>([]);
   const [showNotifDialog, setShowNotifDialog] = useState(false);
@@ -209,14 +210,7 @@ export default function RoutineFormScreen() {
         <View style={styles.timeRow}>
           <TouchableOpacity
             style={[styles.dateButton, styles.timeButton]}
-            onPress={() => {
-              if (!alarmTime) {
-                const d = new Date();
-                d.setHours(9, 0, 0, 0);
-                setAlarmTime(d);
-              }
-              setShowTimePicker(true);
-            }}
+            onPress={() => { setTempTime(alarmTime ?? new Date(new Date().setHours(9, 0, 0, 0))); setShowTimePicker(true); }}
           >
             <Text style={alarmTime ? styles.dateText : styles.datePlaceholder}>
               {alarmTime ? dayjs(alarmTime).format('HH:mm') : t('routine.time_not_set')}
@@ -229,19 +223,27 @@ export default function RoutineFormScreen() {
 
         {showTimePicker && (
           <DateTimePicker
-            value={alarmTime ?? new Date(new Date().setHours(9, 0, 0, 0))}
+            value={tempTime}
             mode="time"
             display="spinner"
             locale={pickerLocale}
             textColor="#F2F2F7"
-            onChange={(_, date) => {
-              if (date) setAlarmTime(date);
+            onChange={(event, date) => {
+              if (Platform.OS === 'android') {
+                setShowTimePicker(false);
+                if (event.type === 'set' && date) setAlarmTime(date);
+              } else if (date) {
+                setTempTime(date);
+              }
             }}
           />
         )}
-        {showTimePicker && (
+        {showTimePicker && Platform.OS === 'ios' && (
           <View style={styles.confirmRow}>
-            <Button mode="contained" onPress={() => setShowTimePicker(false)}>
+            <Button mode="text" onPress={() => setShowTimePicker(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button mode="contained" onPress={() => { setAlarmTime(tempTime); setShowTimePicker(false); }}>
               {t('common.confirm')}
             </Button>
           </View>
