@@ -13,19 +13,11 @@ fi
 # 빌드 시작 시간
 START=$(date +%s)
 
-eas build --platform android --profile production --local --non-interactive
+eas build --platform android --profile production --non-interactive
 
-# 빌드 결과물 확인
-BUILD_FILE=$(ls *.apk *.aab 2>/dev/null | head -1)
 END=$(date +%s)
 ELAPSED=$((END - START))
 
-if [ -n "$BUILD_FILE" ]; then
-  echo ""
-  echo "✅ Android 빌드 완료 (${ELAPSED}초)"
-  echo "📦 결과물: $BUILD_FILE"
-else
-  echo ""
-  echo "❌ 빌드 결과물을 찾을 수 없습니다."
-  exit 1
-fi
+echo ""
+echo "✅ Android 클라우드 빌드 요청 완료 (${ELAPSED}초)"
+echo "🔗 빌드 완료 후 npm run upload:android 로 업로드하세요."
