@@ -80,7 +80,7 @@ export default function TodoTabOverdue() {
     const count = selectedIds.size;
     bulkMoveToToday([...selectedIds]);
     clearSelection();
-    setSnackbarMessage(t('todo.move_to_today_msg', { count }));
+    setSnackbarMessage(t('todo.move_to_today_msg'));
     setSnackbarVisible(true);
   };
 
@@ -151,7 +151,7 @@ export default function TodoTabOverdue() {
         actions={[
           {
             icon: 'calendar-arrow-right',
-            label: t('todo.move_to_today_msg', { count: selectedIds.size }),
+            label: t('todo.move_to_today_label'),
             onPress: () => { handleMoveToToday(); setFabOpen(false); },
             size: 'small' as const,
           },
