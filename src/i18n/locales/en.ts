@@ -57,6 +57,8 @@ const en: TranslationKeys = {
     search_section_routine: 'Routines',
     search_uncategorized: 'Uncategorized',
     status_in_progress: 'In Progress',
+    mark_complete_label: 'Mark as Complete',
+    mark_complete_msg: 'Marked as complete',
     in_progress_label: 'Mark as In Progress',
     in_progress_msg: 'Moved to Tasks tab',
     in_progress_clear: 'Clear In Progress',

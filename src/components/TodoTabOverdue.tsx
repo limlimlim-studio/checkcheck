@@ -5,7 +5,7 @@ import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
-import { useTodosOverdue, useBulkMoveToToday, useBulkDeleteTodos, useSetInProgress } from '../hooks/useTodos';
+import { useTodosOverdue, useBulkMoveToToday, useBulkDeleteTodos, useSetInProgress, useBulkComplete } from '../hooks/useTodos';
 import { useCategories } from '../hooks/useCategories';
 import { useCategoryMap } from '../hooks/useCategoryMap';
 import { useSelectable } from '../hooks/useSelectable';
@@ -56,6 +56,7 @@ export default function TodoTabOverdue() {
   const { mutate: bulkMoveToToday } = useBulkMoveToToday();
   const { mutate: bulkDelete } = useBulkDeleteTodos();
   const { mutate: setInProgress } = useSetInProgress();
+  const { mutate: bulkComplete } = useBulkComplete();
 
   const isFocused = useIsFocused();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -75,6 +76,14 @@ export default function TodoTabOverdue() {
     { key: 'urgency' as SortKey, label: t('todo.sort_urgency') },
     { key: 'importance' as SortKey, label: t('todo.sort_importance') },
   ];
+
+  const handleMarkComplete = () => {
+    if (selectedIds.size === 0) return;
+    bulkComplete([...selectedIds]);
+    clearSelection();
+    setSnackbarMessage(t('todo.mark_complete_msg'));
+    setSnackbarVisible(true);
+  };
 
   const handleMoveToToday = () => {
     if (selectedIds.size === 0) return;
@@ -157,6 +166,12 @@ export default function TodoTabOverdue() {
         icon={fabOpen ? 'close' : 'dots-vertical'}
         fabStyle={styles.fab}
         actions={[
+          {
+            icon: 'check-circle-outline',
+            label: t('todo.mark_complete_label'),
+            onPress: () => { handleMarkComplete(); setFabOpen(false); },
+            size: 'small' as const,
+          },
           {
             icon: 'calendar-arrow-right',
             label: t('todo.move_to_today_label'),
