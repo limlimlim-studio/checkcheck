@@ -12,6 +12,7 @@ import { useCategoryMap } from '../hooks/useCategoryMap';
 import { useCategories } from '../hooks/useCategories';
 import { GoalStackParamList } from '../navigation/GoalStack';
 import { Goal, Category } from '../types';
+import PageHelpModal from '../components/PageHelpModal';
 
 type Nav = NativeStackNavigationProp<GoalStackParamList, 'GoalList'>;
 
@@ -135,6 +136,7 @@ export default function GoalScreen() {
   const { t } = useTranslation();
   const layout = useWindowDimensions();
   const [tabIndex, setTabIndex] = useState(0);
+  const [helpVisible, setHelpVisible] = useState(false);
 
   const ROUTES = [
     { key: 'active', title: t('goal.tab_active') },
@@ -156,9 +158,22 @@ export default function GoalScreen() {
   return (
     <View style={styles.container}>
       <Appbar.Header style={styles.appbarHeader}>
-        <Appbar.Content title="CheckCheck" titleStyle={{ fontWeight: '700' }} />
+        <Appbar.Content
+          title="CheckCheck"
+          titleStyle={{ fontWeight: '700' }}
+          subtitle={t('help.goal_subtitle')}
+          subtitleStyle={styles.subtitle}
+        />
+        <Appbar.Action icon="help-circle-outline" onPress={() => setHelpVisible(true)} />
         <Appbar.Action icon="cog-outline" onPress={() => navigation.navigate('SettingsRoot' as never)} />
       </Appbar.Header>
+
+      <PageHelpModal
+        visible={helpVisible}
+        onDismiss={() => setHelpVisible(false)}
+        title={t('help.goal_title')}
+        body={t('help.goal_body')}
+      />
 
       <TabView
         navigationState={{ index: tabIndex, routes: ROUTES }}
@@ -190,7 +205,8 @@ export default function GoalScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
-  appbarHeader: { height: 72 },
+  appbarHeader: { height: 88 },
+  subtitle: { fontSize: 11, color: Colors.textMuted },
   tabBar: { backgroundColor: Colors.surface },
   indicator: { backgroundColor: Colors.primary },
   tabContainer: { flex: 1 },
