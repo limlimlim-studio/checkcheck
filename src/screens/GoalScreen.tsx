@@ -13,6 +13,7 @@ import { useCategories } from '../hooks/useCategories';
 import { GoalStackParamList } from '../navigation/GoalStack';
 import { Goal, Category } from '../types';
 import PageHelpModal from '../components/PageHelpModal';
+import BannerAdView from '../components/BannerAdView';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 type Nav = NativeStackNavigationProp<GoalStackParamList, 'GoalList'>;
@@ -200,6 +201,7 @@ export default function GoalScreen() {
           onPress={() => navigation.navigate('GoalForm', undefined)}
         />
       )}
+      <BannerAdView />
     </View>
   );
 }
@@ -216,7 +218,7 @@ const styles = StyleSheet.create({
   tabBar: { backgroundColor: Colors.surface },
   indicator: { backgroundColor: Colors.primary },
   tabContainer: { flex: 1 },
-  listContent: { paddingTop: 12, paddingBottom: 100 },
+  listContent: { paddingTop: 12, paddingBottom: 150 },
   goalItem: {
     backgroundColor: Colors.surface,
     marginHorizontal: 16,
@@ -259,7 +261,7 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     right: 16,
-    bottom: 16,
+    bottom: 106,
     transform: [{ scale: 0.85 }],
   },
 });
