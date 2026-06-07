@@ -5,10 +5,9 @@ import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
-import { useTodosList, useTodayAllTodos, useTodayCompletionIds, useTodayToggle, useCleanupChecked } from '../hooks/useTodos';
+import { useTodosList, useTodayAllTodos, useTodayCompletionIds, useThreeStateToggle, useCleanupChecked } from '../hooks/useTodos';
 import { useCategories } from '../hooks/useCategories';
 import { useCategoryMap } from '../hooks/useCategoryMap';
-import { useCheckable } from '../hooks/useCheckable';
 import TodoItem from './TodoItem';
 import DateSeparator from './DateSeparator';
 import TodayProgressBar from './TodayProgressBar';
@@ -56,7 +55,7 @@ export default function TodoTabList() {
   const { data: allTodayTodos = [] } = useTodayAllTodos();
   const { data: completedIds = new Set<number>() } = useTodayCompletionIds();
   const { data: categories = [] } = useCategories();
-  const { mutate: todayToggle } = useTodayToggle();
+  const { mutate: threeStateToggle } = useThreeStateToggle();
   const { mutate: cleanup } = useCleanupChecked();
   const isFocused = useIsFocused();
 
@@ -65,7 +64,6 @@ export default function TodoTabList() {
   const [fabOpen, setFabOpen] = useState(false);
 
   const categoryMap = useCategoryMap(categories);
-  const getCheckable = useCheckable({ mode: 'today', completedIds, toggleFn: todayToggle });
 
   const listItems = useMemo(() => buildGroupedList(todos as Todo[], sortKey), [todos, sortKey]);
 
@@ -94,13 +92,15 @@ export default function TodoTabList() {
     if (item.type === 'header') {
       return <DateSeparator label={item.label} />;
     }
-    const { checked, onCheck } = getCheckable(item.todo);
+    const isInProgress = item.todo.isInProgress === 1;
+    const isCheckedToday = completedIds.has(item.todo.id);
     return (
       <TodoItem
         todo={item.todo}
         category={categoryMap.get(item.todo.categoryId)}
-        checked={checked}
-        onCheck={onCheck}
+        checked={isCheckedToday}
+        isInProgress={isInProgress && !isCheckedToday}
+        onCheck={() => threeStateToggle({ id: item.todo.id, isInProgress: item.todo.isInProgress, isCheckedToday })}
         onPress={() => navigation.navigate('TodoForm', { todo: item.todo })}
         showDescription
       />

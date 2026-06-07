@@ -14,6 +14,7 @@ export interface Todo {
   dueTime: number | null; // minutes from midnight (0-1439), null = no time set
   urgency: number | null;
   importance: number | null;
+  isInProgress: number; // 0 | 1 (SQLite boolean)
   isCompleted: number; // 0 | 1 (SQLite boolean)
   completedAt: number | null;
   sortOrder: number;

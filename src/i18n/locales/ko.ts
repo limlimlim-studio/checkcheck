@@ -54,6 +54,10 @@ const ko = {
     search_section_todo: '할 일',
     search_section_routine: '루틴',
     search_uncategorized: '미분류',
+    status_in_progress: '진행 중',
+    in_progress_label: '진행 중으로 표시',
+    in_progress_msg: '할 일 탭으로 이동했어요',
+    in_progress_clear: '진행 중 해제',
   },
   notif: {
     on_time: '정시',

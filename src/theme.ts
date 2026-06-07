@@ -51,4 +51,5 @@ export const Colors = {
   primary: '#A78BFA',
   urgency: '#FF6B6B',
   importance: '#4ECDC4',
+  inProgress: '#FBBF24',
 };

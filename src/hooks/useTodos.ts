@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { and, asc, desc, eq, gte, isNull, lt, or } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, isNull, lt, or } from 'drizzle-orm';
 import dayjs from 'dayjs';
 import { db } from '../db';
 import { todos, todoCompletions } from '../db/schema';
@@ -35,7 +35,7 @@ export const useTodosToday = () => {
   });
 };
 
-/** 할 일 탭: 기한 >= 오늘 AND 미완료 (기한 없는 항목도 포함) */
+/** 할 일 탭: 기한 >= 오늘 AND 미완료 (기한 없는 항목 + 진행 중 항목도 포함) */
 export const useTodosList = () => {
   const todayStart = dayjs().startOf('day').valueOf();
   return useQuery({
@@ -45,14 +45,14 @@ export const useTodosList = () => {
         .where(and(
           eq(todos.isCompleted, 0),
           eq(todos.isDeleted, 0),
-          or(isNull(todos.dueDate), gte(todos.dueDate, todayStart)),
+          or(isNull(todos.dueDate), gte(todos.dueDate, todayStart), eq(todos.isInProgress, 1)),
         ))
         .orderBy(asc(todos.sortOrder))
         .all(),
   });
 };
 
-/** 미완료 탭: 기한 < 오늘 AND 미완료 */
+/** 미완료 탭: 기한 < 오늘 AND 미완료 AND 진행 중 아님 */
 export const useTodosOverdue = () => {
   const todayStart = dayjs().startOf('day').valueOf();
   return useQuery({
@@ -61,6 +61,7 @@ export const useTodosOverdue = () => {
       db.select().from(todos)
         .where(and(
           eq(todos.isCompleted, 0),
+          eq(todos.isInProgress, 0),
           eq(todos.isDeleted, 0),
           lt(todos.dueDate, todayStart),
         ))
@@ -261,6 +262,7 @@ export const useUpdateTodo = () => {
       notificationOffsets,
       urgency,
       importance,
+      isInProgress,
     }: {
       id: number;
       categoryId: number;
@@ -271,6 +273,7 @@ export const useUpdateTodo = () => {
       notificationOffsets?: number[];
       urgency?: number;
       importance?: number;
+      isInProgress?: number;
     }) => {
       const offsets = notificationOffsets ?? [];
       await db.update(todos).set({
@@ -282,6 +285,7 @@ export const useUpdateTodo = () => {
         notificationOffsets: offsets.length > 0 ? offsetsToString(offsets) : null,
         urgency: urgency ?? 0,
         importance: importance ?? 0,
+        ...(isInProgress !== undefined ? { isInProgress } : {}),
         updatedAt: Date.now(),
       }).where(eq(todos.id, id)).run();
       await cancelTodoNotifications(id);
@@ -293,25 +297,24 @@ export const useUpdateTodo = () => {
   });
 };
 
+/** 3단계 상태 토글: 미완료 → 진행 중 → 완료 → 미완료 */
 export const useToggleTodo = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, isCompleted }: { id: number; isCompleted: number }) => {
-      const newCompleted = isCompleted === 1 ? 0 : 1;
+    mutationFn: async ({ id, isCompleted, isInProgress }: { id: number; isCompleted: number; isInProgress: number }) => {
       const now = Date.now();
-      await db.update(todos).set({
-        isCompleted: newCompleted,
-        completedAt: newCompleted === 1 ? now : null,
-        updatedAt: now,
-      }).where(eq(todos.id, id)).run();
-      if (newCompleted === 1) {
+      const today = useDayStartStore.getState().effectiveToday;
+      if (isCompleted === 0 && isInProgress === 0) {
+        // 미완료 → 진행 중
+        await db.update(todos).set({ isInProgress: 1, updatedAt: now }).where(eq(todos.id, id)).run();
+      } else if (isInProgress === 1) {
+        // 진행 중 → 완료
+        await db.update(todos).set({ isInProgress: 0, isCompleted: 1, completedAt: now, updatedAt: now }).where(eq(todos.id, id)).run();
         cancelTodoNotifications(id).catch(() => {});
-      }
-
-      const today = new Date().toISOString().split('T')[0];
-      if (newCompleted === 1) {
         await db.insert(todoCompletions).values({ todoId: id, completedDate: today }).run();
       } else {
+        // 완료 → 미완료 (완료 취소)
+        await db.update(todos).set({ isCompleted: 0, completedAt: null, updatedAt: now }).where(eq(todos.id, id)).run();
         await db.delete(todoCompletions)
           .where(and(eq(todoCompletions.todoId, id), eq(todoCompletions.completedDate, today)))
           .run();
@@ -362,6 +365,60 @@ export const useReorderTodos = () => {
       for (let i = 0; i < orderedIds.length; i++) {
         await db.update(todos).set({ sortOrder: i }).where(eq(todos.id, orderedIds[i])).run();
       }
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos'] }),
+  });
+};
+
+/** 할 일 탭 3단계 토글: 미완료 → 진행 중 → 오늘 체크 → 미완료 (항목은 목록에 유지) */
+export const useThreeStateToggle = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, isInProgress, isCheckedToday }: { id: number; isInProgress: number; isCheckedToday: boolean }) => {
+      const now = Date.now();
+      const today = useDayStartStore.getState().effectiveToday;
+      if (isInProgress === 0 && !isCheckedToday) {
+        // 미완료 → 진행 중
+        await db.update(todos).set({ isInProgress: 1, updatedAt: now }).where(eq(todos.id, id)).run();
+      } else if (isInProgress === 1) {
+        // 진행 중 → 오늘 체크 (todoCompletions 기록, isInProgress 해제)
+        await db.update(todos).set({ isInProgress: 0, updatedAt: now }).where(eq(todos.id, id)).run();
+        const existing = db.select().from(todoCompletions)
+          .where(and(eq(todoCompletions.todoId, id), eq(todoCompletions.completedDate, today))).get();
+        if (!existing) {
+          await db.insert(todoCompletions).values({ todoId: id, completedDate: today }).run();
+        }
+      } else {
+        // 오늘 체크 → 미완료 (todoCompletions 제거)
+        await db.delete(todoCompletions)
+          .where(and(eq(todoCompletions.todoId, id), eq(todoCompletions.completedDate, today)))
+          .run();
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
+      queryClient.invalidateQueries({ queryKey: ['todayCompletionIds'] });
+      queryClient.invalidateQueries({ queryKey: ['completions'], exact: false });
+    },
+  });
+};
+
+export const useSetInProgress = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (ids: number[]) => {
+      await db.update(todos).set({ isInProgress: 1, updatedAt: Date.now() })
+        .where(inArray(todos.id, ids)).run();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos'] }),
+  });
+};
+
+export const useClearInProgress = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      await db.update(todos).set({ isInProgress: 0, updatedAt: Date.now() }).where(eq(todos.id, id)).run();
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos'] }),
   });

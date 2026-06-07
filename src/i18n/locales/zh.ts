@@ -56,6 +56,10 @@ const zh: TranslationKeys = {
     search_section_todo: '任务',
     search_section_routine: '习惯',
     search_uncategorized: '未分类',
+    status_in_progress: '进行中',
+    in_progress_label: '标为进行中',
+    in_progress_msg: '已移至任务标签',
+    in_progress_clear: '取消进行中',
   },
   notif: {
     on_time: '准时',

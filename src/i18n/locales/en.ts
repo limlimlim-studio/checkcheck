@@ -56,6 +56,10 @@ const en: TranslationKeys = {
     search_section_todo: 'Tasks',
     search_section_routine: 'Routines',
     search_uncategorized: 'Uncategorized',
+    status_in_progress: 'In Progress',
+    in_progress_label: 'Mark as In Progress',
+    in_progress_msg: 'Moved to Tasks tab',
+    in_progress_clear: 'Clear In Progress',
   },
   notif: {
     on_time: 'On time',
