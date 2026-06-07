@@ -3,6 +3,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import TodoStack from './TodoStack';
 import RecordStack from './RecordStack';
+import GoalStack from './GoalStack';
 import SettingsStack from './SettingsStack';
 
 const Tab = createBottomTabNavigator();
@@ -36,6 +37,16 @@ export default function TabNavigator() {
           tabBarLabel: t('nav.record'),
           tabBarIcon: ({ color, size }: IconProps) => (
             <MaterialCommunityIcons name="calendar-month-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="목표"
+        component={GoalStack}
+        options={{
+          tabBarLabel: t('nav.goal'),
+          tabBarIcon: ({ color, size }: IconProps) => (
+            <MaterialCommunityIcons name="flag-outline" size={size} color={color} />
           ),
         }}
       />

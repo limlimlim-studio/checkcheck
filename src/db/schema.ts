@@ -70,3 +70,34 @@ export const routineCompletions = sqliteTable('routine_completions', {
     .references(() => routines.id, { onDelete: 'cascade' }),
   completedDate: text('completed_date').notNull(), // 'YYYY-MM-DD'
 });
+
+export const goals = sqliteTable('goals', {
+  id: int('id').primaryKey({ autoIncrement: true }),
+  categoryId: int('category_id')
+    .notNull()
+    .references(() => categories.id),
+  title: text('title').notNull(),
+  description: text('description'),
+  dueDate: int('due_date'), // timestamp ms (midnight)
+  sortOrder: int('sort_order').notNull().default(0),
+  isCompleted: int('is_completed').notNull().default(0),
+  completedAt: int('completed_at'),
+  createdAt: int('created_at').notNull(),
+  updatedAt: int('updated_at').notNull(),
+});
+
+export const goalTodos = sqliteTable('goal_todos', {
+  id: int('id').primaryKey({ autoIncrement: true }),
+  goalId: int('goal_id')
+    .notNull()
+    .references(() => goals.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  description: text('description'),
+  urgency: int('urgency').default(0),
+  importance: int('importance').default(0),
+  isCompleted: int('is_completed').notNull().default(0),
+  completedAt: int('completed_at'),
+  sortOrder: int('sort_order').notNull().default(0),
+  createdAt: int('created_at').notNull(),
+  updatedAt: int('updated_at').notNull(),
+});
