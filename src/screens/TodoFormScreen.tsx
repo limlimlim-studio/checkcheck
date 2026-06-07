@@ -7,7 +7,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCategories } from '../hooks/useCategories';
-import { useCreateTodo, useUpdateTodo, useDeleteTodo } from '../hooks/useTodos';
+import { useCreateTodo, useUpdateTodo, useDeleteTodo, useClearInProgress } from '../hooks/useTodos';
 import { TodoStackParamList } from '../navigation/TodoStack';
 import { getLevelOptions } from '../constants/todo';
 import { getOffsetOptions, offsetsFromString, offsetLabel } from '../utils/notifications';
@@ -38,6 +38,7 @@ export default function TodoFormScreen() {
   const { mutate: createTodo } = useCreateTodo();
   const { mutate: updateTodo } = useUpdateTodo();
   const { mutate: deleteTodo } = useDeleteTodo();
+  const { mutate: clearInProgress } = useClearInProgress();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -290,6 +291,19 @@ export default function TodoFormScreen() {
           style={styles.segment}
         />
 
+        {isEdit && todo?.isInProgress === 1 && (
+          <Button
+            mode="outlined"
+            icon="stop-circle-outline"
+            onPress={() => { clearInProgress(todo.id); navigation.goBack(); }}
+            style={styles.inProgressButton}
+            labelStyle={styles.actionButtonLabel}
+            textColor={Colors.inProgress}
+          >
+            {t('todo.in_progress_clear')}
+          </Button>
+        )}
+
         {isEdit && (
           <Button
             mode="outlined"
@@ -361,6 +375,7 @@ const styles = StyleSheet.create({
   input: { marginBottom: 16 },
   descriptionInput: { minHeight: 120 },
   label: { marginBottom: 8, marginTop: 4 },
+  inProgressButton: { marginTop: 8 },
   deleteButton: { marginTop: 8 },
   saveButton: { marginRight: 8, alignSelf: 'center' },
   actionButtonLabel: { fontSize: 14 },

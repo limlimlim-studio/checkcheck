@@ -5,7 +5,7 @@ import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../theme';
-import { useTodosOverdue, useBulkMoveToToday, useBulkDeleteTodos } from '../hooks/useTodos';
+import { useTodosOverdue, useBulkMoveToToday, useBulkDeleteTodos, useSetInProgress } from '../hooks/useTodos';
 import { useCategories } from '../hooks/useCategories';
 import { useCategoryMap } from '../hooks/useCategoryMap';
 import { useSelectable } from '../hooks/useSelectable';
@@ -55,6 +55,7 @@ export default function TodoTabOverdue() {
   const { data: categories = [] } = useCategories();
   const { mutate: bulkMoveToToday } = useBulkMoveToToday();
   const { mutate: bulkDelete } = useBulkDeleteTodos();
+  const { mutate: setInProgress } = useSetInProgress();
 
   const isFocused = useIsFocused();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -77,10 +78,17 @@ export default function TodoTabOverdue() {
 
   const handleMoveToToday = () => {
     if (selectedIds.size === 0) return;
-    const count = selectedIds.size;
     bulkMoveToToday([...selectedIds]);
     clearSelection();
     setSnackbarMessage(t('todo.move_to_today_msg'));
+    setSnackbarVisible(true);
+  };
+
+  const handleMarkInProgress = () => {
+    if (selectedIds.size === 0) return;
+    setInProgress([...selectedIds]);
+    clearSelection();
+    setSnackbarMessage(t('todo.in_progress_msg'));
     setSnackbarVisible(true);
   };
 
@@ -153,6 +161,12 @@ export default function TodoTabOverdue() {
             icon: 'calendar-arrow-right',
             label: t('todo.move_to_today_label'),
             onPress: () => { handleMoveToToday(); setFabOpen(false); },
+            size: 'small' as const,
+          },
+          {
+            icon: 'play-circle-outline',
+            label: t('todo.in_progress_label'),
+            onPress: () => { handleMarkInProgress(); setFabOpen(false); },
             size: 'small' as const,
           },
           {

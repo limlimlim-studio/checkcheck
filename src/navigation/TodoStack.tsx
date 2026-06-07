@@ -16,6 +16,7 @@ export type TodoStackParamList = {
       importance?: number | null;
       categoryId: number;
       isCompleted: number;
+      isInProgress?: number;
       notificationOffsets?: string | null;
     };
   } | undefined;

@@ -1,10 +1,12 @@
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { Colors } from '../../theme';
 
 const URGENCY_COLOR = Colors.urgency;
 const IMPORTANCE_COLOR = Colors.importance;
+const IN_PROGRESS_COLOR = Colors.inProgress;
 
 // 레벨별 아이콘 수 (1→1개, 2→2개, 3→3개)
 const URGENCY_ICON = 'lightning-bolt';
@@ -29,14 +31,22 @@ type Props = {
   dueTime?: number | null;
   urgency?: number | null;
   importance?: number | null;
+  isInProgress?: boolean;
 };
 
-export default function TodoItemMeta({ category, dueTime, urgency, importance }: Props) {
+export default function TodoItemMeta({ category, dueTime, urgency, importance, isInProgress }: Props) {
+  const { t } = useTranslation();
   const urgencyLevel = urgency ?? 0;
   const importanceLevel = importance ?? 0;
 
   return (
     <View style={styles.meta}>
+      {isInProgress && (
+        <View style={[styles.tag, { backgroundColor: IN_PROGRESS_COLOR + '28' }]}>
+          <MaterialCommunityIcons name="play-circle-outline" size={10} color={IN_PROGRESS_COLOR} />
+          <Text style={[styles.tagText, { color: IN_PROGRESS_COLOR }]}>{t('todo.status_in_progress')}</Text>
+        </View>
+      )}
       {category && (
         <View style={[styles.tag, { backgroundColor: category.color + '28' }]}>
           <View style={[styles.tagDot, { backgroundColor: category.color }]} />

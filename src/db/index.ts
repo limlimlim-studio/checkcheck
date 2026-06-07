@@ -58,6 +58,8 @@ export const initDb = async () => {
     sqlite.execSync('ALTER TABLE todos ADD COLUMN due_time INTEGER;');
   if (!todoColumns.includes('notification_offsets'))
     sqlite.execSync('ALTER TABLE todos ADD COLUMN notification_offsets TEXT;');
+  if (!todoColumns.includes('is_in_progress'))
+    sqlite.execSync('ALTER TABLE todos ADD COLUMN is_in_progress INTEGER NOT NULL DEFAULT 0;');
 
   sqlite.execSync(`
     CREATE TABLE IF NOT EXISTS app_settings (
@@ -197,6 +199,7 @@ export function autoCompleteCheckedTodosBeforeDate(beforeDate: string): void {
       .where(and(
         eq(schema.todos.id, c.todoId),
         eq(schema.todos.isCompleted, 0),
+        eq(schema.todos.isInProgress, 0),
         eq(schema.todos.isDeleted, 0),
       ))
       .run();

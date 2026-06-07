@@ -26,6 +26,7 @@ type Props = {
   todo: Todo;
   category?: Category;
   checked: boolean;
+  isInProgress?: boolean;
   onCheck: () => void;
   onPress?: () => void;        // 본문 탭 (없으면 onCheck 호출)
   onDrag?: () => void;
@@ -38,6 +39,7 @@ export default function TodoItem({
   todo,
   category,
   checked,
+  isInProgress = false,
   onCheck,
   onPress,
   onDrag,
@@ -58,8 +60,8 @@ export default function TodoItem({
       {checkboxVisible && (
         <TouchableOpacity onPress={onCheck} activeOpacity={0.6} style={styles.checkboxArea}>
           <Checkbox.Android
-            status={checked ? 'checked' : 'unchecked'}
-            color={Colors.primary}
+            status={checked ? 'checked' : isInProgress ? 'indeterminate' : 'unchecked'}
+            color={isInProgress && !checked ? Colors.inProgress : Colors.primary}
           />
         </TouchableOpacity>
       )}
@@ -92,6 +94,7 @@ export default function TodoItem({
           dueTime={todo.dueTime}
           urgency={todo.urgency}
           importance={todo.importance}
+          isInProgress={isInProgress}
         />
       </TouchableOpacity>
 
