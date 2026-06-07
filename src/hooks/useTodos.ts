@@ -453,3 +453,26 @@ export const useBulkDeleteTodos = () => {
   });
 };
 
+export const useBulkComplete = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (ids: number[]) => {
+      const now = Date.now();
+      const today = dayjs().format('YYYY-MM-DD');
+      for (const id of ids) {
+        await db.update(todos)
+          .set({ isCompleted: 1, isInProgress: 0, completedAt: now, updatedAt: now })
+          .where(eq(todos.id, id)).run();
+        await db.insert(todoCompletions)
+          .values({ todoId: id, completedDate: today })
+          .onConflictDoNothing()
+          .run();
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
+      queryClient.invalidateQueries({ queryKey: ['completions'] });
+    },
+  });
+};
+

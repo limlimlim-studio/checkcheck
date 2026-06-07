@@ -57,6 +57,8 @@ const ja: TranslationKeys = {
     search_section_routine: 'ルーティン',
     search_uncategorized: '未分類',
     status_in_progress: '進行中',
+    mark_complete_label: '完了にする',
+    mark_complete_msg: '完了にしました',
     in_progress_label: '進行中にする',
     in_progress_msg: 'タスクタブに移動しました',
     in_progress_clear: '進行中を解除',
