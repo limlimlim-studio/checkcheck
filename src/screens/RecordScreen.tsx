@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
-import { Appbar, Text, IconButton, TouchableRipple, Menu } from 'react-native-paper';
+import { Appbar, Text, IconButton, TouchableRipple } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
@@ -19,7 +19,6 @@ export default function RecordScreen() {
   const navigation = useNavigation<Nav>();
   const { t } = useTranslation();
   const [year, setYear] = useState(CURRENT_YEAR);
-  const [menuVisible, setMenuVisible] = useState(false);
   const { data: categories = [] } = useCategories();
   const { data: earliestYear = CURRENT_YEAR } = useEarliestCompletionYear();
   const { data: allCellColorMap = {} } = useAllCompletionsByYear(year);
@@ -28,24 +27,7 @@ export default function RecordScreen() {
     <View style={styles.container}>
       <Appbar.Header style={styles.header}>
         <Appbar.Content title="CheckCheck" titleStyle={{ fontWeight: '700' }} />
-        <Menu
-          visible={menuVisible}
-          onDismiss={() => setMenuVisible(false)}
-          anchor={
-            <Appbar.Action icon="dots-vertical" onPress={() => setMenuVisible(true)} />
-          }
-        >
-          <Menu.Item
-            leadingIcon="tag-outline"
-            title={t('record.menu_category')}
-            onPress={() => { setMenuVisible(false); navigation.navigate('CategoryRoot' as never); }}
-          />
-          <Menu.Item
-            leadingIcon="repeat"
-            title={t('record.menu_routine')}
-            onPress={() => { setMenuVisible(false); navigation.navigate('RoutineRoot' as never); }}
-          />
-        </Menu>
+        <Appbar.Action icon="cog-outline" onPress={() => navigation.navigate('SettingsRoot' as never)} />
       </Appbar.Header>
 
       <View style={styles.yearRow}>

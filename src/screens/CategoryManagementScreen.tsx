@@ -7,9 +7,9 @@ import DraggableFlatList, { RenderItemParams, ScaleDecorator } from 'react-nativ
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCategories, useReorderCategories } from '../hooks/useCategories';
-import { CategoryStackParamList } from '../navigation/CategoryStack';
+import { SettingsStackParamList } from '../navigation/SettingsStack';
 
-type Nav = NativeStackNavigationProp<CategoryStackParamList, 'CategoryManagement'>;
+type Nav = NativeStackNavigationProp<SettingsStackParamList, 'CategoryManagement'>;
 
 type Category = {
   id: number;

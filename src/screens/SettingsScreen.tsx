@@ -10,6 +10,7 @@ import { Colors } from '../theme';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SettingsStackParamList } from '../navigation/SettingsStack';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { useAdFree, REQUIRED_AD_COUNT } from '../hooks/useAdFree';
 import { setDayStartMinutes, db, setAppLanguage, resetOnboardingCompleted } from '../db';
@@ -203,6 +204,16 @@ export default function SettingsScreen() {
       </Appbar.Header>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Text variant="labelSmall" style={styles.sectionLabel}>{t('category.title_manage')}</Text>
+        <View style={styles.section}>
+          <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('CategoryManagement')}>
+            <View style={styles.itemLeft}>
+              <MaterialCommunityIcons name="label-multiple-outline" size={20} color={Colors.textSecondary} style={styles.itemIcon} />
+              <Text variant="bodyLarge">{t('category.title_manage')}</Text>
+            </View>
+            <MaterialCommunityIcons name="chevron-right" size={20} color={Colors.textMuted} />
+          </TouchableOpacity>
+        </View>
         <Text variant="labelSmall" style={styles.sectionLabel}>{t('settings.section_ad')}</Text>
         <View style={styles.section}>
           {isAdFree ? (
@@ -431,6 +442,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
   },
+  itemLeft: { flexDirection: 'row', alignItems: 'center' },
+  itemIcon: { marginRight: 10 },
   description: { color: Colors.textSecondary, marginTop: 2 },
   localePicker: { flexDirection: 'row', gap: 8, marginTop: 10 },
   localeBtn: {

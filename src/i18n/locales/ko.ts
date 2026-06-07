@@ -9,6 +9,7 @@ const ko = {
   },
   nav: {
     todo: '할 일',
+    routine: '루틴',
     record: '기록',
     goal: '목표',
     settings: '설정',
@@ -33,7 +34,6 @@ const ko = {
     empty_list: '할 일이 없어요',
     empty_overdue: '미완료 항목이 없어요',
     menu_clear: '완료 항목 정리',
-    menu_category: '카테고리 관리',
     menu_routine: '루틴 관리',
     sort_default: '기본순',
     sort_deadline: '기한순',
@@ -189,8 +189,6 @@ const ko = {
     card_5_desc: '헤더 ☰ 버튼으로 카테고리 색상·이름을 자유롭게 설정하고\n루틴 반복 주기도 원하는 대로 맞춤 설정하세요',
   },
   record: {
-    menu_category: '카테고리 관리',
-    menu_routine: '루틴 관리',
     empty_completed: '완료된 항목이 없어요',
     all_title: '전체',
   },

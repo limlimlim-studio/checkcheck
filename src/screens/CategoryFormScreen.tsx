@@ -6,11 +6,11 @@ import { Colors } from '../theme';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCreateCategory, useUpdateCategory, useDeleteCategory, useCategories } from '../hooks/useCategories';
-import { CategoryStackParamList } from '../navigation/CategoryStack';
+import { SettingsStackParamList } from '../navigation/SettingsStack';
 import { generateRandomColor } from '../constants/colors';
 
-type Nav = NativeStackNavigationProp<CategoryStackParamList, 'CategoryForm'>;
-type Route = RouteProp<CategoryStackParamList, 'CategoryForm'>;
+type Nav = NativeStackNavigationProp<SettingsStackParamList, 'CategoryForm'>;
+type Route = RouteProp<SettingsStackParamList, 'CategoryForm'>;
 
 export default function CategoryFormScreen() {
   const navigation = useNavigation<Nav>();

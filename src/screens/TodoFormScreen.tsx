@@ -252,7 +252,15 @@ export default function TodoFormScreen() {
 
         <Divider style={styles.divider} />
 
-        <Text variant="labelLarge" style={styles.label}>{t('todo.field_category')}</Text>
+        <View style={styles.categoryLabelRow}>
+          <Text variant="labelLarge">{t('todo.field_category')}</Text>
+          <TouchableOpacity
+            onPress={() => (navigation as any).navigate('SettingsRoot', { screen: 'CategoryManagement' })}
+            style={styles.categoryEditBtn}
+          >
+            <Text variant="labelSmall" style={styles.categoryEditText}>{t('category.title_manage')}</Text>
+          </TouchableOpacity>
+        </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
           {categories.map((cat) => (
             <TouchableOpacity
@@ -397,6 +405,9 @@ const styles = StyleSheet.create({
   timeRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
   timeButton: { flex: 1, marginBottom: 0 },
   divider: { marginVertical: 16 },
+  categoryLabelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, marginTop: 4 },
+  categoryEditBtn: { paddingHorizontal: 8, paddingVertical: 2 },
+  categoryEditText: { color: Colors.primary },
   categoryScroll: { marginBottom: 4 },
   categoryChip: {
     borderWidth: 1.5,
