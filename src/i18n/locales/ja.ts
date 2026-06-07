@@ -11,6 +11,7 @@ const ja: TranslationKeys = {
   },
   nav: {
     todo: 'タスク',
+    routine: 'ルーティン',
     record: '記録',
     goal: '目標',
     settings: '設定',
@@ -35,7 +36,6 @@ const ja: TranslationKeys = {
     empty_list: 'タスクがありません',
     empty_overdue: '期限切れのタスクはありません',
     menu_clear: '完了済みを整理',
-    menu_category: 'カテゴリ管理',
     menu_routine: 'ルーティン管理',
     sort_default: 'デフォルト',
     sort_deadline: '期限順',
@@ -191,8 +191,6 @@ const ja: TranslationKeys = {
     card_5_desc: '☰ボタンでカテゴリの色や名前を自由にカスタマイズ\nルーティンの繰り返し周期もお好みで設定できます',
   },
   record: {
-    menu_category: 'カテゴリ管理',
-    menu_routine: 'ルーティン管理',
     empty_completed: '完了したタスクがありません',
     all_title: 'すべて',
   },

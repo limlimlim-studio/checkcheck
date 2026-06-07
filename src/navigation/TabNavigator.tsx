@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import TodoStack from './TodoStack';
 import RecordStack from './RecordStack';
 import GoalStack from './GoalStack';
-import SettingsStack from './SettingsStack';
+import RoutineScreen from '../screens/RoutineScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -31,12 +31,12 @@ export default function TabNavigator() {
         }}
       />
       <Tab.Screen
-        name="기록"
-        component={RecordStack}
+        name="루틴"
+        component={RoutineScreen}
         options={{
-          tabBarLabel: t('nav.record'),
+          tabBarLabel: t('nav.routine'),
           tabBarIcon: ({ color, size }: IconProps) => (
-            <MaterialCommunityIcons name="calendar-month-outline" size={size} color={color} />
+            <MaterialCommunityIcons name="repeat" size={size} color={color} />
           ),
         }}
       />
@@ -51,12 +51,12 @@ export default function TabNavigator() {
         }}
       />
       <Tab.Screen
-        name="설정"
-        component={SettingsStack}
+        name="기록"
+        component={RecordStack}
         options={{
-          tabBarLabel: t('nav.settings'),
+          tabBarLabel: t('nav.record'),
           tabBarIcon: ({ color, size }: IconProps) => (
-            <MaterialCommunityIcons name="cog-outline" size={size} color={color} />
+            <MaterialCommunityIcons name="calendar-month-outline" size={size} color={color} />
           ),
         }}
       />

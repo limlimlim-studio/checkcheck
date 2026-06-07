@@ -11,6 +11,7 @@ const zh: TranslationKeys = {
   },
   nav: {
     todo: '任务',
+    routine: '习惯',
     record: '记录',
     goal: '目标',
     settings: '设置',
@@ -35,7 +36,6 @@ const zh: TranslationKeys = {
     empty_list: '没有任务',
     empty_overdue: '没有逾期任务',
     menu_clear: '清理已完成',
-    menu_category: '分类管理',
     menu_routine: '习惯管理',
     sort_default: '默认排序',
     sort_deadline: '按截止日期',
@@ -191,8 +191,6 @@ const zh: TranslationKeys = {
     card_5_desc: '点击☰自由设置分类颜色和名称\n习惯周期随意选：每天、每周或每月',
   },
   record: {
-    menu_category: '分类管理',
-    menu_routine: '习惯管理',
     empty_completed: '没有已完成的任务',
     all_title: '全部',
   },

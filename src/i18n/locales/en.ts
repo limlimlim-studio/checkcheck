@@ -11,6 +11,7 @@ const en: TranslationKeys = {
   },
   nav: {
     todo: 'Tasks',
+    routine: 'Routines',
     record: 'Record',
     goal: 'Goals',
     settings: 'Settings',
@@ -35,7 +36,6 @@ const en: TranslationKeys = {
     empty_list: 'No tasks',
     empty_overdue: 'No overdue tasks',
     menu_clear: 'Clear completed',
-    menu_category: 'Categories',
     menu_routine: 'Routines',
     sort_default: 'Default',
     sort_deadline: 'By deadline',
@@ -191,8 +191,6 @@ const en: TranslationKeys = {
     card_5_desc: 'Tap ☰ to create categories with custom colors and names.\nSet routines to repeat daily, weekly, or monthly — your way.',
   },
   record: {
-    menu_category: 'Categories',
-    menu_routine: 'Routines',
     empty_completed: 'No completed tasks',
     all_title: 'All',
   },

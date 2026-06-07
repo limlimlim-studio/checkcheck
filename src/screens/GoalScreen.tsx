@@ -157,6 +157,7 @@ export default function GoalScreen() {
     <View style={styles.container}>
       <Appbar.Header style={styles.appbarHeader}>
         <Appbar.Content title="CheckCheck" titleStyle={{ fontWeight: '700' }} />
+        <Appbar.Action icon="cog-outline" onPress={() => navigation.navigate('SettingsRoot' as never)} />
       </Appbar.Header>
 
       <TabView
@@ -236,7 +237,7 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     right: 16,
-    bottom: 24,
-    backgroundColor: Colors.primary,
+    bottom: 16,
+    transform: [{ scale: 0.85 }],
   },
 });
