@@ -61,7 +61,7 @@ export default function RecordScreen() {
         />
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         {/* 전체 섹션 */}
         <View style={styles.section}>
           <TouchableRipple
@@ -140,6 +140,7 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.border,
   },
   yearText: { color: Colors.text, fontWeight: '700', fontSize: 16, minWidth: 40, textAlign: 'center' },
+  scroll: { flex: 1 },
   content: { paddingVertical: 8 },
   section: {
     paddingHorizontal: 2,
