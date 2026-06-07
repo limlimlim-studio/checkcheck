@@ -13,6 +13,7 @@ import { useCategories } from '../hooks/useCategories';
 import { GoalStackParamList } from '../navigation/GoalStack';
 import { Goal, Category } from '../types';
 import PageHelpModal from '../components/PageHelpModal';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 type Nav = NativeStackNavigationProp<GoalStackParamList, 'GoalList'>;
 
@@ -158,14 +159,14 @@ export default function GoalScreen() {
   return (
     <View style={styles.container}>
       <Appbar.Header style={styles.appbarHeader}>
-        <Appbar.Content
-          title="CheckCheck"
-          titleStyle={{ fontWeight: '700' }}
-          subtitle={t('help.goal_subtitle')}
-          subtitleStyle={styles.subtitle}
-        />
-        <Appbar.Action icon="help-circle-outline" onPress={() => setHelpVisible(true)} />
-        <Appbar.Action icon="cog-outline" onPress={() => navigation.navigate('SettingsRoot' as never)} />
+        <View style={styles.headerContent}>
+          <Text style={styles.headerTitle}>CheckCheck</Text>
+          <TouchableOpacity style={styles.subtitleRow} onPress={() => setHelpVisible(true)} activeOpacity={0.6}>
+            <Text style={styles.headerSubtitle}>{t('help.goal_subtitle')}</Text>
+            <MaterialCommunityIcons name="help-circle-outline" size={13} color={Colors.textMuted} style={styles.helpIcon} />
+          </TouchableOpacity>
+        </View>
+        <Appbar.Action icon="cog-outline" onPress={() => navigation.navigate('SettingsRoot' as never)} style={styles.action} />
       </Appbar.Header>
 
       <PageHelpModal
@@ -206,7 +207,12 @@ export default function GoalScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   appbarHeader: { height: 88 },
-  subtitle: { fontSize: 11, color: Colors.textMuted },
+  action: { marginHorizontal: -2 },
+  headerContent: { flex: 1, paddingLeft: 16, justifyContent: 'center' },
+  headerTitle: { fontSize: 20, fontWeight: '700', color: Colors.text },
+  subtitleRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
+  headerSubtitle: { fontSize: 13, color: Colors.textMuted },
+  helpIcon: { marginLeft: 4 },
   tabBar: { backgroundColor: Colors.surface },
   indicator: { backgroundColor: Colors.primary },
   tabContainer: { flex: 1 },

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
+import { View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { Appbar, Text, IconButton, TouchableRipple } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -10,6 +10,7 @@ import { useEarliestCompletionYear, useAllCompletionsByYear } from '../hooks/use
 import ContributionGrid from '../components/ContributionGrid';
 import BannerAdView from '../components/BannerAdView';
 import PageHelpModal from '../components/PageHelpModal';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { RecordStackParamList } from '../navigation/RecordStack';
 
 type Nav = NativeStackNavigationProp<RecordStackParamList, 'RecordHome'>;
@@ -28,14 +29,14 @@ export default function RecordScreen() {
   return (
     <View style={styles.container}>
       <Appbar.Header style={styles.header}>
-        <Appbar.Content
-          title="CheckCheck"
-          titleStyle={{ fontWeight: '700' }}
-          subtitle={t('help.record_subtitle')}
-          subtitleStyle={styles.subtitle}
-        />
-        <Appbar.Action icon="help-circle-outline" onPress={() => setHelpVisible(true)} />
-        <Appbar.Action icon="cog-outline" onPress={() => navigation.navigate('SettingsRoot' as never)} />
+        <View style={styles.headerContent}>
+          <Text style={styles.headerTitle}>CheckCheck</Text>
+          <TouchableOpacity style={styles.subtitleRow} onPress={() => setHelpVisible(true)} activeOpacity={0.6}>
+            <Text style={styles.headerSubtitle}>{t('help.record_subtitle')}</Text>
+            <MaterialCommunityIcons name="help-circle-outline" size={13} color={Colors.textMuted} style={styles.helpIcon} />
+          </TouchableOpacity>
+        </View>
+        <Appbar.Action icon="cog-outline" onPress={() => navigation.navigate('SettingsRoot' as never)} style={styles.action} />
       </Appbar.Header>
       <PageHelpModal
         visible={helpVisible}
@@ -123,7 +124,12 @@ export default function RecordScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   header: { height: 88 },
-  subtitle: { fontSize: 11, color: Colors.textMuted },
+  action: { marginHorizontal: -2 },
+  headerContent: { flex: 1, paddingLeft: 16, justifyContent: 'center' },
+  headerTitle: { fontSize: 20, fontWeight: '700', color: Colors.text },
+  subtitleRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
+  headerSubtitle: { fontSize: 13, color: Colors.textMuted },
+  helpIcon: { marginLeft: 4 },
   yearRow: {
     flexDirection: 'row',
     alignItems: 'center',
