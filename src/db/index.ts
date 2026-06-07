@@ -105,6 +105,43 @@ export const initDb = async () => {
     );
   `);
 
+  sqlite.execSync(`
+    CREATE TABLE IF NOT EXISTS goals (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      category_id INTEGER NOT NULL REFERENCES categories(id),
+      title TEXT NOT NULL,
+      description TEXT,
+      due_date INTEGER,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      is_completed INTEGER NOT NULL DEFAULT 0,
+      completed_at INTEGER,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+  `);
+
+  sqlite.execSync(`
+    CREATE TABLE IF NOT EXISTS goal_todos (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      goal_id INTEGER NOT NULL REFERENCES goals(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      description TEXT,
+      urgency INTEGER DEFAULT 0,
+      importance INTEGER DEFAULT 0,
+      is_completed INTEGER NOT NULL DEFAULT 0,
+      completed_at INTEGER,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+  `);
+
+  const goalTodoColumns = (sqlite.getAllSync('PRAGMA table_info(goal_todos)') as { name: string }[]).map(c => c.name);
+  if (!goalTodoColumns.includes('urgency'))
+    sqlite.execSync('ALTER TABLE goal_todos ADD COLUMN urgency INTEGER DEFAULT 0;');
+  if (!goalTodoColumns.includes('importance'))
+    sqlite.execSync('ALTER TABLE goal_todos ADD COLUMN importance INTEGER DEFAULT 0;');
+
 
   db = drizzle(sqlite, { schema });
 

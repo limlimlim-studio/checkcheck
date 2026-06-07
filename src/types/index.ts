@@ -26,3 +26,30 @@ export interface TodoCompletion {
   todoId: number;
   completedDate: string; // 'YYYY-MM-DD'
 }
+
+export interface Goal {
+  id: number;
+  categoryId: number;
+  title: string;
+  description: string | null;
+  dueDate: number | null;
+  isCompleted: number;
+  completedAt: number | null;
+  sortOrder: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface GoalTodo {
+  id: number;
+  goalId: number;
+  title: string;
+  description: string | null;
+  urgency: number | null;
+  importance: number | null;
+  isCompleted: number;
+  completedAt: number | null;
+  sortOrder: number;
+  createdAt: number;
+  updatedAt: number;
+}

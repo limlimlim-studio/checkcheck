@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { asc, eq } from 'drizzle-orm';
 import { db } from '../db';
-import { categories, todos } from '../db/schema';
+import { categories, todos, goals } from '../db/schema';
 
 export const useCategories = () =>
   useQuery({
@@ -47,13 +47,14 @@ export const useDeleteCategory = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, defaultCategoryId }: { id: number; defaultCategoryId: number }) => {
-      // 해당 카테고리의 할 일을 미분류로 재배정
       await db.update(todos).set({ categoryId: defaultCategoryId }).where(eq(todos.categoryId, id)).run();
+      await db.update(goals).set({ categoryId: defaultCategoryId }).where(eq(goals.categoryId, id)).run();
       await db.delete(categories).where(eq(categories.id, id)).run();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       queryClient.invalidateQueries({ queryKey: ['todos'] });
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
     },
   });
 };
