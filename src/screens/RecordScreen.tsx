@@ -9,6 +9,7 @@ import { useCategories } from '../hooks/useCategories';
 import { useEarliestCompletionYear, useAllCompletionsByYear } from '../hooks/useCompletions';
 import ContributionGrid from '../components/ContributionGrid';
 import BannerAdView from '../components/BannerAdView';
+import PageHelpModal from '../components/PageHelpModal';
 import { RecordStackParamList } from '../navigation/RecordStack';
 
 type Nav = NativeStackNavigationProp<RecordStackParamList, 'RecordHome'>;
@@ -19,6 +20,7 @@ export default function RecordScreen() {
   const navigation = useNavigation<Nav>();
   const { t } = useTranslation();
   const [year, setYear] = useState(CURRENT_YEAR);
+  const [helpVisible, setHelpVisible] = useState(false);
   const { data: categories = [] } = useCategories();
   const { data: earliestYear = CURRENT_YEAR } = useEarliestCompletionYear();
   const { data: allCellColorMap = {} } = useAllCompletionsByYear(year);
@@ -26,9 +28,21 @@ export default function RecordScreen() {
   return (
     <View style={styles.container}>
       <Appbar.Header style={styles.header}>
-        <Appbar.Content title="CheckCheck" titleStyle={{ fontWeight: '700' }} />
+        <Appbar.Content
+          title="CheckCheck"
+          titleStyle={{ fontWeight: '700' }}
+          subtitle={t('help.record_subtitle')}
+          subtitleStyle={styles.subtitle}
+        />
+        <Appbar.Action icon="help-circle-outline" onPress={() => setHelpVisible(true)} />
         <Appbar.Action icon="cog-outline" onPress={() => navigation.navigate('SettingsRoot' as never)} />
       </Appbar.Header>
+      <PageHelpModal
+        visible={helpVisible}
+        onDismiss={() => setHelpVisible(false)}
+        title={t('help.record_title')}
+        body={t('help.record_body')}
+      />
 
       <View style={styles.yearRow}>
         <IconButton
@@ -108,7 +122,8 @@ export default function RecordScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
-  header: { height: 72 },
+  header: { height: 88 },
+  subtitle: { fontSize: 11, color: Colors.textMuted },
   yearRow: {
     flexDirection: 'row',
     alignItems: 'center',

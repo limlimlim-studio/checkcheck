@@ -14,6 +14,7 @@ import { TodoStackParamList } from '../navigation/TodoStack';
 import BannerAdView from '../components/BannerAdView';
 import TodoTabList from '../components/TodoTabList';
 import TodoTabOverdue from '../components/TodoTabOverdue';
+import PageHelpModal from '../components/PageHelpModal';
 
 type Nav = NativeStackNavigationProp<TodoStackParamList, 'TodoList'>;
 
@@ -30,6 +31,7 @@ export default function TodoScreen() {
   const { t } = useTranslation();
   const layout = useWindowDimensions();
   const [tabIndex, setTabIndex] = useState(0);
+  const [helpVisible, setHelpVisible] = useState(false);
   const isFocused = useIsFocused();
   const queryClient = useQueryClient();
 
@@ -66,10 +68,23 @@ export default function TodoScreen() {
   return (
     <View style={styles.container}>
       <Appbar.Header style={styles.header}>
-        <Appbar.Content title="CheckCheck" titleStyle={{ fontWeight: '700' }} />
+        <Appbar.Content
+          title="CheckCheck"
+          titleStyle={{ fontWeight: '700' }}
+          subtitle={t('help.todo_subtitle')}
+          subtitleStyle={styles.subtitle}
+        />
+        <Appbar.Action icon="help-circle-outline" onPress={() => setHelpVisible(true)} style={{ marginRight: -8 }} />
         <Appbar.Action icon="magnify" onPress={() => navigation.navigate('Search')} style={{ marginRight: -8 }} />
         <Appbar.Action icon="cog-outline" onPress={() => navigation.navigate('SettingsRoot' as never)} />
       </Appbar.Header>
+
+      <PageHelpModal
+        visible={helpVisible}
+        onDismiss={() => setHelpVisible(false)}
+        title={t('help.todo_title')}
+        body={t('help.todo_body')}
+      />
 
       <TabView
         navigationState={{ index: tabIndex, routes: ROUTES }}
@@ -95,7 +110,8 @@ export default function TodoScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
-  header: { height: 72 },
+  header: { height: 88 },
   tabBar: { backgroundColor: Colors.surface },
   indicator: { backgroundColor: Colors.primary },
+  subtitle: { fontSize: 11, color: Colors.textMuted },
 });
